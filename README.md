@@ -4,9 +4,7 @@
 
 ## 安装
 
-```bash
-pip install oak-deepseek
-```
+当前尚未发布，需自行从源码构建
 
 ## 快速开始
 下面是一个完整示例，展示如何创建两个 Agent（主 Agent 和子 Agent）并让它们协作计算数学表达式。
