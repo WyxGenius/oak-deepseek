@@ -4,14 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "oak-deepseek"
-version = "0.0.51"
+version = "0.0.53"
 description = "一个轻量AI Agent框架，基于DeepSeek API"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{name = "WyxGenius", email = "2389604361@qq.com"}]
 license = "MIT"
 classifiers = [
-    # 去掉 "License :: OSI Approved :: MIT License" 这一行
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
