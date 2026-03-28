@@ -2,7 +2,7 @@ from queue import Queue
 from threading import Thread
 import os
 
-from oak_deepseek.session import AgentSession
+from oak_deepseek.engine import AgentEngine
 
 def add(a: int, b: int) -> str:
     """
@@ -18,12 +18,12 @@ def mul(a: int, b: int) -> str:
     """
     return f"{a * b}"
 
-session: AgentSession = AgentSession()
+session: AgentEngine = AgentEngine()
 session.create_agent(
     key=("sys","sys"),
     description="一个能进行数学计算的agent",
     prompt="你是一个数学计算助手，会使用工具确保自己计算的正确性。",
-    #loop="reactive_enter",
+    loop="reactive_enter",
     tools=[add],
     sub_agents=[("sys","sub")]
 )
@@ -35,7 +35,7 @@ session.create_agent(
     tools=[mul]
 )
 history_queue = Queue()
-session.init_engine(key=("sys","sys"), history_queue=history_queue, api_key=os.getenv("DEEPSEEK_API_KEY"))
+session.init_core(key=("sys", "sys"), history_queue=history_queue, api_key=os.getenv("DEEPSEEK_API_KEY"))
 
 task_queue = Queue()
 task_queue.put("计算(679+678)*(2+78)")

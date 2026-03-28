@@ -2,12 +2,12 @@ from queue import Queue
 from typing import Dict, Callable, Tuple, Optional
 
 from oak_deepseek.agent import AgentFactory
-from oak_deepseek.engine import AgentEngine
+from oak_deepseek.core import AgentCore
 from oak_deepseek.loops.basic import init, parse_tool_calls, exec_tool, new_agent, finish
 from oak_deepseek.models import AssistantMessage, UserMessage
 
 
-def re_act(engine: AgentEngine, agent_factory: AgentFactory, task: str, tools: Dict[str, Callable]) -> Optional[str]:
+def re_act(engine: AgentCore, agent_factory: AgentFactory, task: str, tools: Dict[str, Callable]) -> Optional[str]:
     init(engine, task)
 
     while True:
@@ -32,7 +32,7 @@ def re_act(engine: AgentEngine, agent_factory: AgentFactory, task: str, tools: D
             pass
 
 
-def reactive_enter(engine: AgentEngine, agent_factory: AgentFactory, task: str, tools: Dict[str, Callable], queue: Queue[str]) -> Optional[str]:
+def reactive_enter(engine: AgentCore, agent_factory: AgentFactory, task: str, tools: Dict[str, Callable], queue: Queue[str]) -> Optional[str]:
     init(engine, task)
     while True:
         assistant_msg: AssistantMessage = engine.send()

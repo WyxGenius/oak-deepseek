@@ -2,12 +2,12 @@ from queue import Queue
 from typing import Dict, Tuple, Callable
 
 from oak_deepseek.agent import Agent, AgentFactory
-from oak_deepseek.engine import AgentEngine
+from oak_deepseek.core import AgentCore
 from oak_deepseek.models import SystemMessage, UserMessage, ToolMessage
 from oak_deepseek.tool import parse_tool_call, ToolCall
 
 
-def init(engine: AgentEngine, task: str):
+def init(engine: AgentCore, task: str):
     """
     用于Agent初始化
     :param engine: AgentEngine，Agent所在的引擎
@@ -30,7 +30,7 @@ def parse_tool_calls(tool_calls: ToolCall) -> Queue[ToolCall]:
         queue.put(parse_tool_call(tool_call))
     return queue
 
-def finish(engine: AgentEngine, call_info: ToolCall):
+def finish(engine: AgentCore, call_info: ToolCall):
     """
     处理Agent的任务总结
     :param engine: AgentEngine，当前会话的引擎
@@ -56,7 +56,7 @@ def finish(engine: AgentEngine, call_info: ToolCall):
         tool_call_id: str = parse_tool_call(last_tool_call)[0]
         engine.update(ToolMessage(content=conclusion, tool_call_id=tool_call_id))
 
-def new_agent(agent_factory: AgentFactory, engine: AgentEngine, call_info: ToolCall) -> str:
+def new_agent(agent_factory: AgentFactory, engine: AgentCore, call_info: ToolCall) -> str:
     """
     处理Agent调用子Agent
     :param agent_factory: 当前会话的AgentFactory，用于生成新的Agent实例
@@ -72,7 +72,7 @@ def new_agent(agent_factory: AgentFactory, engine: AgentEngine, call_info: ToolC
     engine.sub_agent(agent)
     return task
 
-def exec_tool(engine: AgentEngine, tools: Dict[str, Callable], call_info: ToolCall):
+def exec_tool(engine: AgentCore, tools: Dict[str, Callable], call_info: ToolCall):
     """
     直接执行工具，最简单的一集
     :param engine: AgentEngine，当前会话的引擎
