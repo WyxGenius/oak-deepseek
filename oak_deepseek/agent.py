@@ -61,34 +61,24 @@ class AgentFactory:
         self.agents[key] = agent
 
     def build(self, key: Tuple[str, str]) -> Agent:
+        # 检查要构建的agent是否存在
         if self.agents.get(key) is None:
             raise KeyError(f"agent {key} 未注册")
-        
+
+        # 从表中查出agent信息，写入实例
         agent_info: AgentInfo = self.agents.get(key).model_copy(deep=True)
         agent: Agent = Agent(agent_info)
 
+        # 提取工具元数据并写入实例
         agent.info.tools.append(standardize_tool(finished))
 
-        match agent_info.loop:
-            case "ReAct":
-                pass
-            case "reactive_enter":
-                pass
-            case "plan_exec":
-                agent.info.tools.append(standardize_tool(plan))
-                agent.info.tools.append(standardize_tool(next_step))
-            case "plan_exec_with_reflection":
-                agent.info.tools.append(standardize_tool(plan))
-                agent.info.tools.append(standardize_tool(next_step))
-
+        # 将AI Agent信息拼接到提示词中
         keys: Optional[Tuple[str, str]] = agent_info.sub_agents
         if keys is not None:
             agent.info.tools.append(standardize_tool(choose_agent))
             prompt_about_sub_agent = "\n\n**你可以让这些AI Agent辅助你完成任务：**"
-
             for sub_agent in agent_info.sub_agents:
                 prompt_about_sub_agent += f"\n\n(namespace={sub_agent[0]}, name={sub_agent[1]})\n简介：{self.agents[sub_agent].description}"
-
             agent.info.prompt += prompt_about_sub_agent
 
         return agent
