@@ -9,7 +9,6 @@ from oak_deepseek.models import AssistantMessage, UserMessage
 
 def re_act(engine: AgentCore, agent_factory: AgentFactory, task: str, tools: Dict[str, Callable]) -> Optional[str]:
     init(engine, task)
-
     while True:
         assistant_msg: AssistantMessage = engine.send()
         if assistant_msg.tool_calls is not None:
@@ -26,9 +25,6 @@ def re_act(engine: AgentCore, agent_factory: AgentFactory, task: str, tools: Dic
                     case _:
                         exec_tool(engine, tools, call_info)
         else:
-            """t: UserMessage = engine.update(
-                UserMessage(content="你没有调用工具，如果你认为任务已经结束了，就调用finished"))
-            print(t)"""
             pass
 
 
