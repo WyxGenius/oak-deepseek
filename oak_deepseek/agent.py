@@ -48,7 +48,8 @@ class AgentInfo(BaseModel):
 
 # agent自己维护好自己的消息记录
 class Agent:
-    def __init__(self, info: AgentInfo):
+    def __init__(self, key: Tuple[str, str], info: AgentInfo):
+        self.key: Tuple[str, str] = key
         self.info: AgentInfo = info
         self.messages: List[Message] = []
 
@@ -67,12 +68,12 @@ class AgentFactory:
 
         # 从表中查出agent信息，写入实例
         agent_info: AgentInfo = self.agents.get(key).model_copy(deep=True)
-        agent: Agent = Agent(agent_info)
+        agent: Agent = Agent(key=key, info=agent_info)
 
-        # 提取工具元数据并写入实例
+        # 将finished工具添加至列表
         agent.info.tools.append(standardize_tool(finished))
 
-        # 将AI Agent信息拼接到提示词中
+        # 将choose_agent工具加入工具列表，并将可用Agent信息拼接到提示词中
         keys: Optional[Tuple[str, str]] = agent_info.sub_agents
         if keys is not None:
             agent.info.tools.append(standardize_tool(choose_agent))
