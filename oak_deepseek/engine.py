@@ -5,7 +5,7 @@ import os
 from oak_deepseek.agent import AgentInfo, AgentFactory
 from oak_deepseek.client import RequestResponsePair
 from oak_deepseek.core import AgentCore
-from oak_deepseek.loops.strategies import re_act, reactive_rea_ct
+from oak_deepseek.strategies import re_act, reactive_rea_ct
 from oak_deepseek.models import Tool
 from oak_deepseek.tool import standardize_tool
 
