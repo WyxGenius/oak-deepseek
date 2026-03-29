@@ -39,6 +39,14 @@ def choose_agent(agent: Tuple[str, str], task) -> str:
 
 # agent元数据
 class AgentInfo(BaseModel):
+    """
+    Agent的元数据，描述Agent的静态配置。
+    :ivar description: Agent的简短描述
+    :ivar prompt: 系统提示词
+    :ivar tools: 可调用的工具列表
+    :ivar loop: 循环模式，如 "ReAct" 或 "ReactiveReAct"
+    :ivar sub_agents: 可选，可调用的子Agent列表，每个元素为(namespace, name)
+    """
     description: str
     prompt: str
     tools: List[Tool]
@@ -48,20 +56,46 @@ class AgentInfo(BaseModel):
 
 # agent自己维护好自己的消息记录
 class Agent:
+    """
+    Agent实例，包含其元数据和消息历史。
+    :ivar key: 唯一标识 (namespace, name)
+    :ivar info: AgentInfo对象
+    :ivar messages: 该Agent的消息历史列表
+    """
     def __init__(self, key: Tuple[str, str], info: AgentInfo):
+        """
+        初始化Agent实例。
+        :param key: Agent的唯一标识 (namespace, name)
+        :param info: Agent的元数据
+        """
         self.key: Tuple[str, str] = key
         self.info: AgentInfo = info
         self.messages: List[Message] = []
 
 # 从元数据中组装agent实例
 class AgentFactory:
+    """
+    Agent工厂，负责注册和构建Agent实例。
+    """
     def __init__(self):
         self.agents: Dict[Tuple[str, str], AgentInfo] = {}
 
     def register_agent(self, key: Tuple[str, str], agent: AgentInfo):
+        """
+        注册一个Agent的元数据。
+        :param key: Agent的唯一标识
+        :param agent: Agent的元数据
+        """
         self.agents[key] = agent
 
     def build(self, key: Tuple[str, str]) -> Agent:
+        """
+        根据key构建一个Agent实例。
+        自动添加finished工具，如有子Agent则添加choose_agent工具并拼接提示词。
+        :param key: Agent的唯一标识
+        :return: 构建好的Agent实例
+        :raises KeyError: 如果key未注册
+        """
         # 检查要构建的agent是否存在
         if self.agents.get(key) is None:
             raise KeyError(f"agent {key} 未注册")

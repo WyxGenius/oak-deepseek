@@ -81,6 +81,14 @@ def exec_tool(engine: AgentCore, tools: Dict[str, Callable], call_info: ToolCall
 def re_act(engine: AgentCore,
            agent_factory: AgentFactory,
            task: str, tools: Dict[str, Callable]) -> Optional[str]:
+    """
+    ReAct循环模式：Agent反复调用工具直到完成。
+    :param engine: 当前运行的AgentCore
+    :param agent_factory: Agent工厂，用于构建子Agent
+    :param task: 当前Agent的任务
+    :param tools: 可用的工具字典，键为函数名，值为可调用对象
+    :return: 如果调用了子Agent，返回子Agent的任务字符串；否则返回None
+    """
     init(engine, task)
     while True:
         assistant_msg: AssistantMessage = engine.send()
@@ -104,6 +112,15 @@ def re_act(engine: AgentCore,
 def reactive_rea_ct(engine: AgentCore,
                     agent_factory: AgentFactory,
                     task: str, tools: Dict[str, Callable], queue: Queue[str]) -> Optional[str]:
+    """
+    ReactiveReAct循环模式：与ReAct类似，但无工具调用时会从队列获取用户输入。
+    :param engine: 当前运行的AgentCore
+    :param agent_factory: Agent工厂
+    :param task: 当前Agent的任务
+    :param tools: 可用的工具字典
+    :param queue: 用户输入队列
+    :return: 如果调用了子Agent，返回子Agent的任务字符串；否则返回None
+    """
     init(engine, task)
     while True:
         assistant_msg: AssistantMessage = engine.send()

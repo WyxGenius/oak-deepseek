@@ -12,8 +12,20 @@ from oak_deepseek.models import DeepSeekRequestBody, Thinking, Tool, Message, As
 RequestResponsePair = namedtuple("RequestResponsePair", ["request", "response"])
 
 class ChatClient():
+    """
+    DeepSeek API的客户端封装。
+    :ivar conn: requests.Session对象
+    :ivar url: API端点
+    :ivar headers: 请求头
+    :ivar raw_response_queue: 可选队列，记录原始请求与响应
+    """
     def __init__(self, api_key: str = os.getenv("DEEPSEEK_API_KEY"),
                  raw_response_queue: Optional[Queue[RequestResponsePair]] = None):
+        """
+        初始化客户端。
+        :param api_key: DeepSeek API密钥，默认从环境变量DEEPSEEK_API_KEY读取
+        :param raw_response_queue: 可选队列，存储原始请求和响应对
+        """
         self.conn: Session = requests.session()
         self.url:str = "https://api.deepseek.com/chat/completions"
         self.headers = {
@@ -26,6 +38,14 @@ class ChatClient():
     def send(self, messages: List[Message],
              tools: Optional[List[Tool]]=None,
              thinking: bool=False) -> AssistantMessage:
+        """
+        发送请求并返回助手消息。
+        :param messages: 消息历史列表
+        :param tools: 可选，可用的工具列表
+        :param thinking: 是否启用思考模式
+        :return: AssistantMessage对象
+        :raises RuntimeError: 如果API返回的响应中没有choices字段
+        """
 
         payload: DeepSeekRequestBody = DeepSeekRequestBody(
             messages=messages,

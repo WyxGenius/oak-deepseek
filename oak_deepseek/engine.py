@@ -11,6 +11,11 @@ from oak_deepseek.tools import standardize_tool
 
 
 class AgentEngine:
+    """
+    核心类，用于创建和运行Agent系统。
+    引擎本身是无状态的，只保存注册信息。实际运行状态由AgentCore管理，
+    支持断点重连：通过create_core传入历史消息列表即可恢复之前的执行状态。
+    """
     def __init__(self):
         self.agent_factory: AgentFactory = AgentFactory()
         self.tools: Dict[str, Callable] = {}
@@ -24,14 +29,14 @@ class AgentEngine:
                      loop: Literal["ReactiveReAct", "ReAct"]="ReAct",
                      sub_agents: Optional[List[Tuple[str, str]]]=None):
         """
-        这个函数用来注册一个Agent至引擎，以后可以用唯一命名空间+名字来指定
-        :param key: Tuple[str, str]，命名空间+名字
-        :param description: str，Agent描述
-        :param prompt: str，Agent提示词
-        :param tools: Optional[List[Callable]]，可用工具
-        :param loop: str，消息循环模式
-        :param sub_agents: 可以调用的子Agent
-        :return:
+        注册一个Agent至引擎，以后可以用唯一命名空间+名字来指定。
+        :param key: 命名空间+名字，例如 ("sys", "math_agent")
+        :param description: Agent的简短描述
+        :param prompt: Agent的系统提示词
+        :param tools: 可选，Agent可调用的工具函数列表
+        :param loop: 消息循环模式，可选 "ReAct" 或 "ReactiveReAct"
+        :param sub_agents: 可选，可调用的子Agent列表，每个元素为子Agent的key
+        :return: None
         """
 
         tools_info: Optional[List[Tool]] = []
@@ -51,12 +56,16 @@ class AgentEngine:
                     api_key: str=os.getenv("DEEPSEEK_API_KEY")
                     ) -> AgentCore:
         """
-        初始化引擎，指定入口Agent和消息记录队列
-        :param key: Union[Tuple[str, str], List[Tuple[Tuple[str, str], Message]]]，根据信息类型决定创建方式
-        :param history_queue: Queue，这个队列用会写入完整的消息记录，可以用于持久化等场景
-        :param raw_response_queue: Queue[namedtuple("RequestResponsePair", ["request", "response"]]，记录原始请求与响应
-        :param api_key: deepseek api key，不写的话默认从环境变量DEEPSEEK_API_KEY里取
-        :return: AgentCore，这个方法返回Agent核心
+        初始化引擎，指定入口Agent和消息记录队列。
+        支持两种模式：
+        - 正常启动：传入一个元组 (namespace, name) 作为入口Agent的key。
+        - 断点恢复：传入一个历史消息列表，每个元素为 (agent_key, message)，按时间顺序排列。
+          引擎会根据消息中的agent_key重建调用栈和各Agent的消息历史。
+        :param key: 启动方式，元组表示正常启动，列表表示恢复模式
+        :param history_queue: 消息输出队列，运行期间产生的所有消息（附带所属Agent key）都会被放入此队列
+        :param raw_response_queue: 可选，用于输出原始请求/响应对的队列
+        :param api_key: DeepSeek API密钥，默认从环境变量DEEPSEEK_API_KEY读取
+        :return: 已初始化的AgentCore实例
         """
         if isinstance(key, tuple):
             return AgentCore(self.agent_factory.build(key), history_queue, api_key=api_key, raw_response_queue=raw_response_queue)
@@ -93,13 +102,17 @@ class AgentEngine:
             api_key: str = os.getenv("DEEPSEEK_API_KEY")
             ):
         """
-        开始任务
-        :param input_queue: Queue[str]，队列，用于接收用户消息
-        :param key: Union[Tuple[str, str], List[Tuple[Tuple[str, str], Message]]]，入口agent的命名空间id，或历史消息
-        :param history_queue: Queue，这个队列用会写入完整的消息记录，可以用于持久化等场景
-        :param raw_response_queue: Queue[namedtuple("RequestResponsePair", ["request", "response"]]，记录原始请求与响应
-        :param api_key: deepseek api key，不写的话默认从环境变量DEEPSEEK_API_KEY里取
-        :return:
+        开始任务，阻塞直到所有Agent完成工作。
+        此方法会：
+        1. 调用create_core创建AgentCore实例（支持正常启动或历史恢复）。
+        2. 从input_queue获取初始任务（正常启动时）或继续已有任务（恢复时）。
+        3. 根据当前Agent的循环模式，反复调用相应的循环函数，直到调用栈为空。
+        :param input_queue: 用户输入队列，用于接收新消息（在ReactiveReAct模式下需要）
+        :param key: 同create_core的key参数，用于确定启动方式
+        :param history_queue: 消息输出队列，同create_core
+        :param raw_response_queue: 可选，原始请求/响应队列
+        :param api_key: DeepSeek API密钥
+        :return: None
         """
         core: AgentCore = self.create_core(key=key, history_queue=history_queue, raw_response_queue=raw_response_queue, api_key=api_key)
         agent_count: int = len(core.stack) + 1
