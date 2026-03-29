@@ -49,7 +49,6 @@ def messages():
         print(msg)
 
 
-
 if __name__ == "__main__":
     agent_thread = Thread(target=go)
     agent_thread.start()
