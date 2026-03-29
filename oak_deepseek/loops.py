@@ -19,7 +19,6 @@ def init(engine: AgentCore, task: str):
         engine.update(SystemMessage(content=engine.agent.info.prompt))
         engine.update(UserMessage(content=task))
 
-
 def finish(core: AgentCore, call_info: ToolCall):
     """
     处理Agent的任务总结
@@ -46,7 +45,6 @@ def finish(core: AgentCore, call_info: ToolCall):
         tool_call_id: str = parse_tool_call(last_tool_call)[0]
         core.update(ToolMessage(content=f"AI Agent执行摘要：{conclusion}", tool_call_id=tool_call_id))
 
-
 def new_agent(agent_factory: AgentFactory, engine: AgentCore, call_info: ToolCall) -> str:
     """
     处理Agent调用子Agent
@@ -63,7 +61,6 @@ def new_agent(agent_factory: AgentFactory, engine: AgentCore, call_info: ToolCal
     engine.sub_agent(agent)
     return task
 
-
 def exec_tool(engine: AgentCore, tools: Dict[str, Callable], call_info: ToolCall):
     """
     直接执行工具，最简单的一集
@@ -79,9 +76,7 @@ def exec_tool(engine: AgentCore, tools: Dict[str, Callable], call_info: ToolCall
     content: str = tools.get(name)(**args)
     engine.update(ToolMessage(content=content, tool_call_id=tool_call_id))
 
-
 ########################################################################################################################
-
 
 def re_act(engine: AgentCore,
            agent_factory: AgentFactory,
