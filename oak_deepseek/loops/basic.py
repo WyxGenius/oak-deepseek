@@ -37,16 +37,16 @@ def finish(engine: AgentCore, call_info: ToolCall):
     :param call_info: namedtuple("ToolCall", ["id", "name", "args"])，调用信息
     :return: 没有返回值，不过对应的分支可能要返回None
     """
-    tool_call_id: str = call_info[0]
-    args: Dict = call_info[2]
+    tool_call_id: str = call_info.id
+    args: Dict = call_info.args
 
     # 当前Agent收尾
-    engine.update(ToolMessage(content="任务已完成", tool_call_id=tool_call_id))
+    conclusion: str = args["conclusion"]
+    engine.update(ToolMessage(content=f"任务摘要：{conclusion}", tool_call_id=tool_call_id))
 
     # 判空
     if len(engine.stack) > 0:
         # 准备父Agent工具content
-        conclusion: str = args["conclusion"]
 
         # 返回父Agent，构造ToolMessage
         engine.back()

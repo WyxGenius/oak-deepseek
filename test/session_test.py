@@ -23,7 +23,6 @@ engine.create_agent(
     key=("sys","sys"),
     description="一个能进行数学计算的agent",
     prompt="你是一个数学计算助手，会使用工具确保自己计算的正确性。",
-    loop="ReactiveReAct",
     tools=[add],
     sub_agents=[("sys","sub")]
 )
