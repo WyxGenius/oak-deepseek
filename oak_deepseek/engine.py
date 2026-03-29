@@ -2,11 +2,11 @@ from queue import Queue
 from typing import List, Callable, Literal, Optional, Tuple, Dict, Union
 import os
 
-from oak_deepseek.agent import AgentInfo, AgentFactory
+from oak_deepseek.agent import AgentInfo, AgentFactory, Agent
 from oak_deepseek.client import RequestResponsePair
 from oak_deepseek.core import AgentCore
 from oak_deepseek.loops import re_act, reactive_rea_ct
-from oak_deepseek.models import Tool
+from oak_deepseek.models import Tool, Message
 from oak_deepseek.tools import standardize_tool
 
 
@@ -45,24 +45,49 @@ class AgentEngine:
             description=description, prompt=prompt, tools=tools_info, loop=loop, sub_agents=sub_agents
         ))
 
-    def create_core(self, key: Union[Tuple[str, str]],
+    def create_core(self, key: Union[Tuple[str, str], List[Tuple[Tuple[str, str], Message]]],
                     history_queue: Queue,
                     raw_response_queue: Optional[Queue[RequestResponsePair]] = None,
                     api_key: str=os.getenv("DEEPSEEK_API_KEY")
                     ) -> AgentCore:
         """
         初始化引擎，指定入口Agent和消息记录队列
-        :param key: Union[Tuple[str, str]]，入口agent的命名空间id
+        :param key: Union[Tuple[str, str], List[Tuple[Tuple[str, str], Message]]]，根据信息类型决定创建方式
         :param history_queue: Queue，这个队列用会写入完整的消息记录，可以用于持久化等场景
         :param raw_response_queue: Queue[namedtuple("RequestResponsePair", ["request", "response"]]，记录原始请求与响应
         :param api_key: deepseek api key，不写的话默认从环境变量DEEPSEEK_API_KEY里取
         :return: AgentCore，这个方法返回Agent核心
         """
-        return AgentCore(self.agent_factory.build(key), history_queue, api_key=api_key, raw_response_queue=raw_response_queue)
+        if isinstance(key, tuple):
+            return AgentCore(self.agent_factory.build(key), history_queue, api_key=api_key, raw_response_queue=raw_response_queue)
+        else:
+            owner: List[Tuple[str, str]] = [key[0][0]]
+            core: AgentCore = AgentCore(self.agent_factory.build(owner[-1]),
+                                        history_queue, api_key=api_key, raw_response_queue=raw_response_queue)
+            for snapshot in key:
+                if snapshot[0] == owner[-1]:
+                    # 直接写入消息
+                    core.agent.messages.append(snapshot[1])
+                else:
+                    if len(owner) > 1 and snapshot[0] == owner[-2]:
+                        # 返回父agent写入消息
+                        core.back()
+                        core.agent.messages.append(snapshot[1])
+                        # 更新调用链
+                        owner.pop()
+                    else:
+                        # 创建子agent写入消息
+                        sub_agent: Agent = self.agent_factory.build(snapshot[0])
+                        core.sub_agent(sub_agent)
+                        core.agent.messages.append(snapshot[1])
+                        # 更新调用链
+                        owner.append(snapshot[0])
+
+            return core
 
 
     def run(self, input_queue: Queue[str],
-            key: Union[Tuple[str, str]],
+            key: Union[Tuple[str, str], List[Tuple[Tuple[str, str], Message]]],
             history_queue: Queue,
             raw_response_queue: Optional[Queue[RequestResponsePair]] = None,
             api_key: str = os.getenv("DEEPSEEK_API_KEY")
@@ -70,7 +95,7 @@ class AgentEngine:
         """
         开始任务
         :param input_queue: Queue[str]，队列，用于接收用户消息
-        :param key: Union[Tuple[str, str]]，入口agent的命名空间id
+        :param key: Union[Tuple[str, str], List[Tuple[Tuple[str, str], Message]]]，入口agent的命名空间id，或历史消息
         :param history_queue: Queue，这个队列用会写入完整的消息记录，可以用于持久化等场景
         :param raw_response_queue: Queue[namedtuple("RequestResponsePair", ["request", "response"]]，记录原始请求与响应
         :param api_key: deepseek api key，不写的话默认从环境变量DEEPSEEK_API_KEY里取
