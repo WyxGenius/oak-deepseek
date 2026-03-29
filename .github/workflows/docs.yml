@@ -1,5 +1,19 @@
+name: Deploy Sphinx documentation
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - 'oak_deepseek/**'
+      - '.github/workflows/docs.yml'
+  workflow_dispatch:
+
 permissions:
-  contents: write    # 显式授予写入权限
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true   # 提前适配 Node.js 24
 
 jobs:
   build-and-deploy:
@@ -23,7 +37,7 @@ jobs:
           sphinx-build -b html docs/source docs/build
 
       - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/build
