@@ -32,7 +32,7 @@ def re_act(engine: AgentCore, agent_factory: AgentFactory, task: str, tools: Dic
             pass
 
 
-def reactive_enter(engine: AgentCore, agent_factory: AgentFactory, task: str, tools: Dict[str, Callable], queue: Queue[str]) -> Optional[str]:
+def reactive_rea_ct(engine: AgentCore, agent_factory: AgentFactory, task: str, tools: Dict[str, Callable], queue: Queue[str]) -> Optional[str]:
     init(engine, task)
     while True:
         assistant_msg: AssistantMessage = engine.send()

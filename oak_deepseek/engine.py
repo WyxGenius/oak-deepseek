@@ -5,7 +5,7 @@ import os
 from oak_deepseek.agent import AgentInfo, AgentFactory
 from oak_deepseek.client import RequestResponsePair
 from oak_deepseek.core import AgentCore
-from oak_deepseek.loops.strategies import re_act, reactive_enter
+from oak_deepseek.loops.strategies import re_act, reactive_rea_ct
 from oak_deepseek.models import Tool
 from oak_deepseek.tool import standardize_tool
 
@@ -21,7 +21,7 @@ class AgentEngine:
                      description: str,
                      prompt: str,
                      tools: Optional[List[Callable]]=None,
-                     loop: Literal["reactive_enter", "ReAct"]="ReAct",
+                     loop: Literal["ReactiveReAct", "ReAct"]="ReAct",
                      sub_agents: Optional[List[Tuple[str, str]]]=None):
         """
         这个函数用来注册一个Agent至系统
@@ -84,8 +84,8 @@ class AgentEngine:
             # 检查当前Agent的工作模式
             if core.agent.info.loop == "ReAct":
                 return_value: Optional[str] = re_act(core, self.agent_factory, task, self.tools)
-            if core.agent.info.loop == "reactive_enter":
-                return_value: Optional[str] = reactive_enter(core, self.agent_factory, task, self.tools, input_queue)
+            if core.agent.info.loop == "ReactiveReAct":
+                return_value: Optional[str] = reactive_rea_ct(core, self.agent_factory, task, self.tools, input_queue)
 
             # 有返回值说明调用了子Agent，返回值是子Agent的任务
             if return_value is not None:

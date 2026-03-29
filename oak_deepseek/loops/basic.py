@@ -1,5 +1,5 @@
 from queue import Queue
-from typing import Dict, Tuple, Callable
+from typing import Dict, Tuple, Callable, List
 
 from oak_deepseek.agent import Agent, AgentFactory
 from oak_deepseek.core import AgentCore
@@ -19,10 +19,10 @@ def init(engine: AgentCore, task: str):
         engine.update(SystemMessage(content=engine.agent.info.prompt))
         engine.update(UserMessage(content=task))
 
-def parse_tool_calls(tool_calls: ToolCall) -> Queue[ToolCall]:
+def parse_tool_calls(tool_calls: List[Dict]) -> Queue[ToolCall]:
     """
     将tool_calls字段的id，函数名和参数提取出来按顺序放队列里
-    :param tool_calls: ToolCall，原始tool_calls字段
+    :param tool_calls: List[Dict]，原始tool_calls字段
     :return: Queue[namedtuple("ToolCall", ["id", "name", "args"])]，按顺序放好的调用信息
     """
     queue: Queue[Tuple[str, str, Dict]] = Queue()
