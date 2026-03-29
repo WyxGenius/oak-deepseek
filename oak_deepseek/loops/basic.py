@@ -30,10 +30,10 @@ def parse_tool_calls(tool_calls: List[Dict]) -> Queue[ToolCall]:
         queue.put(parse_tool_call(tool_call))
     return queue
 
-def finish(engine: AgentCore, call_info: ToolCall):
+def finish(core: AgentCore, call_info: ToolCall):
     """
     处理Agent的任务总结
-    :param engine: AgentEngine，当前会话的引擎
+    :param core: AgentCore，当前会话的引擎
     :param call_info: namedtuple("ToolCall", ["id", "name", "args"])，调用信息
     :return: 没有返回值，不过对应的分支可能要返回None
     """
@@ -42,19 +42,19 @@ def finish(engine: AgentCore, call_info: ToolCall):
 
     # 当前Agent收尾
     conclusion: str = args["conclusion"]
-    engine.update(ToolMessage(content=f"任务摘要：{conclusion}", tool_call_id=tool_call_id))
+    core.update(ToolMessage(content=f"任务摘要：{conclusion}", tool_call_id=tool_call_id))
 
     # 判空
-    if len(engine.stack) > 0:
+    if len(core.stack) > 0:
         # 准备父Agent工具content
 
         # 返回父Agent，构造ToolMessage
-        engine.back()
-        last_tool_call: Dict = engine.agent.messages[-1].tool_calls[0]
+        core.back()
+        last_tool_call: Dict = core.agent.messages[-1].tool_calls[0]
 
         # tool_call_id从最后一条消息中取
         tool_call_id: str = parse_tool_call(last_tool_call)[0]
-        engine.update(ToolMessage(content=f"AI Agent执行摘要：{conclusion}", tool_call_id=tool_call_id))
+        core.update(ToolMessage(content=f"AI Agent执行摘要：{conclusion}", tool_call_id=tool_call_id))
 
 def new_agent(agent_factory: AgentFactory, engine: AgentCore, call_info: ToolCall) -> str:
     """
