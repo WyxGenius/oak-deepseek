@@ -1,5 +1,6 @@
 import json
 from collections import namedtuple
+from queue import Queue
 from typing import Callable, List, Dict, Literal, Any, Tuple
 from pydantic import TypeAdapter
 
@@ -35,6 +36,15 @@ def parse_tool_call(tool_call: Dict) -> ToolCall:
     name: str = call_data["name"]
     args: Dict = json.loads(call_data["arguments"])
 
-
-
     return ToolCall(id=tool_call_id, name=name, args=args)
+
+def parse_tool_calls(tool_calls: List[Dict]) -> Queue[ToolCall]:
+    """
+    将tool_calls字段的id，函数名和参数提取出来按顺序放队列里
+    :param tool_calls: List[Dict]，原始tool_calls字段
+    :return: Queue[namedtuple("ToolCall", ["id", "name", "args"])]，按顺序放好的调用信息
+    """
+    queue: Queue[Tuple[str, str, Dict]] = Queue()
+    for tool_call in tool_calls:
+        queue.put(parse_tool_call(tool_call))
+    return queue
