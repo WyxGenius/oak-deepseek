@@ -3,7 +3,7 @@ from typing import Dict, Tuple, Callable
 from oak_deepseek.agent import Agent, AgentFactory
 from oak_deepseek.core import AgentCore
 from oak_deepseek.models import SystemMessage, UserMessage, ToolMessage
-from oak_deepseek.tool import parse_tool_call, ToolCall
+from oak_deepseek.tools import parse_tool_call, ToolCall
 
 
 def init(engine: AgentCore, task: str):

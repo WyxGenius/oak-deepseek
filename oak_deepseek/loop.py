@@ -4,7 +4,7 @@ from typing import Dict, Callable, Tuple, Optional
 from oak_deepseek.agent import AgentFactory
 from oak_deepseek.core import AgentCore
 from oak_deepseek.branch import init, exec_tool, new_agent, finish
-from oak_deepseek.tool import parse_tool_calls
+from oak_deepseek.tools import parse_tool_calls
 from oak_deepseek.models import AssistantMessage, UserMessage
 
 

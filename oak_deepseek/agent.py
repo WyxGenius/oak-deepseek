@@ -2,7 +2,7 @@ from typing import Optional, List, Tuple, Dict
 from pydantic import BaseModel
 
 from oak_deepseek.models import Tool, Message
-from oak_deepseek.tool import standardize_tool
+from oak_deepseek.tools import standardize_tool
 
 def plan(steps: List[str]):
     """
