@@ -35,13 +35,12 @@ engine.create_agent(
     tools=[mul]
 )
 history_queue = Queue()
-engine.init_core(key=("sys", "sys"), history_queue=history_queue, api_key=os.getenv("DEEPSEEK_API_KEY"))
 
 task_queue = Queue()
 task_queue.put("计算(679+678)*(2+78)")
 
 def go():
-    engine.run(task_queue)
+    engine.run(task_queue, key=("sys", "sys"), history_queue=history_queue, api_key=os.getenv("DEEPSEEK_API_KEY"))
 
 def messages():
     while True:

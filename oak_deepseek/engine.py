@@ -1,5 +1,5 @@
 from queue import Queue
-from typing import List, Callable, Literal, Optional, Tuple, Dict
+from typing import List, Callable, Literal, Optional, Tuple, Dict, Union
 import os
 
 from oak_deepseek.agent import AgentInfo, AgentFactory
@@ -14,7 +14,6 @@ class AgentEngine:
     def __init__(self):
         self.agent_factory: AgentFactory = AgentFactory()
         self.tools: Dict[str, Callable] = {}
-        self.core: Optional[AgentCore] = None
 
     # 快速注册
     def create_agent(self,
@@ -46,38 +45,47 @@ class AgentEngine:
             description=description, prompt=prompt, tools=tools_info, loop=loop, sub_agents=sub_agents
         ))
 
-    def init_core(self, key: Tuple[str, str],
-                  history_queue: Queue,
-                  raw_response_queue: Optional[Queue[RequestResponsePair]] = None,
-                  api_key: str=os.getenv("DEEPSEEK_API_KEY")
-                  ):
+    def create_core(self, key: Union[Tuple[str, str]],
+                    history_queue: Queue,
+                    raw_response_queue: Optional[Queue[RequestResponsePair]] = None,
+                    api_key: str=os.getenv("DEEPSEEK_API_KEY")
+                    ) -> AgentCore:
         """
         初始化引擎，指定入口Agent和消息记录队列
-        :param key: Tuple[str, str]，入口agent的命名空间id
+        :param key: Union[Tuple[str, str]]，入口agent的命名空间id
+        :param history_queue: Queue，这个队列用会写入完整的消息记录，可以用于持久化等场景
+        :param raw_response_queue: Queue[namedtuple("RequestResponsePair", ["request", "response"]]，记录原始请求与响应
+        :param api_key: deepseek api key，不写的话默认从环境变量DEEPSEEK_API_KEY里取
+        :return: AgentCore，这个方法返回Agent核心
+        """
+        return AgentCore(self.agent_factory.build(key), history_queue, api_key=api_key, raw_response_queue=raw_response_queue)
+
+
+    def run(self, input_queue: Queue[str],
+            key: Union[Tuple[str, str]],
+            history_queue: Queue,
+            raw_response_queue: Optional[Queue[RequestResponsePair]] = None,
+            api_key: str = os.getenv("DEEPSEEK_API_KEY")
+            ):
+        """
+        开始任务
+        :param input_queue: Queue[str]，队列，用于接收用户消息
+        :param key: Union[Tuple[str, str]]，入口agent的命名空间id
         :param history_queue: Queue，这个队列用会写入完整的消息记录，可以用于持久化等场景
         :param raw_response_queue: Queue[namedtuple("RequestResponsePair", ["request", "response"]]，记录原始请求与响应
         :param api_key: deepseek api key，不写的话默认从环境变量DEEPSEEK_API_KEY里取
         :return:
         """
-        self.core: AgentCore = AgentCore(self.agent_factory.build(key), history_queue,
-                                         api_key=api_key, raw_response_queue=raw_response_queue)
-
-
-    def run(self, input_queue: Queue[str]):
-        """
-        开始任务，指定接受用户消息的队列
-        :param input_queue: Queue[str]，队列，用于接收用户消息
-        :return:
-        """
+        core: AgentCore = self.create_core(key=key, history_queue=history_queue, raw_response_queue=raw_response_queue, api_key=api_key)
         agent_count: int = 1
         task: str = input_queue.get(block=True)
         while agent_count > 0:
             return_value = None
             # 检查当前Agent的工作模式
-            if self.core.agent.info.loop == "ReAct":
-                return_value: Optional[str] = re_act(self.core, self.agent_factory, task, self.tools)
-            if self.core.agent.info.loop == "reactive_enter":
-                return_value: Optional[str] = reactive_enter(self.core, self.agent_factory, task, self.tools, input_queue)
+            if core.agent.info.loop == "ReAct":
+                return_value: Optional[str] = re_act(core, self.agent_factory, task, self.tools)
+            if core.agent.info.loop == "reactive_enter":
+                return_value: Optional[str] = reactive_enter(core, self.agent_factory, task, self.tools, input_queue)
 
             # 有返回值说明调用了子Agent，返回值是子Agent的任务
             if return_value is not None:
