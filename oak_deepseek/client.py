@@ -71,7 +71,7 @@ class ChatClient():
             with ChatClient() as client
                 client.conn.send(...)
 
-        :return: client: ChatClient
+        :return: ChatClient 实例
         """
         return self
 

@@ -8,6 +8,11 @@ from oak_deepseek.models import Function, Tool
 
 
 def standardize_tool(func: Callable) -> Tool:
+    """
+    将 Python 函数转换为框架可用的 Tool 对象。
+    :param func: 工具函数，需包含类型注解和文档字符串
+    :return: Tool 对象
+    """
     return Tool(
         type="function",
         function=Function(
@@ -18,6 +23,11 @@ def standardize_tool(func: Callable) -> Tool:
     )
 
 def standardize_tools(funcs: List[Callable]) -> List[Tool]:
+    """
+    批量转换工具函数。
+    :param funcs: 工具函数列表
+    :return: Tool 对象列表
+    """
     return [standardize_tool(func) for func in funcs]
 
 
@@ -28,7 +38,7 @@ def parse_tool_call(tool_call: Dict) -> ToolCall:
     """
     用来提取单个工具的核心数据
     :param tool_call: Dict，tool_calls字段中的单个元素
-    :return: Tuple[str, str, Dict]，依次是id，函数名和参数
+    :return: ToolCall 实例，包含 id、name 和 args
     """
     tool_call_id: str = tool_call["id"]
     call_data: Dict[Literal["name", "arguments"], Any] = tool_call["function"]
