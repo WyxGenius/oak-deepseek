@@ -54,7 +54,7 @@ class AgentEngine:
     def create_core(self, key: Union[Tuple[str, str], List[Tuple[Tuple[str, str], Message]]],
                     history_queue: Queue,
                     raw_response_queue: Optional[Queue[RequestResponsePair]] = None,
-                    api_key: str=os.getenv("DEEPSEEK_API_KEY")
+                    api_key: Optional[str] = None
                     ) -> AgentCore:
         """
         初始化引擎，指定入口Agent和消息记录队列。
@@ -103,7 +103,7 @@ class AgentEngine:
             key: Union[Tuple[str, str], List[Tuple[Tuple[str, str], Message]]],
             history_queue: Queue,
             raw_response_queue: Optional[Queue[RequestResponsePair]] = None,
-            api_key: str = os.getenv("DEEPSEEK_API_KEY")
+            api_key: Optional[str] = None
             ):
         """
         开始任务，阻塞直到所有Agent完成工作。

@@ -11,7 +11,7 @@ from oak_deepseek.models import DeepSeekRequestBody, Thinking, Tool, Message, As
 
 RequestResponsePair = namedtuple("RequestResponsePair", ["request", "response"])
 
-class ChatClient():
+class ChatClient:
     """
     DeepSeek API的客户端封装。
 
@@ -20,7 +20,7 @@ class ChatClient():
     :ivar headers: 请求头
     :ivar raw_response_queue: 可选队列，记录原始请求与响应
     """
-    def __init__(self, api_key: str = os.getenv("DEEPSEEK_API_KEY"),
+    def __init__(self, api_key: Optional[str],
                  raw_response_queue: Optional[Queue[RequestResponsePair]] = None):
         """
         初始化客户端。
@@ -28,12 +28,16 @@ class ChatClient():
         :param api_key: DeepSeek API密钥，默认从环境变量DEEPSEEK_API_KEY读取
         :param raw_response_queue: 可选队列，存储原始请求和响应对
         """
+        if api_key is None:
+            self.api_key: str = os.getenv("DEEPSEEK_API_KEY")
+        else:
+            self.api_key: str = api_key
         self.conn: Session = requests.session()
         self.url:str = "https://api.deepseek.com/chat/completions"
         self.headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'Authorization': f'Bearer {api_key}'
+            'Authorization': f'Bearer {self.api_key}'
         }
         self.raw_response_queue: Optional[Queue[RequestResponsePair]] = raw_response_queue
 

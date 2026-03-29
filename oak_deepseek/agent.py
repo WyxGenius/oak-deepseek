@@ -4,21 +4,6 @@ from pydantic import BaseModel
 from oak_deepseek.models import Tool, Message
 from oak_deepseek.tools import standardize_tool
 
-def plan(steps: List[str]):
-    """
-    调用此工具时，不能调用其它工具
-    在你开始执行任务前，需要先规划好步骤，并将步骤写入列表
-
-    :param steps: 步骤列表，每个元素表示一个步骤
-    """
-    pass
-
-def next_step():
-    """
-    调用此工具时，不能调用其它工具
-    当你确认完成当前阶段任务时，调用此工具
-    """
-    pass
 
 def finished(conclusion: str):
     """

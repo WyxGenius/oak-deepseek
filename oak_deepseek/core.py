@@ -20,7 +20,7 @@ class AgentCore:
     """
     def __init__(self, agent: Agent,
                  history_queue: Queue[Tuple[Tuple[str, str], Message]],
-                 api_key: str = os.getenv("DEEPSEEK_API_KEY"),
+                 api_key: Optional[str] = None,
                  raw_response_queue: Optional[Queue[RequestResponsePair]] = None):
         """
         初始化AgentCore。
