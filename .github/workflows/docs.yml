@@ -1,0 +1,35 @@
+name: Deploy Sphinx documentation
+
+on:
+  push:
+    branches: [ main ]   # 当推送到 main 分支时触发
+  workflow_dispatch:     # 允许手动触发
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -e .
+          pip install sphinx sphinx-rtd-theme furo
+
+      - name: Build documentation
+        run: |
+          sphinx-build -b html docs/source docs/build
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/build
+          publish_branch: gh-pages
+          keep_files: false   # 每次覆盖旧文档
