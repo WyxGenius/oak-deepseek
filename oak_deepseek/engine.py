@@ -24,7 +24,7 @@ class AgentEngine:
                      loop: Literal["ReactiveReAct", "ReAct"]="ReAct",
                      sub_agents: Optional[List[Tuple[str, str]]]=None):
         """
-        这个函数用来注册一个Agent至系统
+        这个函数用来注册一个Agent至引擎，以后可以用唯一命名空间+名字来指定
         :param key: Tuple[str, str]，命名空间+名字
         :param description: str，Agent描述
         :param prompt: str，Agent提示词
