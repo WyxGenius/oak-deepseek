@@ -30,6 +30,7 @@ class AgentEngine:
                      sub_agents: Optional[List[Tuple[str, str]]]=None):
         """
         注册一个Agent至引擎，以后可以用唯一命名空间+名字来指定。
+
         :param key: 命名空间+名字，例如 ("sys", "math_agent")
         :param description: Agent的简短描述
         :param prompt: Agent的系统提示词
@@ -57,10 +58,13 @@ class AgentEngine:
                     ) -> AgentCore:
         """
         初始化引擎，指定入口Agent和消息记录队列。
+
         支持两种模式：
+
         - 正常启动：传入一个元组 (namespace, name) 作为入口Agent的key。
         - 断点恢复：传入一个历史消息列表，每个元素为 (agent_key, message)，按时间顺序排列。
           引擎会根据消息中的agent_key重建调用栈和各Agent的消息历史。
+
         :param key: 启动方式，元组表示正常启动，列表表示恢复模式
         :param history_queue: 消息输出队列，运行期间产生的所有消息（附带所属Agent key）都会被放入此队列
         :param raw_response_queue: 可选，用于输出原始请求/响应对的队列
@@ -107,6 +111,7 @@ class AgentEngine:
         1. 调用create_core创建AgentCore实例（支持正常启动或历史恢复）。
         2. 从input_queue获取初始任务（正常启动时）或继续已有任务（恢复时）。
         3. 根据当前Agent的循环模式，反复调用相应的循环函数，直到调用栈为空。
+
         :param input_queue: 用户输入队列，用于接收新消息（在ReactiveReAct模式下需要）
         :param key: 同create_core的key参数，用于确定启动方式
         :param history_queue: 消息输出队列，同create_core

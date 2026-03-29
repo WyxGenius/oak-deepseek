@@ -8,6 +8,7 @@ def plan(steps: List[str]):
     """
     调用此工具时，不能调用其它工具
     在你开始执行任务前，需要先规划好步骤，并将步骤写入列表
+
     :param steps: 步骤列表，每个元素表示一个步骤
     """
     pass
@@ -23,6 +24,7 @@ def finished(conclusion: str):
     """
     调用此工具时，不能调用其它工具。
     当你要做最终总结时，不能直接发送总结内容，而是写在这个工具的参数里
+
     :param conclusion: 你的总结
     """
     pass
@@ -31,6 +33,7 @@ def choose_agent(agent: Tuple[str, str], task) -> str:
     """
     调用此工具时，不能调用其它工具。
     在某些时候，你需要使用这个工具给新的AI Agent布置任务
+
     :param agent: (命名空间, 名字)
     :param task: AI Agent需要完成的任务
     :return: AI Agent完成任务时，会返回你执行摘要
@@ -41,6 +44,7 @@ def choose_agent(agent: Tuple[str, str], task) -> str:
 class AgentInfo(BaseModel):
     """
     Agent的元数据，描述Agent的静态配置。
+
     :ivar description: Agent的简短描述
     :ivar prompt: 系统提示词
     :ivar tools: 可调用的工具列表
@@ -58,6 +62,7 @@ class AgentInfo(BaseModel):
 class Agent:
     """
     Agent实例，包含其元数据和消息历史。
+
     :ivar key: 唯一标识 (namespace, name)
     :ivar info: AgentInfo对象
     :ivar messages: 该Agent的消息历史列表
@@ -65,6 +70,7 @@ class Agent:
     def __init__(self, key: Tuple[str, str], info: AgentInfo):
         """
         初始化Agent实例。
+
         :param key: Agent的唯一标识 (namespace, name)
         :param info: Agent的元数据
         """
@@ -83,6 +89,7 @@ class AgentFactory:
     def register_agent(self, key: Tuple[str, str], agent: AgentInfo):
         """
         注册一个Agent的元数据。
+
         :param key: Agent的唯一标识
         :param agent: Agent的元数据
         """
@@ -92,6 +99,7 @@ class AgentFactory:
         """
         根据key构建一个Agent实例。
         自动添加finished工具，如有子Agent则添加choose_agent工具并拼接提示词。
+
         :param key: Agent的唯一标识
         :return: 构建好的Agent实例
         :raises KeyError: 如果key未注册

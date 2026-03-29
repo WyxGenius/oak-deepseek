@@ -10,6 +10,7 @@ from oak_deepseek.models import Function, Tool
 def standardize_tool(func: Callable) -> Tool:
     """
     将 Python 函数转换为框架可用的 Tool 对象。
+
     :param func: 工具函数，需包含类型注解和文档字符串
     :return: Tool 对象
     """
@@ -25,6 +26,7 @@ def standardize_tool(func: Callable) -> Tool:
 def standardize_tools(funcs: List[Callable]) -> List[Tool]:
     """
     批量转换工具函数。
+
     :param funcs: 工具函数列表
     :return: Tool 对象列表
     """
@@ -37,6 +39,7 @@ ToolCall = namedtuple("ToolCall", ["id", "name", "args"])
 def parse_tool_call(tool_call: Dict) -> ToolCall:
     """
     用来提取单个工具的核心数据
+
     :param tool_call: Dict，tool_calls字段中的单个元素
     :return: ToolCall 实例，包含 id、name 和 args
     """
@@ -51,6 +54,7 @@ def parse_tool_call(tool_call: Dict) -> ToolCall:
 def parse_tool_calls(tool_calls: List[Dict]) -> Queue[ToolCall]:
     """
     将tool_calls字段的id，函数名和参数提取出来按顺序放队列里
+
     :param tool_calls: List[Dict]，原始tool_calls字段
     :return: Queue[namedtuple("ToolCall", ["id", "name", "args"])]，按顺序放好的调用信息
     """

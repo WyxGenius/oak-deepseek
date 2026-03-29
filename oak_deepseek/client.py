@@ -14,6 +14,7 @@ RequestResponsePair = namedtuple("RequestResponsePair", ["request", "response"])
 class ChatClient():
     """
     DeepSeek API的客户端封装。
+
     :ivar conn: requests.Session对象
     :ivar url: API端点
     :ivar headers: 请求头
@@ -23,6 +24,7 @@ class ChatClient():
                  raw_response_queue: Optional[Queue[RequestResponsePair]] = None):
         """
         初始化客户端。
+
         :param api_key: DeepSeek API密钥，默认从环境变量DEEPSEEK_API_KEY读取
         :param raw_response_queue: 可选队列，存储原始请求和响应对
         """
@@ -40,6 +42,7 @@ class ChatClient():
              thinking: bool=False) -> AssistantMessage:
         """
         发送请求并返回助手消息。
+
         :param messages: 消息历史列表
         :param tools: 可选，可用的工具列表
         :param thinking: 是否启用思考模式

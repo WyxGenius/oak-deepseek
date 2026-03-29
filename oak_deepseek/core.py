@@ -12,6 +12,7 @@ from oak_deepseek.agent import Agent
 class AgentCore:
     """
     Agent运行时的核心，管理当前Agent、调用栈和消息历史。
+
     :ivar history_queue: 消息输出队列，每条消息附带所属Agent的key
     :ivar client: ChatClient实例
     :ivar agent: 当前Agent实例
@@ -23,6 +24,7 @@ class AgentCore:
                  raw_response_queue: Optional[Queue[RequestResponsePair]] = None):
         """
         初始化AgentCore。
+
         :param agent: 初始的Agent实例
         :param history_queue: 消息输出队列，每条消息会附带其所属Agent的key
         :param api_key: DeepSeek API密钥
@@ -36,6 +38,7 @@ class AgentCore:
     def update(self, message: Message) -> Message:
         """
         将消息添加到当前Agent的消息列表，并放入历史队列（附带当前Agent key）。
+
         :param message: 要添加的消息
         :return: 传入的消息本身
         """
@@ -47,6 +50,7 @@ class AgentCore:
         """
         基于当前Agent的消息历史调用DeepSeek API，返回助手消息。
         该消息会自动添加到当前Agent的消息列表，并放入历史队列。
+
         :param thinking: 是否启用思考模式
         :return: 助手消息
         """
@@ -58,6 +62,7 @@ class AgentCore:
     def sub_agent(self, agent: Agent):
         """
         切换到子Agent：深拷贝当前Agent入栈，并将当前Agent设为子Agent。
+
         :param agent: 子Agent实例
         """
         previous_agent: Agent = copy.deepcopy(self.agent)

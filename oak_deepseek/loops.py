@@ -22,6 +22,7 @@ def init(engine: AgentCore, task: str):
 def finish(core: AgentCore, call_info: ToolCall):
     """
     处理Agent的任务总结
+
     :param core: AgentCore，当前会话的引擎
     :param call_info: namedtuple("ToolCall", ["id", "name", "args"])，调用信息
     :return: 没有返回值，不过对应的分支可能要返回None
@@ -48,6 +49,7 @@ def finish(core: AgentCore, call_info: ToolCall):
 def new_agent(agent_factory: AgentFactory, engine: AgentCore, call_info: ToolCall) -> str:
     """
     处理Agent调用子Agent
+
     :param agent_factory: 当前会话的AgentFactory，用于生成新的Agent实例
     :param engine: AgentEngine，当前会话的引擎
     :param call_info: namedtuple("ToolCall", ["id", "name", "args"])，调用信息
@@ -64,6 +66,7 @@ def new_agent(agent_factory: AgentFactory, engine: AgentCore, call_info: ToolCal
 def exec_tool(engine: AgentCore, tools: Dict[str, Callable], call_info: ToolCall):
     """
     直接执行工具，最简单的一集
+
     :param engine: AgentEngine，当前会话的引擎
     :param tools: Dict[str, Callable]，当前会话的可用工具
     :param call_info: namedtuple("ToolCall", ["id", "name", "args"])，调用信息
@@ -83,6 +86,7 @@ def re_act(engine: AgentCore,
            task: str, tools: Dict[str, Callable]) -> Optional[str]:
     """
     ReAct循环模式：Agent反复调用工具直到完成。
+
     :param engine: 当前运行的AgentCore
     :param agent_factory: Agent工厂，用于构建子Agent
     :param task: 当前Agent的任务
@@ -114,6 +118,7 @@ def reactive_rea_ct(engine: AgentCore,
                     task: str, tools: Dict[str, Callable], queue: Queue[str]) -> Optional[str]:
     """
     ReactiveReAct循环模式：与ReAct类似，但无工具调用时会从队列获取用户输入。
+
     :param engine: 当前运行的AgentCore
     :param agent_factory: Agent工厂
     :param task: 当前Agent的任务
