@@ -1,0 +1,37 @@
+API 参考
+========
+
+.. automodule:: oak_deepseek.engine
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: oak_deepseek.core
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: oak_deepseek.agent
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: oak_deepseek.loops
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: oak_deepseek.models
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: oak_deepseek.tools
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: oak_deepseek.client
+   :members:
+   :undoc-members:
+   :show-inheritance:
