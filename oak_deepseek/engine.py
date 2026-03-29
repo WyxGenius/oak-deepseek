@@ -77,7 +77,7 @@ class AgentEngine:
         :return:
         """
         core: AgentCore = self.create_core(key=key, history_queue=history_queue, raw_response_queue=raw_response_queue, api_key=api_key)
-        agent_count: int = 1
+        agent_count: int = len(core.stack) + 1
         task: str = input_queue.get(block=True)
         while agent_count > 0:
             return_value = None
