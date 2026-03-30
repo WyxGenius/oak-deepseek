@@ -5,6 +5,14 @@ from oak_deepseek.models import Tool, Message
 from oak_deepseek.tools import standardize_tool
 
 
+def wait_for_input():
+    """
+    调用此工具时，不能调用其它工具。
+    等待用户输入。
+    当你认为当前输出完成后需要等待用户输入，就调用这个工具
+    """
+    pass
+
 def finished(conclusion: str):
     """
     调用此工具时，不能调用其它工具。
