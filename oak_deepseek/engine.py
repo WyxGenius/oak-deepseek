@@ -65,7 +65,11 @@ class AgentEngine:
         - 断点恢复：传入一个历史消息列表，每个元素为 (agent_key, message)，按时间顺序排列。
           引擎会根据消息中的agent_key重建调用栈和各Agent的消息历史。
 
-        :param key: 启动方式，元组表示正常启动，列表表示恢复模式
+        :param key: 启动方式。
+
+        - 若为元组 (namespace, name)，表示正常启动，该元组为入口 Agent 的 key。
+        - 若为列表，表示断点恢复模式。列表元素为 (agent_key, message)，按时间顺序排列。其中 agent_key 是产生该消息的 Agent 的标识 (namespace, name)，message 是具体的 Message 对象。
+
         :param history_queue: 消息输出队列，运行期间产生的所有消息（附带所属Agent key）都会被放入此队列
         :param raw_response_queue: 可选，用于输出原始请求/响应对的队列
         :param api_key: DeepSeek API密钥，默认从环境变量DEEPSEEK_API_KEY读取
@@ -192,9 +196,12 @@ class AgentEngine:
         """
         开始任务，阻塞直到所有Agent完成工作。
         此方法会：
-        1. 调用create_core创建AgentCore实例（支持正常启动或历史恢复）。
-        2. 从input_queue获取初始任务（正常启动时）或继续已有任务（恢复时）。
+
+        1. 调用 create_core 创建 AgentCore 实例（支持正常启动或历史恢复）。
+        2. 正常启动时，从 input_queue 获取初始任务；恢复时，直接从历史中恢复执行状态，不再读取初始任务。恢复时，传入循环函数的 task 参数为 None，会被 init 函数自动忽略。
         3. 根据当前Agent的循环模式，反复调用相应的循环函数，直到调用栈为空。
+
+        注意：在恢复模式下，input_queue 仍然用于在 ReactiveReAct 循环中接收新的用户输入。
 
         :param input_queue: 用户输入队列，用于接收新消息（在ReactiveReAct模式下需要）
         :param key: 同create_core的key参数，用于确定启动方式
@@ -205,7 +212,12 @@ class AgentEngine:
         """
         core: AgentCore = self.create_core(key=key, history_queue=history_queue, raw_response_queue=raw_response_queue, api_key=api_key)
         agent_count: int = len(core.stack) + 1
-        task: str = input_queue.get(block=True)
+
+        task: Optional[str]
+        if core.agent.messages is not None:
+            task = None
+        else:
+            task = input_queue.get(block=True)
         while agent_count > 0:
             return_value = None
             # 检查当前Agent的工作模式
