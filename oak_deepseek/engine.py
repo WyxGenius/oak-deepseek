@@ -1,13 +1,13 @@
 from queue import Queue
 from typing import List, Callable, Literal, Optional, Tuple, Dict, Union
-import os
+import warnings
 
 from oak_deepseek.agent import AgentInfo, AgentFactory, Agent
 from oak_deepseek.client import RequestResponsePair
 from oak_deepseek.core import AgentCore
 from oak_deepseek.loops import re_act, reactive_rea_ct
-from oak_deepseek.models import Tool, Message
-from oak_deepseek.tools import standardize_tool
+from oak_deepseek.models import Tool, Message, AssistantMessage, ToolMessage, UserMessage, SystemMessage
+from oak_deepseek.tools import standardize_tool, parse_tool_calls, ToolCall, parse_tool_call, if_finished_in_message
 
 
 class AgentEngine:
@@ -77,6 +77,91 @@ class AgentEngine:
             owner: List[Tuple[str, str]] = [key[0][0]]
             core: AgentCore = AgentCore(self.agent_factory.build(owner[-1]),
                                         history_queue, api_key=api_key, raw_response_queue=raw_response_queue)
+
+            # 获取最后一条消息和所有者
+            last_message: Message = key[-1][1]
+            last_key: Tuple[str, str] = key[-1][0]
+
+            # 最后一条是UserMessage：不用管
+            if isinstance(last_message, UserMessage):
+                pass
+
+            # 最后一条是SystemMessage：说明任务信息丢失，可以直接结束
+            elif isinstance(last_message, SystemMessage):
+                recovery_msg: UserMessage = UserMessage(
+                    content="执行刚刚被打断，现已重启。请直接调用finished工具，让上级重新委派任务，并简洁地说明原因"
+                )
+                key.append((last_key, recovery_msg))
+                core.history_queue.put((last_key, recovery_msg))
+
+            # 最后一条是AssistantMessage：先判断工具调用情况
+            elif isinstance(last_message, AssistantMessage):
+                if last_message.tool_calls is None:
+                    pass
+                else:
+                    if if_finished_in_message(last_message):
+                        recovery_msg: ToolMessage = ToolMessage(
+                            content="执行刚刚被打断，现已重启。请重新调用finished",
+                            tool_call_id=parse_tool_call(last_message.tool_calls[0]).id
+                        )
+                        key.append((last_key, recovery_msg))
+                        core.history_queue.put((last_key, recovery_msg))
+                    else:
+                        tools_queue: Queue[ToolCall] = parse_tool_calls(last_message.tool_calls)
+                        while tools_queue.qsize() > 0:
+                            recovery_msg: ToolMessage = ToolMessage(
+                                content="执行刚刚被打断，现已重启。请根据工具幂等性决定是否重试",
+                                tool_call_id=tools_queue.get().id
+                            )
+                            key.append((last_key, recovery_msg))
+                            core.history_queue.put((last_key, recovery_msg))
+
+            # 最后一条是ToolMessage：倒序遍历至AssistantMessage后再决定
+            elif isinstance(last_message, ToolMessage):
+                # 倒走遍历至AssistanMessage
+                last_messages: List[Tuple[Tuple[str, str], Message]] = []
+                for snapshot in reversed(key):
+                    if isinstance(snapshot[1], AssistantMessage):
+                        last_messages.append(snapshot)
+                        break
+                    last_messages.append(snapshot)
+
+                # 检查倒数第二条消息是不是带finished的AssistantMessage
+                msg_2nd: Message = last_messages[1][1]
+                key_2nd: Tuple[str, str] = last_messages[1][0]
+                j = if_finished_in_message(msg_2nd)
+
+                if isinstance(msg_2nd, AssistantMessage) and j:
+                    # 让agent重新调用finished
+                    recovery_msg: UserMessage = UserMessage(
+                            content="执行刚刚被打断，现已重启。你需要重新调用finished生成总结",
+                        )
+                    key.append((key_2nd, recovery_msg))
+                    core.history_queue.put((key_2nd, recovery_msg))
+                else:
+                    last_assistant_message: Tuple[Tuple[str, str], AssistantMessage] = last_messages.pop()
+                    last_tool_messages: List[Tuple[Tuple[str, str], ToolMessage]] = [last_tool_message for
+                                                                                     last_tool_message in
+                                                                                     reversed(last_messages)]
+
+                    completed_count: int = len(last_tool_messages)
+                    tools_queue: Queue[ToolCall] = parse_tool_calls(last_assistant_message[1].tool_calls)
+
+                    # 调用的工具比完成的多，就触发补全
+                    if tools_queue.qsize() > completed_count:
+                        while completed_count > 0:
+                            tools_queue.get_nowait()
+                            completed_count -= 1
+
+                        while tools_queue.qsize() > 0:
+                            recovery_msg: ToolMessage = ToolMessage(
+                                content="执行刚刚被打断，现已重启。请根据工具幂等性决定是否重试。",
+                                tool_call_id=tools_queue.get().id
+                            )
+                            key.append((last_key, recovery_msg))
+                            core.history_queue.put((last_key, recovery_msg))
+
+            # 消息已补全，正式开始恢复
             for snapshot in key:
                 if snapshot[0] == owner[-1]:
                     # 直接写入消息
@@ -97,7 +182,6 @@ class AgentEngine:
                         owner.append(snapshot[0])
 
             return core
-
 
     def run(self, input_queue: Queue[str],
             key: Union[Tuple[str, str], List[Tuple[Tuple[str, str], Message]]],

@@ -17,11 +17,11 @@ def finished(conclusion: str):
 def choose_agent(agent: Tuple[str, str], task) -> str:
     """
     调用此工具时，不能调用其它工具。
-    在某些时候，你需要使用这个工具给新的AI Agent布置任务
+    在某些时候，你需要使用这个工具给新的AI Agent布置任务。
 
     :param agent: (命名空间, 名字)
     :param task: AI Agent需要完成的任务
-    :return: AI Agent完成任务时，会返回你执行摘要
+    :return: AI Agent完成任务，或请求重新调用它时，会返回执行摘要
     """
     pass
 

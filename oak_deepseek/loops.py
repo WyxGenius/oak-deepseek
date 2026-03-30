@@ -44,7 +44,7 @@ def finish(core: AgentCore, call_info: ToolCall):
 
         # tool_call_id从最后一条消息中取
         tool_call_id: str = parse_tool_call(last_tool_call)[0]
-        core.update(ToolMessage(content=f"AI Agent执行摘要：{conclusion}", tool_call_id=tool_call_id))
+        core.update(ToolMessage(content=f"{conclusion}", tool_call_id=tool_call_id))
 
 def new_agent(agent_factory: AgentFactory, engine: AgentCore, call_info: ToolCall) -> str:
     """
