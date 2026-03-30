@@ -214,10 +214,10 @@ class AgentEngine:
         agent_count: int = len(core.stack) + 1
 
         task: Optional[str]
-        if core.agent.messages is not None:
-            task = None
-        else:
+        if not core.agent.messages:
             task = input_queue.get(block=True)
+        else:
+            task = None
         while agent_count > 0:
             return_value = None
             # 检查当前Agent的工作模式
