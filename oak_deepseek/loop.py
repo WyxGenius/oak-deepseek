@@ -99,7 +99,8 @@ def main(engine: AgentCore,
                 call_info: tuple[str, str, dict] = tool_queue.get(block=True)
                 match call_info[1]:
                     case "wait_for_input":
-                        engine.update(ToolMessage(content=queue.get(block=True), tool_call_id=call_info[0]))
+                        content: str = queue.get(block=True)
+                        engine.update(ToolMessage(content=content, tool_call_id=call_info[0]))
                     case "finished":
                         finish(engine, call_info)
                         return None
