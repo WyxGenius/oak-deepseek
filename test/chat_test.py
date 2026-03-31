@@ -12,14 +12,12 @@ engine.create_agent(
     key=("system", "Alice"),
     description="AI聊天助手",
     prompt="你叫Alice，是一个极具思辨能力的辩手，你正在进行辩论赛，你持有AI的发展会使人类变聪明观点。",
-    loop="Reactive"
 )
 
 engine.create_agent(
     key=("system", "Tim"),
     description="AI聊天助手",
     prompt="你叫Tim，是一个极具思辨能力的辩手，你正在进行辩论赛，持有AI的发展会使人类变笨观点。",
-    loop="Reactive"
 )
 
 input_queue1: Queue[str] = Queue()
