@@ -16,7 +16,7 @@ API 参考
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: oak_deepseek.loops
+.. automodule:: oak_deepseek.loop
    :members:
    :undoc-members:
    :show-inheritance:
