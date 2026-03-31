@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="索引" href="../../genindex.html"><link rel="search" title="搜索" href="../../search.html">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
-        <title>oak_deepseek.agent - Oak DeepSeek 0.2.0 文档</title>
+        <title>oak_deepseek.agent - Oak DeepSeek 0.3.0 文档</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -160,7 +160,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">Oak DeepSeek 0.2.0 文档</div></a>
+      <a href="../../index.html"><div class="brand">Oak DeepSeek 0.3.0 文档</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -181,7 +181,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
   
-  <span class="sidebar-brand-text">Oak DeepSeek 0.2.0 文档</span>
+  <span class="sidebar-brand-text">Oak DeepSeek 0.3.0 文档</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
   <input class="sidebar-search" placeholder="搜索" name="q" aria-label="搜索">
@@ -237,11 +237,9 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">wait_for_input</span><span class="p">(</span><span class="n">msg</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    调用此工具时，不能调用其它工具。</span>
-<span class="sd">    特殊工具：这是你和用户沟通的**唯一**手段</span>
+<span class="sd">    特殊工具：这是你与用户交互的**唯一**方式，最终总结也通过它发送。</span>
 <span class="sd">    把你想直接和用户说的内容写在参数里，用户才能看到并回应</span>
 <span class="sd">    用户**看不到其他任何位置的消息**</span>
-
-<span class="sd">    此外，当你要做最终总结时，也要用这个工具把总结发给用户</span>
 
 <span class="sd">    :param msg: 你发送给用户的消息内容（支持多行文本）</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -284,14 +282,11 @@
 <span class="sd">    :ivar description: Agent的简短描述</span>
 <span class="sd">    :ivar prompt: 系统提示词</span>
 <span class="sd">    :ivar tools: 可调用的工具列表</span>
-<span class="sd">    :ivar loop: 循环模式，如 &quot;ReAct&quot; 或 &quot;ReactiveReAct&quot;</span>
 <span class="sd">    :ivar sub_agents: 可选，可调用的子Agent列表，每个元素为(namespace, name)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">description</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">tools</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tool</span><span class="p">]</span>
-
-    <span class="n">loop</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">sub_agents</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 
@@ -342,12 +337,13 @@
 
 <div class="viewcode-block" id="AgentFactory.build">
 <a class="viewcode-back" href="../../api.html#oak_deepseek.agent.AgentFactory.build">[文档]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Agent</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">reactive</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Agent</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        根据key构建一个Agent实例。</span>
 <span class="sd">        自动添加finished工具，如有子Agent则添加choose_agent工具并拼接提示词。</span>
 
 <span class="sd">        :param key: Agent的唯一标识</span>
+<span class="sd">        :param reactive: Agent是否为Reactive工作模式</span>
 <span class="sd">        :return: 构建好的Agent实例</span>
 <span class="sd">        :raises KeyError: 如果key未注册</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -360,10 +356,10 @@
         <span class="n">agent</span><span class="p">:</span> <span class="n">Agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">info</span><span class="o">=</span><span class="n">agent_info</span><span class="p">)</span>
 
         <span class="c1"># 根据工作模式添加默认工具</span>
-        <span class="k">if</span> <span class="n">agent</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">loop</span> <span class="o">==</span> <span class="s2">&quot;ReAct&quot;</span><span class="p">:</span>
-            <span class="n">agent</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">standardize_tool</span><span class="p">(</span><span class="n">finished</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">agent</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">loop</span> <span class="o">==</span> <span class="s2">&quot;Reactive&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">reactive</span><span class="p">:</span>
             <span class="n">agent</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">standardize_tool</span><span class="p">(</span><span class="n">wait_for_input</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">agent</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">standardize_tool</span><span class="p">(</span><span class="n">finished</span><span class="p">))</span>
 
         <span class="c1"># 将choose_agent工具加入工具列表，并将可用Agent信息拼接到提示词中</span>
         <span class="n">keys</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">agent_info</span><span class="o">.</span><span class="n">sub_agents</span>
@@ -371,6 +367,8 @@
             <span class="n">agent</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">standardize_tool</span><span class="p">(</span><span class="n">choose_agent</span><span class="p">))</span>
             <span class="n">prompt_about_sub_agent</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">**你可以让这些AI Agent辅助你完成任务：**&quot;</span>
             <span class="k">for</span> <span class="n">sub_agent</span> <span class="ow">in</span> <span class="n">agent_info</span><span class="o">.</span><span class="n">sub_agents</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">agents</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sub_agent</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;agent </span><span class="si">{</span><span class="n">sub_agent</span><span class="si">}</span><span class="s2"> 未注册&quot;</span><span class="p">)</span>
                 <span class="n">prompt_about_sub_agent</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">(namespace=</span><span class="si">{</span><span class="n">sub_agent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, name=</span><span class="si">{</span><span class="n">sub_agent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">)</span><span class="se">\n</span><span class="s2">简介：</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">agents</span><span class="p">[</span><span class="n">sub_agent</span><span class="p">]</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="n">agent</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">prompt</span> <span class="o">+=</span> <span class="n">prompt_about_sub_agent</span>
 
@@ -409,7 +407,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=ad3000b3"></script>
+</div><script src="../../_static/documentation_options.js?v=32729429"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

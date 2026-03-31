@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="索引" href="../../genindex.html"><link rel="search" title="搜索" href="../../search.html">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
-        <title>oak_deepseek.engine - Oak DeepSeek 0.2.0 文档</title>
+        <title>oak_deepseek.engine - Oak DeepSeek 0.3.0 文档</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -160,7 +160,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">Oak DeepSeek 0.2.0 文档</div></a>
+      <a href="../../index.html"><div class="brand">Oak DeepSeek 0.3.0 文档</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -181,7 +181,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
   
-  <span class="sidebar-brand-text">Oak DeepSeek 0.2.0 文档</span>
+  <span class="sidebar-brand-text">Oak DeepSeek 0.3.0 文档</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
   <input class="sidebar-search" placeholder="搜索" name="q" aria-label="搜索">
@@ -231,7 +231,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">oak_deepseek.agent</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentInfo</span><span class="p">,</span> <span class="n">AgentFactory</span><span class="p">,</span> <span class="n">Agent</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">oak_deepseek.client</span><span class="w"> </span><span class="kn">import</span> <span class="n">RequestResponsePair</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">oak_deepseek.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentCore</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">oak_deepseek.loops</span><span class="w"> </span><span class="kn">import</span> <span class="n">re_act</span><span class="p">,</span> <span class="n">reactive</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">oak_deepseek.loop</span><span class="w"> </span><span class="kn">import</span> <span class="n">main</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">oak_deepseek.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tool</span><span class="p">,</span> <span class="n">Message</span><span class="p">,</span> <span class="n">AssistantMessage</span><span class="p">,</span> <span class="n">ToolMessage</span><span class="p">,</span> <span class="n">UserMessage</span><span class="p">,</span> <span class="n">SystemMessage</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">oak_deepseek.tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">standardize_tool</span><span class="p">,</span> <span class="n">parse_tool_calls</span><span class="p">,</span> <span class="n">ToolCall</span><span class="p">,</span> <span class="n">parse_tool_call</span><span class="p">,</span> <span class="n">if_finished_in_message</span><span class="p">,</span> \
     <span class="n">if_wait_for_input_in_message</span>
@@ -257,7 +257,6 @@
                      <span class="n">description</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                      <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                      <span class="n">tools</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">]]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                     <span class="n">loop</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;Reactive&quot;</span><span class="p">,</span> <span class="s2">&quot;ReAct&quot;</span><span class="p">]</span><span class="o">=</span><span class="s2">&quot;Reactive&quot;</span><span class="p">,</span>
                      <span class="n">sub_agents</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]]</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        注册一个Agent至引擎，以后可以用唯一命名空间+名字来指定。</span>
@@ -266,7 +265,6 @@
 <span class="sd">        :param description: Agent的简短描述</span>
 <span class="sd">        :param prompt: Agent的系统提示词</span>
 <span class="sd">        :param tools: 可选，Agent可调用的工具函数列表</span>
-<span class="sd">        :param loop: 消息循环模式，可选 &quot;Reactive&quot; 或 &quot;ReAct&quot;。默认模式为 &quot;Reactive&quot;</span>
 <span class="sd">        :param sub_agents: 可选，可调用的子Agent列表，每个元素为子Agent的key</span>
 <span class="sd">        :return: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -279,7 +277,7 @@
                 <span class="n">tools_info</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">standardize_tool</span><span class="p">(</span><span class="n">tool</span><span class="p">))</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">agent_factory</span><span class="o">.</span><span class="n">register_agent</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">AgentInfo</span><span class="p">(</span>
-            <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="n">tools_info</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">,</span> <span class="n">sub_agents</span><span class="o">=</span><span class="n">sub_agents</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="n">tools_info</span><span class="p">,</span> <span class="n">sub_agents</span><span class="o">=</span><span class="n">sub_agents</span>
         <span class="p">))</span></div>
 
 
@@ -303,19 +301,21 @@
 
 <span class="sd">        - 若为元组 (namespace, name)，表示正常启动，该元组为入口 Agent 的 key。</span>
 <span class="sd">        - 若为列表，表示断点恢复模式。列表元素为 (agent_key, message)，按时间顺序排列。其中 agent_key 是产生该消息的 Agent 的标识 (namespace, name)，message 是具体的 Message 对象。传入空列表时，会抛出 ValueError。</span>
+<span class="sd">        - 注意：恢复模式下传入的历史消息列表可能会被修改（恢复时会补全缺失消息以确保符合API规范）</span>
 
 <span class="sd">        :param history_queue: 消息输出队列，运行期间产生的所有消息（附带所属Agent key）都会被放入此队列</span>
 <span class="sd">        :param raw_response_queue: 可选，用于输出原始请求/响应对的队列</span>
 <span class="sd">        :param api_key: DeepSeek API密钥，默认从环境变量DEEPSEEK_API_KEY读取</span>
 <span class="sd">        :return: 已初始化的AgentCore实例</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># 保证入口是Reactive模式</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">AgentCore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agent_factory</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">key</span><span class="p">),</span> <span class="n">history_queue</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span> <span class="n">raw_response_queue</span><span class="o">=</span><span class="n">raw_response_queue</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">AgentCore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agent_factory</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span> <span class="n">history_queue</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span> <span class="n">raw_response_queue</span><span class="o">=</span><span class="n">raw_response_queue</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;历史记录列表不能为空&quot;</span><span class="p">)</span>
             <span class="n">owner</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span>
-            <span class="n">core</span><span class="p">:</span> <span class="n">AgentCore</span> <span class="o">=</span> <span class="n">AgentCore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agent_factory</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">owner</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="n">core</span><span class="p">:</span> <span class="n">AgentCore</span> <span class="o">=</span> <span class="n">AgentCore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agent_factory</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">owner</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="kc">True</span><span class="p">),</span>
                                         <span class="n">history_queue</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span> <span class="n">raw_response_queue</span><span class="o">=</span><span class="n">raw_response_queue</span><span class="p">)</span>
 
             <span class="c1"># 获取最后一条消息和所有者</span>
@@ -466,27 +466,22 @@
 <span class="sd">        :return: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">core</span><span class="p">:</span> <span class="n">AgentCore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_core</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">history_queue</span><span class="o">=</span><span class="n">history_queue</span><span class="p">,</span> <span class="n">raw_response_queue</span><span class="o">=</span><span class="n">raw_response_queue</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">)</span>
-        <span class="n">agent_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">core</span><span class="o">.</span><span class="n">stack</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">depth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">core</span><span class="o">.</span><span class="n">stack</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
 
         <span class="n">task</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">core</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">messages</span><span class="p">:</span>
             <span class="n">task</span> <span class="o">=</span> <span class="n">input_queue</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">task</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">while</span> <span class="n">agent_count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">return_value</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="c1"># 检查当前Agent的工作模式</span>
-            <span class="k">if</span> <span class="n">core</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">loop</span> <span class="o">==</span> <span class="s2">&quot;ReAct&quot;</span><span class="p">:</span>
-                <span class="n">return_value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">re_act</span><span class="p">(</span><span class="n">core</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent_factory</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tools</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">core</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">loop</span> <span class="o">==</span> <span class="s2">&quot;Reactive&quot;</span><span class="p">:</span>
-                <span class="n">return_value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">reactive</span><span class="p">(</span><span class="n">core</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent_factory</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tools</span><span class="p">,</span> <span class="n">input_queue</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">depth</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">return_value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">main</span><span class="p">(</span><span class="n">core</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent_factory</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tools</span><span class="p">,</span> <span class="n">input_queue</span><span class="p">)</span>
 
             <span class="c1"># 有返回值说明调用了子Agent，返回值是子Agent的任务</span>
             <span class="k">if</span> <span class="n">return_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">task</span> <span class="o">=</span> <span class="n">return_value</span>
-                <span class="n">agent_count</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">depth</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">agent_count</span> <span class="o">+=</span> <span class="o">-</span><span class="mi">1</span></div>
+                <span class="n">depth</span> <span class="o">+=</span> <span class="o">-</span><span class="mi">1</span></div>
 </div>
 
 </pre></div>
@@ -521,7 +516,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=ad3000b3"></script>
+</div><script src="../../_static/documentation_options.js?v=32729429"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
