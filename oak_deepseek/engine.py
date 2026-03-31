@@ -4,7 +4,7 @@ from typing import List, Callable, Literal, Optional, Tuple, Dict, Union
 from oak_deepseek.agent import AgentInfo, AgentFactory, Agent
 from oak_deepseek.client import RequestResponsePair
 from oak_deepseek.core import AgentCore
-from oak_deepseek.loops import re_act, reactive
+from oak_deepseek.loop import re_act, reactive
 from oak_deepseek.models import Tool, Message, AssistantMessage, ToolMessage, UserMessage, SystemMessage
 from oak_deepseek.tools import standardize_tool, parse_tool_calls, ToolCall, parse_tool_call, if_finished_in_message, \
     if_wait_for_input_in_message
