@@ -1,6 +1,5 @@
 from queue import Queue
 from typing import List, Callable, Literal, Optional, Tuple, Dict, Union
-import warnings
 
 from oak_deepseek.agent import AgentInfo, AgentFactory, Agent
 from oak_deepseek.client import RequestResponsePair
@@ -69,7 +68,7 @@ class AgentEngine:
         :param key: 启动方式。
 
         - 若为元组 (namespace, name)，表示正常启动，该元组为入口 Agent 的 key。
-        - 若为列表，表示断点恢复模式。列表元素为 (agent_key, message)，按时间顺序排列。其中 agent_key 是产生该消息的 Agent 的标识 (namespace, name)，message 是具体的 Message 对象。
+        - 若为列表，表示断点恢复模式。列表元素为 (agent_key, message)，按时间顺序排列。其中 agent_key 是产生该消息的 Agent 的标识 (namespace, name)，message 是具体的 Message 对象。传入空列表时，会抛出 ValueError。
 
         :param history_queue: 消息输出队列，运行期间产生的所有消息（附带所属Agent key）都会被放入此队列
         :param raw_response_queue: 可选，用于输出原始请求/响应对的队列

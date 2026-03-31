@@ -5,7 +5,7 @@ from typing import Tuple
 
 from oak_deepseek.engine import AgentEngine
 from oak_deepseek.models import AssistantMessage
-from oak_deepseek.tools import if_finished_in_message, parse_tool_call, if_wait_for_input_in_message
+from oak_deepseek.tools import parse_tool_call, if_wait_for_input_in_message
 
 engine: AgentEngine = AgentEngine()
 engine.create_agent(
