@@ -96,7 +96,6 @@ def main(engine: AgentCore,
         if assistant_msg.tool_calls is not None:
             tool_queue: Queue[Tuple[str, str, Dict]] = parse_tool_calls(assistant_msg.tool_calls)
             while tool_queue.qsize() > 0:
-                # name
                 call_info: tuple[str, str, dict] = tool_queue.get(block=True)
                 match call_info[1]:
                     case "wait_for_input":
