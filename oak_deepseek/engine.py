@@ -26,7 +26,6 @@ class AgentEngine:
                      description: str,
                      prompt: str,
                      tools: Optional[List[Callable]]=None,
-                     loop: Literal["Reactive", "ReAct"]="Reactive",
                      sub_agents: Optional[List[Tuple[str, str]]]=None):
         """
         注册一个Agent至引擎，以后可以用唯一命名空间+名字来指定。
@@ -35,7 +34,6 @@ class AgentEngine:
         :param description: Agent的简短描述
         :param prompt: Agent的系统提示词
         :param tools: 可选，Agent可调用的工具函数列表
-        :param loop: 消息循环模式，可选 "Reactive" 或 "ReAct"。默认模式为 "Reactive"
         :param sub_agents: 可选，可调用的子Agent列表，每个元素为子Agent的key
         :return: None
         """
@@ -48,7 +46,7 @@ class AgentEngine:
                 tools_info.append(standardize_tool(tool))
 
         self.agent_factory.register_agent(key, AgentInfo(
-            description=description, prompt=prompt, tools=tools_info, loop=loop, sub_agents=sub_agents
+            description=description, prompt=prompt, tools=tools_info, sub_agents=sub_agents
         ))
 
     def create_core(self, key: Union[Tuple[str, str], List[Tuple[Tuple[str, str], Message]]],
