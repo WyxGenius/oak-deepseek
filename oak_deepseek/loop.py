@@ -104,6 +104,7 @@ def main(engine: AgentCore,
                         finish(engine, call_info)
                         return None
                     case "choose_agent":
+                        # 这里返回的是子Agent的任务
                         return new_agent(agent_factory, engine, call_info)
                     case _:
                         exec_tool(engine, tools, call_info)

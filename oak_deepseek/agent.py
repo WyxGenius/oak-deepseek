@@ -52,8 +52,6 @@ class AgentInfo(BaseModel):
     description: str
     prompt: str
     tools: List[Tool]
-
-    loop: str
     sub_agents: Optional[List[Tuple[str, str]]] = None
 
 # agent自己维护好自己的消息记录
@@ -93,12 +91,13 @@ class AgentFactory:
         """
         self.agents[key] = agent
 
-    def build(self, key: Tuple[str, str]) -> Agent:
+    def build(self, key: Tuple[str, str], reactive: bool = False) -> Agent:
         """
         根据key构建一个Agent实例。
         自动添加finished工具，如有子Agent则添加choose_agent工具并拼接提示词。
 
         :param key: Agent的唯一标识
+        :param reactive: Agent是否为Reactive工作模式
         :return: 构建好的Agent实例
         :raises KeyError: 如果key未注册
         """
@@ -111,10 +110,10 @@ class AgentFactory:
         agent: Agent = Agent(key=key, info=agent_info)
 
         # 根据工作模式添加默认工具
-        if agent.info.loop == "ReAct":
-            agent.info.tools.append(standardize_tool(finished))
-        if agent.info.loop == "Reactive":
+        if reactive:
             agent.info.tools.append(standardize_tool(wait_for_input))
+        else:
+            agent.info.tools.append(standardize_tool(finished))
 
         # 将choose_agent工具加入工具列表，并将可用Agent信息拼接到提示词中
         keys: Optional[Tuple[str, str]] = agent_info.sub_agents

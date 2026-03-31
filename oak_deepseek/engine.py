@@ -75,13 +75,14 @@ class AgentEngine:
         :param api_key: DeepSeek API密钥，默认从环境变量DEEPSEEK_API_KEY读取
         :return: 已初始化的AgentCore实例
         """
+        # 保证入口是Reactive模式
         if isinstance(key, tuple):
-            return AgentCore(self.agent_factory.build(key), history_queue, api_key=api_key, raw_response_queue=raw_response_queue)
+            return AgentCore(self.agent_factory.build(key, True), history_queue, api_key=api_key, raw_response_queue=raw_response_queue)
         else:
             if len(key) < 1:
                 raise ValueError("历史记录列表不能为空")
             owner: List[Tuple[str, str]] = [key[0][0]]
-            core: AgentCore = AgentCore(self.agent_factory.build(owner[-1]),
+            core: AgentCore = AgentCore(self.agent_factory.build(owner[-1], True),
                                         history_queue, api_key=api_key, raw_response_queue=raw_response_queue)
 
             # 获取最后一条消息和所有者
@@ -229,19 +230,19 @@ class AgentEngine:
         :return: None
         """
         core: AgentCore = self.create_core(key=key, history_queue=history_queue, raw_response_queue=raw_response_queue, api_key=api_key)
-        agent_count: int = len(core.stack) + 1
+        depth: int = len(core.stack) + 1
 
         task: Optional[str]
         if not core.agent.messages:
             task = input_queue.get(block=True)
         else:
             task = None
-        while agent_count > 0:
+        while depth > 0:
             return_value: Optional[str] = main(core, self.agent_factory, task, self.tools, input_queue)
 
             # 有返回值说明调用了子Agent，返回值是子Agent的任务
             if return_value is not None:
                 task = return_value
-                agent_count += 1
+                depth += 1
             else:
-                agent_count += -1
+                depth += -1
