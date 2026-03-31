@@ -46,7 +46,6 @@ class AgentInfo(BaseModel):
     :ivar description: Agent的简短描述
     :ivar prompt: 系统提示词
     :ivar tools: 可调用的工具列表
-    :ivar loop: 循环模式，如 "ReAct" 或 "ReactiveReAct"
     :ivar sub_agents: 可选，可调用的子Agent列表，每个元素为(namespace, name)
     """
     description: str
@@ -121,6 +120,8 @@ class AgentFactory:
             agent.info.tools.append(standardize_tool(choose_agent))
             prompt_about_sub_agent = "\n\n**你可以让这些AI Agent辅助你完成任务：**"
             for sub_agent in agent_info.sub_agents:
+                if self.agents.get(sub_agent) is None:
+                    raise KeyError(f"agent {sub_agent} 未注册")
                 prompt_about_sub_agent += f"\n\n(namespace={sub_agent[0]}, name={sub_agent[1]})\n简介：{self.agents[sub_agent].description}"
             agent.info.prompt += prompt_about_sub_agent
 
