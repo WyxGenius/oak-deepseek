@@ -22,7 +22,7 @@ engine: AgentEngine = AgentEngine()
 engine.create_agent(
     key=("sys","sys"),
     description="一个能进行数学计算的agent",
-    prompt="你是一个数学计算助手，会使用工具确保自己计算的正确性。",
+    prompt="你是一个严谨细致的数学计算助手，任何计算仅使用工具完成",
     tools=[add],
     sub_agents=[("sys","sub")]
 )
@@ -30,7 +30,8 @@ engine.create_agent(
 engine.create_agent(
     key=("sys","sub"),
     description="能进行乘法计算",
-    prompt="你是一个数学计算助手，会使用工具确保自己计算的正确性",
+    prompt="你是一个严谨细致的数学计算助手，任何计算仅使用工具完成",
+    loop="ReAct",
     tools=[mul]
 )
 history_queue = Queue()
@@ -46,7 +47,7 @@ def messages():
         msg = history_queue.get(block=True)
         if msg is None:
             return
-        print(msg)
+        print(f"{msg},")
 
 
 if __name__ == "__main__":
