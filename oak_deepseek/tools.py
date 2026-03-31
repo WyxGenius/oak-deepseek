@@ -64,6 +64,9 @@ def parse_tool_calls(tool_calls: List[Dict]) -> Queue[ToolCall]:
     return queue
 
 def if_finished_in_message(message: Message) -> bool:
+    """
+    判断消息中是否包含finished工具调用
+    """
     tool_calls: List[Dict] = getattr(message, "tool_calls", None)
     if not tool_calls:
         return False
@@ -76,6 +79,9 @@ def if_finished_in_message(message: Message) -> bool:
     return tool.name == "finished"
 
 def if_wait_for_input_in_message(message: Message) -> bool:
+    """
+    判断消息中是否包含wait_for_input工具调用
+    """
     tool_calls: List[Dict] = getattr(message, "tool_calls", None)
     if not tool_calls:
         return False

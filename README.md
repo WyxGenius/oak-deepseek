@@ -45,7 +45,6 @@ engine.create_agent(
     key=("sys","sub"),
     description="能进行乘法计算",
     prompt="你是一个严谨细致的数学计算助手，任何计算仅使用工具完成",
-    loop="ReAct",
     tools=[mul]
 )
 history_queue = Queue()
