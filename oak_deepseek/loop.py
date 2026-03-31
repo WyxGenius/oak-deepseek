@@ -81,43 +81,11 @@ def exec_tool(engine: AgentCore, tools: Dict[str, Callable], call_info: ToolCall
 
 ########################################################################################################################
 
-def re_act(engine: AgentCore,
-           agent_factory: AgentFactory,
-           task: str, tools: Dict[str, Callable]) -> Optional[str]:
+def main(engine: AgentCore,
+         agent_factory: AgentFactory,
+         task: str, tools: Dict[str, Callable], queue: Queue[str]) -> Optional[str]:
     """
-    ReAct循环模式：Agent反复调用工具直到完成。
-
-    :param engine: 当前运行的AgentCore
-    :param agent_factory: Agent工厂，用于构建子Agent
-    :param task: 当前Agent的任务
-    :param tools: 可用的工具字典，键为函数名，值为可调用对象
-    :return: 如果调用了子Agent，返回子Agent的任务字符串；否则返回None
-    """
-    init(engine, task)
-    while True:
-        assistant_msg: AssistantMessage = engine.send()
-        if assistant_msg.tool_calls is not None:
-            tool_queue: Queue[Tuple[str, str, Dict]] = parse_tool_calls(assistant_msg.tool_calls)
-            while tool_queue.qsize() > 0:
-                # name
-                call_info: tuple[str, str, dict] = tool_queue.get(block=True)
-                match call_info[1]:
-                    case "finished":
-                        finish(engine, call_info)
-                        return None
-                    case "choose_agent":
-                        return new_agent(agent_factory, engine, call_info)
-                    case _:
-                        exec_tool(engine, tools, call_info)
-        else:
-            pass
-
-
-def reactive(engine: AgentCore,
-             agent_factory: AgentFactory,
-             task: str, tools: Dict[str, Callable], queue: Queue[str]) -> Optional[str]:
-    """
-    ReactiveReAct循环模式：与ReAct类似，但完成后会等待用户输入。
+    消息循环。
 
     :param engine: 当前运行的AgentCore
     :param agent_factory: Agent工厂
@@ -137,6 +105,9 @@ def reactive(engine: AgentCore,
                 match call_info[1]:
                     case "wait_for_input":
                         engine.update(ToolMessage(content=queue.get(block=True), tool_call_id=call_info[0]))
+                    case "finished":
+                        finish(engine, call_info)
+                        return None
                     case "choose_agent":
                         return new_agent(agent_factory, engine, call_info)
                     case _:

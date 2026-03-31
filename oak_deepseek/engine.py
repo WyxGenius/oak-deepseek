@@ -4,7 +4,7 @@ from typing import List, Callable, Literal, Optional, Tuple, Dict, Union
 from oak_deepseek.agent import AgentInfo, AgentFactory, Agent
 from oak_deepseek.client import RequestResponsePair
 from oak_deepseek.core import AgentCore
-from oak_deepseek.loop import re_act, reactive
+from oak_deepseek.loop import re_act, main
 from oak_deepseek.models import Tool, Message, AssistantMessage, ToolMessage, UserMessage, SystemMessage
 from oak_deepseek.tools import standardize_tool, parse_tool_calls, ToolCall, parse_tool_call, if_finished_in_message, \
     if_wait_for_input_in_message
@@ -237,12 +237,7 @@ class AgentEngine:
         else:
             task = None
         while agent_count > 0:
-            return_value = None
-            # 检查当前Agent的工作模式
-            if core.agent.info.loop == "ReAct":
-                return_value: Optional[str] = re_act(core, self.agent_factory, task, self.tools)
-            if core.agent.info.loop == "Reactive":
-                return_value: Optional[str] = reactive(core, self.agent_factory, task, self.tools, input_queue)
+            return_value: Optional[str] = main(core, self.agent_factory, task, self.tools, input_queue)
 
             # 有返回值说明调用了子Agent，返回值是子Agent的任务
             if return_value is not None:
