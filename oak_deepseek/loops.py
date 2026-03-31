@@ -113,11 +113,11 @@ def re_act(engine: AgentCore,
             pass
 
 
-def reactive_rea_ct(engine: AgentCore,
-                    agent_factory: AgentFactory,
-                    task: str, tools: Dict[str, Callable], queue: Queue[str]) -> Optional[str]:
+def reactive(engine: AgentCore,
+             agent_factory: AgentFactory,
+             task: str, tools: Dict[str, Callable], queue: Queue[str]) -> Optional[str]:
     """
-    ReactiveReAct循环模式：与ReAct类似，但无工具调用时会从队列获取用户输入。
+    ReactiveReAct循环模式：与ReAct类似，但完成后会等待用户输入。
 
     :param engine: 当前运行的AgentCore
     :param agent_factory: Agent工厂
@@ -135,11 +135,9 @@ def reactive_rea_ct(engine: AgentCore,
                 # name
                 call_info: tuple[str, str, dict] = tool_queue.get(block=True)
                 match call_info[1]:
-                    case "finished":
-                        finish(engine, call_info)
+                    case "wait_for_input":
+                        engine.update(ToolMessage(content=queue.get(block=True), tool_call_id=call_info[0]))
                     case "choose_agent":
                         return new_agent(agent_factory, engine, call_info)
                     case _:
                         exec_tool(engine, tools, call_info)
-        else:
-            engine.update(UserMessage(content=queue.get(block=True)))

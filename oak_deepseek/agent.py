@@ -5,11 +5,16 @@ from oak_deepseek.models import Tool, Message
 from oak_deepseek.tools import standardize_tool
 
 
-def wait_for_input():
+def wait_for_input(msg: str):
     """
     调用此工具时，不能调用其它工具。
-    等待用户输入。
-    当你认为当前输出完成后需要等待用户输入，就调用这个工具
+    特殊工具：这是你和用户沟通的**唯一**手段
+    把你想直接和用户说的内容写在参数里，用户才能看到并回应
+    用户**看不到其他任何位置的消息**
+
+    此外，当你要做最终总结时，也要用这个工具把总结发给用户
+
+    :param msg: 你发送给用户的消息内容（支持多行文本）
     """
     pass
 
@@ -105,8 +110,11 @@ class AgentFactory:
         agent_info: AgentInfo = self.agents.get(key).model_copy(deep=True)
         agent: Agent = Agent(key=key, info=agent_info)
 
-        # 将finished工具添加至列表
-        agent.info.tools.append(standardize_tool(finished))
+        # 根据工作模式添加默认工具
+        if agent.info.loop == "ReAct":
+            agent.info.tools.append(standardize_tool(finished))
+        if agent.info.loop == "Reactive":
+            agent.info.tools.append(standardize_tool(wait_for_input))
 
         # 将choose_agent工具加入工具列表，并将可用Agent信息拼接到提示词中
         keys: Optional[Tuple[str, str]] = agent_info.sub_agents

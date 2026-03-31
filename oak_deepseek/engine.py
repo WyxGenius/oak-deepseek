@@ -5,9 +5,10 @@ import warnings
 from oak_deepseek.agent import AgentInfo, AgentFactory, Agent
 from oak_deepseek.client import RequestResponsePair
 from oak_deepseek.core import AgentCore
-from oak_deepseek.loops import re_act, reactive_rea_ct
+from oak_deepseek.loops import re_act, reactive
 from oak_deepseek.models import Tool, Message, AssistantMessage, ToolMessage, UserMessage, SystemMessage
-from oak_deepseek.tools import standardize_tool, parse_tool_calls, ToolCall, parse_tool_call, if_finished_in_message
+from oak_deepseek.tools import standardize_tool, parse_tool_calls, ToolCall, parse_tool_call, if_finished_in_message, \
+    if_wait_for_input_in_message
 
 
 class AgentEngine:
@@ -26,7 +27,7 @@ class AgentEngine:
                      description: str,
                      prompt: str,
                      tools: Optional[List[Callable]]=None,
-                     loop: Literal["ReactiveReAct", "ReAct"]="ReAct",
+                     loop: Literal["Reactive", "ReAct"]="Reactive",
                      sub_agents: Optional[List[Tuple[str, str]]]=None):
         """
         注册一个Agent至引擎，以后可以用唯一命名空间+名字来指定。
@@ -35,7 +36,7 @@ class AgentEngine:
         :param description: Agent的简短描述
         :param prompt: Agent的系统提示词
         :param tools: 可选，Agent可调用的工具函数列表
-        :param loop: 消息循环模式，可选 "ReAct" 或 "ReactiveReAct"
+        :param loop: 消息循环模式，可选 "Reactive" 或 "ReAct"。默认模式为 "Reactive"
         :param sub_agents: 可选，可调用的子Agent列表，每个元素为子Agent的key
         :return: None
         """
@@ -78,12 +79,15 @@ class AgentEngine:
         if isinstance(key, tuple):
             return AgentCore(self.agent_factory.build(key), history_queue, api_key=api_key, raw_response_queue=raw_response_queue)
         else:
+            if len(key) < 1:
+                raise ValueError("历史记录列表不能为空")
             owner: List[Tuple[str, str]] = [key[0][0]]
             core: AgentCore = AgentCore(self.agent_factory.build(owner[-1]),
                                         history_queue, api_key=api_key, raw_response_queue=raw_response_queue)
 
             # 获取最后一条消息和所有者
             last_message: Message = key[-1][1]
+            first_key: Tuple[str, str] = key[0][0]
             last_key: Tuple[str, str] = key[-1][0]
 
             # 最后一条是UserMessage：不用管
@@ -92,9 +96,15 @@ class AgentEngine:
 
             # 最后一条是SystemMessage：说明任务信息丢失，可以直接结束
             elif isinstance(last_message, SystemMessage):
-                recovery_msg: UserMessage = UserMessage(
-                    content="执行刚刚被打断，现已重启。请直接调用finished工具，让上级重新委派任务，并简洁地说明原因"
-                )
+                # 判断是否在入口
+                if last_key == first_key:
+                    recovery_msg: UserMessage = UserMessage(
+                        content="执行刚刚被打断，现已重启。请直接调用wait_for_input工具，让上级重新委派原定任务，并简洁地说明原因"
+                    )
+                else:
+                    recovery_msg: UserMessage = UserMessage(
+                        content="执行刚刚被打断，现已重启。请直接调用finished工具，让上级重新委派原定任务，并简洁地说明原因"
+                    )
                 key.append((last_key, recovery_msg))
                 core.history_queue.put((last_key, recovery_msg))
 
@@ -110,6 +120,15 @@ class AgentEngine:
                         )
                         key.append((last_key, recovery_msg))
                         core.history_queue.put((last_key, recovery_msg))
+
+                    elif if_wait_for_input_in_message(last_message):
+                        recovery_msg: ToolMessage = ToolMessage(
+                            content="执行刚刚被打断，现已重启。请重新调用wait_for_input",
+                            tool_call_id=parse_tool_call(last_message.tool_calls[0]).id
+                        )
+                        key.append((last_key, recovery_msg))
+                        core.history_queue.put((last_key, recovery_msg))
+
                     else:
                         tools_queue: Queue[ToolCall] = parse_tool_calls(last_message.tool_calls)
                         while tools_queue.qsize() > 0:
@@ -223,8 +242,8 @@ class AgentEngine:
             # 检查当前Agent的工作模式
             if core.agent.info.loop == "ReAct":
                 return_value: Optional[str] = re_act(core, self.agent_factory, task, self.tools)
-            if core.agent.info.loop == "ReactiveReAct":
-                return_value: Optional[str] = reactive_rea_ct(core, self.agent_factory, task, self.tools, input_queue)
+            if core.agent.info.loop == "Reactive":
+                return_value: Optional[str] = reactive(core, self.agent_factory, task, self.tools, input_queue)
 
             # 有返回值说明调用了子Agent，返回值是子Agent的任务
             if return_value is not None:
