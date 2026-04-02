@@ -60,14 +60,14 @@ class Agent:
     :ivar info: AgentInfo对象
     :ivar messages: 该Agent的消息历史列表
     """
-    def __init__(self, key: Tuple[str, str], info: AgentInfo):
+    def __init__(self, key: List[Tuple[str, str]], info: AgentInfo):
         """
         初始化Agent实例。
 
         :param key: Agent的唯一标识 (namespace, name)
         :param info: Agent的元数据
         """
-        self.key: Tuple[str, str] = key
+        self.key: List[Tuple[str, str]] = key
         self.info: AgentInfo = info
         self.messages: List[Message] = []
 
@@ -104,7 +104,7 @@ class AgentFactory:
 
         # 从表中查出agent信息，写入实例
         agent_info: AgentInfo = self.agents.get(key).model_copy(deep=True)
-        agent: Agent = Agent(key=key, info=agent_info)
+        agent: Agent = Agent(key=[key], info=agent_info)
 
         # 根据工作模式添加默认工具
         if reactive:
