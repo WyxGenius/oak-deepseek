@@ -100,11 +100,11 @@ class AgentEngine:
                 # 判断是否在入口
                 if last_key_chain == key_chain:
                     recovery_msg: UserMessage = UserMessage(
-                        content="执行刚刚被打断，现已重启。请直接调用wait_for_input工具，让上级重新委派原定任务，并简洁地说明原因"
+                        content="执行刚刚被打断，现已重启。请直接调用wait_for_input工具，说“我的执行刚刚被打断，现已重启，请重新指派任务”"
                     )
                 else:
                     recovery_msg: UserMessage = UserMessage(
-                        content="执行刚刚被打断，现已重启。请直接调用finished工具，让上级重新委派原定任务，并简洁地说明原因"
+                        content="执行刚刚被打断，现已重启。请直接调用finished工具，说“我的执行刚刚被打断，现已重启，请重新指派任务”"
                     )
                 key.append((last_key_chain, recovery_msg))
                 core.history_queue.put((last_key_chain, recovery_msg))
