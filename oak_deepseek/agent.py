@@ -1,3 +1,4 @@
+import copy
 from typing import Optional, List, Tuple, Dict
 from pydantic import BaseModel
 
@@ -104,7 +105,9 @@ class AgentFactory:
 
         # 从表中查出agent信息，写入实例
         agent_info: AgentInfo = self.agents.get(key_chain[-1]).model_copy(deep=True)
-        agent: Agent = Agent(key_chain=key_chain, info=agent_info)
+
+        # key_chain不可变，应传入深拷贝
+        agent: Agent = Agent(key_chain=copy.deepcopy(key_chain), info=agent_info)
 
         # 根据工作模式添加默认工具
         if reactive:
