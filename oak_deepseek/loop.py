@@ -7,23 +7,23 @@ from oak_deepseek.tools import parse_tool_calls, ToolCall, parse_tool_call
 from oak_deepseek.models import AssistantMessage, UserMessage, SystemMessage, ToolMessage
 
 
-def init(engine: AgentCore, task: str):
+def init(core: AgentCore, task: str):
     """
     用于Agent初始化
-    :param engine: AgentEngine，Agent所在的引擎
+    :param core: AgentCore，会话核心
     :param task: str，Agent要执行的任务
     :return:
     """
-    if len(engine.agent.messages) == 0:
+    if len(core.agent.messages) == 0:
         # 当前agent信息在引擎初始化，或调用子agent时在引擎中更新
-        engine.update(SystemMessage(content=engine.agent.info.prompt))
-        engine.update(UserMessage(content=task))
+        core.update(SystemMessage(content=core.agent.info.prompt))
+        core.update(UserMessage(content=task))
 
 def finish(core: AgentCore, call_info: ToolCall):
     """
     处理Agent的任务总结
 
-    :param core: AgentCore，当前会话的引擎
+    :param core: AgentCore，会话核心
     :param call_info: namedtuple("ToolCall", ["id", "name", "args"])，调用信息
     :return: 没有返回值，不过对应的分支可能要返回None
     """
@@ -43,12 +43,12 @@ def finish(core: AgentCore, call_info: ToolCall):
     parent_call_id: str = parse_tool_call(last_tool_call)[0]
     core.update(ToolMessage(content=f"{conclusion}", tool_call_id=parent_call_id))
 
-def new_agent(agent_factory: AgentFactory, engine: AgentCore, call_info: ToolCall) -> str:
+def new_agent(agent_factory: AgentFactory, core: AgentCore, call_info: ToolCall) -> str:
     """
     处理Agent调用子Agent
 
     :param agent_factory: 当前会话的AgentFactory，用于生成新的Agent实例
-    :param engine: AgentEngine，当前会话的引擎
+    :param core: AgentCore，会话核心
     :param call_info: namedtuple("ToolCall", ["id", "name", "args"])，调用信息
     :return: str，新Agent的任务，需要在循环体内返回
     """
@@ -57,14 +57,14 @@ def new_agent(agent_factory: AgentFactory, engine: AgentCore, call_info: ToolCal
     key: Tuple[str, str] = (args["agent"][0], args["agent"][1])
     task: str = args["task"]
     agent: Agent = agent_factory.build(key)
-    engine.sub_agent(agent)
+    core.sub_agent(agent)
     return task
 
-def exec_tool(engine: AgentCore, tools: Dict[str, Callable], call_info: ToolCall):
+def exec_tool(core: AgentCore, tools: Dict[str, Callable], call_info: ToolCall):
     """
     直接执行工具，最简单的一集
 
-    :param engine: AgentEngine，当前会话的引擎
+    :param core: AgentCore，会话核心
     :param tools: Dict[str, Callable]，当前会话的可用工具
     :param call_info: namedtuple("ToolCall", ["id", "name", "args"])，调用信息
     :return: 没有返回值
@@ -74,7 +74,7 @@ def exec_tool(engine: AgentCore, tools: Dict[str, Callable], call_info: ToolCall
     args: Dict = call_info[2]
 
     content: str = tools.get(name)(**args)
-    engine.update(ToolMessage(content=content, tool_call_id=tool_call_id))
+    core.update(ToolMessage(content=content, tool_call_id=tool_call_id))
 
 ########################################################################################################################
 
