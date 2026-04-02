@@ -61,16 +61,16 @@ class AgentEngine:
         支持两种模式：
 
         - 正常启动：传入一个元组 (namespace, name) 作为入口Agent的key。
-        - 断点恢复：传入一个历史消息列表，每个元素为 (agent_key, message)，按时间顺序排列。
-          引擎会根据消息中的agent_key重建调用栈和各Agent的消息历史。
+        - 断点恢复：传入一个历史消息列表，每个元素为 (key_chain, message)，按时间顺序排列。
+          引擎会根据消息中的key_chain重建调用栈和各Agent的消息历史。
 
         :param key: 启动方式。
 
         - 若为元组 (namespace, name)，表示正常启动，该元组为入口 Agent 的 key。
-        - 若为列表，表示断点恢复模式。列表元素为 (agent_key, message)，按时间顺序排列。其中 agent_key 是产生该消息的 Agent 的标识 (namespace, name)，message 是具体的 Message 对象。传入空列表时，会抛出 ValueError。
+        - 若为列表，表示断点恢复模式。列表元素为 (key_chain, message)，按时间顺序排列。传入空列表时，会抛出 ValueError。
         - 注意：恢复模式下传入的历史消息列表可能会被修改（恢复时会补全缺失消息以确保符合API规范）
 
-        :param history_queue: 消息输出队列，运行期间产生的所有消息（附带所属Agent key）都会被放入此队列
+        :param history_queue: 消息输出队列，运行期间产生的所有消息（附带调用链信息）都会被放入此队列
         :param raw_response_queue: 可选，用于输出原始请求/响应对的队列
         :param api_key: DeepSeek API密钥，默认从环境变量DEEPSEEK_API_KEY读取
         :return: 已初始化的AgentCore实例

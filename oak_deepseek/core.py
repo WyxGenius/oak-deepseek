@@ -13,7 +13,7 @@ class AgentCore:
     """
     Agent运行时的核心，管理当前Agent、调用栈和消息历史。
 
-    :ivar history_queue: 消息输出队列，每条消息附带所属Agent的key
+    :ivar history_queue: 消息输出队列，每条消息会附带其调用链
     :ivar client: ChatClient实例
     :ivar agent: 当前Agent实例
     :ivar stack: 调用栈，存储祖先Agent实例
@@ -26,7 +26,7 @@ class AgentCore:
         初始化AgentCore。
 
         :param agent: 初始的Agent实例
-        :param history_queue: 消息输出队列，每条消息会附带其所属Agent的key
+        :param history_queue: 消息输出队列，每条消息会附带其调用链
         :param api_key: DeepSeek API密钥
         :param raw_response_queue: 可选，原始请求/响应队列
         """

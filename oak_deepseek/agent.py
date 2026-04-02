@@ -58,7 +58,7 @@ class Agent:
     """
     Agent实例，包含其元数据和消息历史。
 
-    :ivar key_chain: 调用链，命名空间ID列表
+    :ivar key_chain: 一个元组，每个元素都是命名空间ID元组，表示调用链。
     :ivar info: AgentInfo对象
     :ivar messages: 该Agent的消息历史列表
     """
@@ -66,7 +66,7 @@ class Agent:
         """
         初始化Agent实例。
 
-        :param key_chain: 调用链，命名空间ID列表
+        :param key_chain: 一个元组，每个元素都是命名空间ID元组，表示调用链。
         :param info: Agent的元数据
         """
         self.key_chain: Tuple[Tuple[str, str], ...] = key_chain
@@ -95,7 +95,7 @@ class AgentFactory:
         根据key构建一个Agent实例。
         自动添加finished工具，如有子Agent则添加choose_agent工具并拼接提示词。
 
-        :param key_chain: 命名空间ID列表，表示调用链。
+        :param key_chain: 一个元组，每个元素都是命名空间ID元组，表示调用链。
         :param reactive: Agent是否为Reactive工作模式
         :return: 构建好的Agent实例
         :raises KeyError: 如果key未注册
