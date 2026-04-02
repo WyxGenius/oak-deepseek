@@ -1,3 +1,4 @@
+import copy
 from queue import Queue
 from typing import List, Callable, Literal, Optional, Tuple, Dict, Union
 
@@ -200,20 +201,21 @@ class AgentEngine:
 
                 # 所有权转移至父agent
                 elif len(current_key_chain) < len(key_chain):
+                    # 更新调用链
+                    key_chain = current_key_chain
                     # 返回父agent写入消息
                     core.back()
                     core.agent.messages.append(current_message)
-                    # 更新调用链
-                    key_chain = current_key_chain
 
                 # 所有权转移至子agent
                 else:
+                    # 更新调用链
+                    key_chain = copy.deepcopy(current_key_chain)
                     # 创建子agent写入消息
-                    sub_agent: Agent = self.agent_factory.build(current_key_chain)
+                    sub_agent: Agent = self.agent_factory.build(key_chain)
                     core.sub_agent(sub_agent)
                     core.agent.messages.append(current_message)
-                    # 更新调用链
-                    key_chain = current_key_chain
+
 
             return core
 
