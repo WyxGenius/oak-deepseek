@@ -49,7 +49,7 @@ class AgentEngine:
             description=description, prompt=prompt, tools=tools_info, sub_agents=sub_agents
         ))
 
-    def create_core(self, key: Union[Tuple[str, str], List[Tuple[Tuple[str, str], Message]]],
+    def create_core(self, key: Union[Tuple[str, str], List[Tuple[List[Tuple[str, str]], Message]]],
                     history_queue: Queue,
                     raw_response_queue: Optional[Queue[RequestResponsePair]] = None,
                     api_key: Optional[str] = None
@@ -76,7 +76,7 @@ class AgentEngine:
         """
         # 保证入口是Reactive模式
         if isinstance(key, tuple):
-            return AgentCore(self.agent_factory.build(key, True), history_queue, api_key=api_key, raw_response_queue=raw_response_queue)
+            return AgentCore(self.agent_factory.build([key], True), history_queue, api_key=api_key, raw_response_queue=raw_response_queue)
         else:
             if len(key) < 1:
                 raise ValueError("历史记录列表不能为空")
@@ -206,7 +206,7 @@ class AgentEngine:
             return core
 
     def run(self, input_queue: Queue[str],
-            key: Union[Tuple[str, str], List[Tuple[Tuple[str, str], Message]]],
+            key: Union[Tuple[str, str], List[Tuple[List[Tuple[str, str]], Message]]],
             history_queue: Queue,
             raw_response_queue: Optional[Queue[RequestResponsePair]] = None,
             api_key: Optional[str] = None
