@@ -58,8 +58,8 @@ def new_agent(agent_factory: AgentFactory, core: AgentCore, call_info: ToolCall)
     key: Tuple[str, str] = (args["agent"][0], args["agent"][1])
     task: str = args["task"]
 
-    key_chain: List[Tuple[str, str]] = core.agent.key_chain
-    agent: Agent = agent_factory.build(key_chain + [key])
+    key_chain: Tuple[Tuple[str, str], ...] = core.agent.key_chain
+    agent: Agent = agent_factory.build(key_chain + (key,))
     core.sub_agent(agent)
     return task
 

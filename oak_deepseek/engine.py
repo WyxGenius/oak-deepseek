@@ -50,7 +50,7 @@ class AgentEngine:
             description=description, prompt=prompt, tools=tools_info, sub_agents=sub_agents
         ))
 
-    def create_core(self, key: Union[Tuple[str, str], List[Tuple[List[Tuple[str, str]], Message]]],
+    def create_core(self, key: Union[Tuple[str, str], List[Tuple[Tuple[Tuple[str, str], ...], Message]]],
                     history_queue: Queue,
                     raw_response_queue: Optional[Queue[RequestResponsePair]] = None,
                     api_key: Optional[str] = None
@@ -77,20 +77,20 @@ class AgentEngine:
         """
         # 保证入口是Reactive模式
         if isinstance(key, tuple):
-            return AgentCore(self.agent_factory.build([key], True), history_queue, api_key=api_key, raw_response_queue=raw_response_queue)
+            return AgentCore(self.agent_factory.build((key,), True), history_queue, api_key=api_key, raw_response_queue=raw_response_queue)
         else:
             if len(key) < 1:
                 raise ValueError("历史记录列表不能为空")
             # 第一条记录，第一个字段
-            # key: List[Tuple[List[Tuple[str, str]], Message]]
-            key_chain: List[Tuple[str, str]] = key[0][0]
+            # key: List[Tuple[Tuple[Tuple[str, str], ...], Message]]
+            key_chain: Tuple[Tuple[str, str], ...] = key[0][0]
             core: AgentCore = AgentCore(self.agent_factory.build(key_chain, True),
                                         history_queue, api_key=api_key, raw_response_queue=raw_response_queue)
 
             # 获取最后一条消息和所有者
-            # key: List[Tuple[List[Tuple[str, str]], Message]]
+            # key: List[Tuple[Tuple[Tuple[str, str], ...], Message]]
             last_message: Message = key[-1][1]
-            last_key_chain: List[Tuple[str, str]] = key[-1][0]
+            last_key_chain: Tuple[Tuple[str, str], ...] = key[-1][0]
 
             # 最后一条是UserMessage：不用管
             if isinstance(last_message, UserMessage):
@@ -147,7 +147,7 @@ class AgentEngine:
             # 最后一条是ToolMessage：倒序遍历至AssistantMessage后再决定
             elif isinstance(last_message, ToolMessage):
                 # 倒走遍历至AssistanMessage
-                last_messages: List[Tuple[List[Tuple[str, str]], Message]] = []
+                last_messages: List[Tuple[Tuple[Tuple[str, str], ...], Message]] = []
                 for snapshot in reversed(key):
                     if isinstance(snapshot[1], AssistantMessage):
                         last_messages.append(snapshot)
@@ -164,12 +164,12 @@ class AgentEngine:
                             content="执行刚刚被打断，现已重启。你需要重新调用finished生成总结",
                         )
                     # 取倒数第二条消息的key_chain
-                    key_chain_2nd: List[Tuple[str, str]] = last_messages[1][0]
+                    key_chain_2nd: Tuple[Tuple[str, str], ...] = last_messages[1][0]
                     key.append((key_chain_2nd, recovery_msg))
                     core.history_queue.put((key_chain_2nd, recovery_msg))
                 else:
-                    last_assistant_message: Tuple[List[Tuple[str, str]], AssistantMessage] = last_messages.pop()
-                    last_tool_messages: List[Tuple[List[Tuple[str, str]], ToolMessage]] = [
+                    last_assistant_message: Tuple[Tuple[Tuple[str, str], ...], AssistantMessage] = last_messages.pop()
+                    last_tool_messages: List[Tuple[Tuple[Tuple[str, str], ...], ToolMessage]] = [
                         last_tool_message for last_tool_message in reversed(last_messages)
                     ]
 
@@ -192,7 +192,7 @@ class AgentEngine:
 
             # 消息已补全，正式开始恢复
             for snapshot in key:
-                current_key_chain: List[Tuple[str, str]] = snapshot[0]
+                current_key_chain: Tuple[Tuple[str, str], ...] = snapshot[0]
                 current_message: Message = snapshot[1]
                 # 所有权不变
                 if current_key_chain == key_chain:

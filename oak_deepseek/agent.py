@@ -62,14 +62,14 @@ class Agent:
     :ivar info: AgentInfo对象
     :ivar messages: 该Agent的消息历史列表
     """
-    def __init__(self, key_chain: List[Tuple[str, str]], info: AgentInfo):
+    def __init__(self, key_chain: Tuple[Tuple[str, str], ...], info: AgentInfo):
         """
         初始化Agent实例。
 
         :param key_chain: 调用链，命名空间ID列表
         :param info: Agent的元数据
         """
-        self.key_chain: List[Tuple[str, str]] = copy.deepcopy(key_chain)
+        self.key_chain: Tuple[Tuple[str, str], ...] = key_chain
         self.info: AgentInfo = info
         self.messages: List[Message] = []
 
@@ -90,7 +90,7 @@ class AgentFactory:
         """
         self.agents[key] = agent
 
-    def build(self, key_chain: List[Tuple[str, str]], reactive: bool = False) -> Agent:
+    def build(self, key_chain: Tuple[Tuple[str, str], ...], reactive: bool = False) -> Agent:
         """
         根据key构建一个Agent实例。
         自动添加finished工具，如有子Agent则添加choose_agent工具并拼接提示词。
