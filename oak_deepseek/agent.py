@@ -117,7 +117,7 @@ class AgentFactory:
         if keys is not None:
             agent.info.tools.append(standardize_tool(choose_agent))
             prompt_about_sub_agent = "\n\n**你可以让这些AI Agent辅助你完成任务：**"
-            for sub_agent in agent_info.sub_agents:
+            for sub_agent in keys:
                 if self.agents.get(sub_agent) is None:
                     raise KeyError(f"agent {sub_agent} 未注册")
                 prompt_about_sub_agent += f"\n\n(namespace={sub_agent[0]}, name={sub_agent[1]})\n简介：{self.agents[sub_agent].description}"
