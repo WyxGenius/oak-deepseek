@@ -95,7 +95,7 @@ class AgentFactory:
         根据key构建一个Agent实例。
         自动添加finished工具，如有子Agent则添加choose_agent工具并拼接提示词。
 
-        :param key_chain: 命名空间ID列表，表示调用链。调用方应确保传入的列表不会被后续修改，或传入副本。
+        :param key_chain: 命名空间ID列表，表示调用链。
         :param reactive: Agent是否为Reactive工作模式
         :return: 构建好的Agent实例
         :raises KeyError: 如果key未注册
