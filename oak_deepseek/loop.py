@@ -78,22 +78,22 @@ def exec_tool(core: AgentCore, tools: Dict[str, Callable], call_info: ToolCall):
 
 ########################################################################################################################
 
-def main(engine: AgentCore,
+def main(core: AgentCore,
          agent_factory: AgentFactory,
          task: str, tools: Dict[str, Callable], queue: Queue[str]) -> Optional[str]:
     """
     消息循环。
 
-    :param engine: 当前运行的AgentCore
+    :param core: 当前运行的AgentCore
     :param agent_factory: Agent工厂
     :param task: 当前Agent的任务
     :param tools: 可用的工具字典
     :param queue: 用户输入队列
     :return: 如果调用了子Agent，返回子Agent的任务字符串；否则返回None
     """
-    init(engine, task)
+    init(core, task)
     while True:
-        assistant_msg: AssistantMessage = engine.send()
+        assistant_msg: AssistantMessage = core.send()
         if assistant_msg.tool_calls is not None:
             tool_queue: Queue[Tuple[str, str, Dict]] = parse_tool_calls(assistant_msg.tool_calls)
             while tool_queue.qsize() > 0:
@@ -101,12 +101,12 @@ def main(engine: AgentCore,
                 match call_info[1]:
                     case "wait_for_input":
                         content: str = queue.get(block=True)
-                        engine.update(ToolMessage(content=content, tool_call_id=call_info[0]))
+                        core.update(ToolMessage(content=content, tool_call_id=call_info[0]))
                     case "finished":
-                        finish(engine, call_info)
+                        finish(core, call_info)
                         return None
                     case "choose_agent":
                         # 这里返回的是子Agent的任务
-                        return new_agent(agent_factory, engine, call_info)
+                        return new_agent(agent_factory, core, call_info)
                     case _:
-                        exec_tool(engine, tools, call_info)
+                        exec_tool(core, tools, call_info)
