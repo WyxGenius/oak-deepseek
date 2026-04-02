@@ -40,21 +40,21 @@ task_queue = Queue()
 #task_queue.put("计算(679+678)*(2+78)")
 
 history = [
-([('sys', 'sys')], SystemMessage(role='system', content='你是一个严谨细致的数学计算助手，任何计算仅使用工具完成\n\n**你可以让这些AI Agent辅助你完成任务：**\n\n(namespace=sys, name=sub)\n简介：能进行乘法计算')),
-#([('sys', 'sys')], UserMessage(role='user', content='计算(679+678)*(2+78)')),
-#([('sys', 'sys')], AssistantMessage(role='assistant', content='我来帮您计算 (679+678)*(2+78)。首先我需要计算括号内的加法，然后进行乘法运算。\n\n让我先计算第一个括号内的加法：679 + 678。', tool_calls=[{'index': 0, 'id': 'call_00_RZTI6plraONJXimUoLFUekqF', 'type': 'function', 'function': {'name': 'add', 'arguments': '{"a": 679, "b": 678}'}}], reasoning_content=None)),
-#([('sys', 'sys')], ToolMessage(role='tool', content='1357', tool_call_id='call_00_RZTI6plraONJXimUoLFUekqF')),
-#([('sys', 'sys')], AssistantMessage(role='assistant', content='现在计算第二个括号内的加法：2 + 78。', tool_calls=[{'index': 0, 'id': 'call_00_1te9IDUVBWx3MCG7rD7QnKFx', 'type': 'function', 'function': {'name': 'add', 'arguments': '{"a": 2, "b": 78}'}}], reasoning_content=None)),
-#([('sys', 'sys')], ToolMessage(role='tool', content='80', tool_call_id='call_00_1te9IDUVBWx3MCG7rD7QnKFx')),
-#([('sys', 'sys')], AssistantMessage(role='assistant', content='现在我得到了两个中间结果：1357 和 80。接下来我需要计算这两个数的乘积。由于乘法计算需要使用专门的工具，我需要调用乘法计算助手来完成这个任务。', tool_calls=[{'index': 0, 'id': 'call_00_m5nRUvEeaLQMizySBPssyJ3d', 'type': 'function', 'function': {'name': 'choose_agent', 'arguments': '{"agent": ["sys", "sub"], "task": "请计算 1357 × 80 的结果"}'}}], reasoning_content=None)),
-#([('sys', 'sys'), ('sys', 'sub')], SystemMessage(role='system', content='你是一个严谨细致的数学计算助手，任何计算仅使用工具完成')),
-#([('sys', 'sys'), ('sys', 'sub')], UserMessage(role='user', content='请计算 1357 × 80 的结果')),
-#([('sys', 'sys'), ('sys', 'sub')], AssistantMessage(role='assistant', content='我来帮你计算 1357 × 80 的结果。', tool_calls=[{'index': 0, 'id': 'call_00_k4WJRU0inPRQwGi6r8IGOcQ5', 'type': 'function', 'function': {'name': 'mul', 'arguments': '{"a": 1357, "b": 80}'}}], reasoning_content=None)),
-#([('sys', 'sys'), ('sys', 'sub')], ToolMessage(role='tool', content='108560', tool_call_id='call_00_k4WJRU0inPRQwGi6r8IGOcQ5')),
-#([('sys', 'sys'), ('sys', 'sub')], AssistantMessage(role='assistant', content='', tool_calls=[{'index': 0, 'id': 'call_00_rkuHGCTvZaf6FIJBHm4a0aOn', 'type': 'function', 'function': {'name': 'finished', 'arguments': '{"conclusion": "1357 × 80 = 108560"}'}}], reasoning_content=None)),
-#([('sys', 'sys'), ('sys', 'sub')], ToolMessage(role='tool', content='任务摘要：1357 × 80 = 108560', tool_call_id='call_00_rkuHGCTvZaf6FIJBHm4a0aOn')),
-#([('sys', 'sys')], ToolMessage(role='tool', content='1357 × 80 = 108560', tool_call_id='call_00_m5nRUvEeaLQMizySBPssyJ3d')),
-#([('sys', 'sys')], AssistantMessage(role='assistant', content='很好！现在我已经完成了所有计算。让我总结一下：\n\n1. 679 + 678 = 1357\n2. 2 + 78 = 80  \n3. 1357 × 80 = 108,560', tool_calls=[{'index': 0, 'id': 'call_00_VXUQAyzvKCB3aoiJYSOZV4s9', 'type': 'function', 'function': {'name': 'wait_for_input', 'arguments': '{"msg": "计算 (679+678)*(2+78) 的结果如下：\\n\\n1. 首先计算括号内的加法：\\n   - 679 + 678 = 1,357\\n   - 2 + 78 = 80\\n\\n2. 然后计算乘积：\\n   - 1,357 × 80 = 108,560\\n\\n所以最终结果是：**108,560**"}'}}], reasoning_content=None)),
+((('sys', 'sys'),), SystemMessage(role='system', content='你是一个严谨细致的数学计算助手，任何计算仅使用工具完成\n\n**你可以让这些AI Agent辅助你完成任务：**\n\n(namespace=sys, name=sub)\n简介：能进行乘法计算')),
+#((('sys', 'sys'),), UserMessage(role='user', content='计算(679+678)*(2+78)')),
+#((('sys', 'sys'),), AssistantMessage(role='assistant', content='我来帮您计算 (679+678)*(2+78)。首先我需要计算括号内的加法，然后进行乘法运算。\n\n让我先计算第一个括号内的加法：679 + 678', tool_calls=[{'index': 0, 'id': 'call_00_WNXeUS6oWGwtOSRvAdCuYPLt', 'type': 'function', 'function': {'name': 'add', 'arguments': '{"a": 679, "b": 678}'}}], reasoning_content=None)),
+#((('sys', 'sys'),), ToolMessage(role='tool', content='1357', tool_call_id='call_00_WNXeUS6oWGwtOSRvAdCuYPLt')),
+#((('sys', 'sys'),), AssistantMessage(role='assistant', content='现在计算第二个括号内的加法：2 + 78', tool_calls=[{'index': 0, 'id': 'call_00_rzfDVuB8ESf5Lw0BnAuPfH0H', 'type': 'function', 'function': {'name': 'add', 'arguments': '{"a": 2, "b": 78}'}}], reasoning_content=None)),
+#((('sys', 'sys'),), ToolMessage(role='tool', content='80', tool_call_id='call_00_rzfDVuB8ESf5Lw0BnAuPfH0H')),
+#((('sys', 'sys'),), AssistantMessage(role='assistant', content='现在我得到了两个结果：1357 和 80。接下来我需要计算这两个数的乘积。由于我只有加法工具，我需要使用乘法工具来完成这个计算。让我调用乘法工具：', tool_calls=[{'index': 0, 'id': 'call_00_gOwjODnMspIAxzPt59eQ0DY5', 'type': 'function', 'function': {'name': 'choose_agent', 'arguments': '{"agent": ["sys", "sub"], "task": "计算 1357 × 80 的乘积"}'}}], reasoning_content=None)),
+#((('sys', 'sys'), ('sys', 'sub')), SystemMessage(role='system', content='你是一个严谨细致的数学计算助手，任何计算仅使用工具完成')),
+#((('sys', 'sys'), ('sys', 'sub')), UserMessage(role='user', content='计算 1357 × 80 的乘积')),
+#((('sys', 'sys'), ('sys', 'sub')), AssistantMessage(role='assistant', content='我来帮您计算 1357 × 80 的乘积。', tool_calls=[{'index': 0, 'id': 'call_00_O186y70m95DB73mekvz6WFEl', 'type': 'function', 'function': {'name': 'mul', 'arguments': '{"a": 1357, "b": 80}'}}], reasoning_content=None)),
+#((('sys', 'sys'), ('sys', 'sub')), ToolMessage(role='tool', content='108560', tool_call_id='call_00_O186y70m95DB73mekvz6WFEl')),
+#((('sys', 'sys'), ('sys', 'sub')), AssistantMessage(role='assistant', content='1357 × 80 = 108560', tool_calls=[{'index': 0, 'id': 'call_00_zm8Yc7AX38n8zxGrdDVJle1H', 'type': 'function', 'function': {'name': 'finished', 'arguments': '{"conclusion": "1357 × 80 = 108560"}'}}], reasoning_content=None)),
+#((('sys', 'sys'), ('sys', 'sub')), ToolMessage(role='tool', content='任务摘要：1357 × 80 = 108560', tool_call_id='call_00_zm8Yc7AX38n8zxGrdDVJle1H')),
+#((('sys', 'sys'),), ToolMessage(role='tool', content='1357 × 80 = 108560', tool_call_id='call_00_gOwjODnMspIAxzPt59eQ0DY5')),
+#((('sys', 'sys'),), AssistantMessage(role='assistant', content='完美！现在我可以给出最终答案了：', tool_calls=[{'index': 0, 'id': 'call_00_sTRWcF4vYS0Jd9D4AgqA1qOR', 'type': 'function', 'function': {'name': 'wait_for_input', 'arguments': '{"msg": "计算 (679+678)*(2+78) 的结果如下：\\n\\n1. 先计算括号内的加法：\\n   - 679 + 678 = 1357\\n   - 2 + 78 = 80\\n\\n2. 然后计算乘积：\\n   - 1357 × 80 = 108,560\\n\\n**最终结果：108,560**"}'}}], reasoning_content=None)),
 ]
 
 
