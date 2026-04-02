@@ -108,7 +108,7 @@ class AgentFactory:
         agent_info: AgentInfo = self.agents.get(key_chain[-1]).model_copy(deep=True)
 
         # key_chain不可变，应传入深拷贝对象
-        agent: Agent = Agent(key_chain=key_chain, info=agent_info)
+        agent: Agent = Agent(key_chain=key_chain.copy(), info=agent_info)
 
         # 根据工作模式添加默认工具
         if reactive:
