@@ -95,7 +95,7 @@ class AgentFactory:
         根据key构建一个Agent实例。
         自动添加finished工具，如有子Agent则添加choose_agent工具并拼接提示词。
 
-        :param key_chain: 命名空间ID列表，表示调用链
+        :param key_chain: 命名空间ID列表，表示调用链。应传入深拷贝对象以防止被修改
         :param reactive: Agent是否为Reactive工作模式
         :return: 构建好的Agent实例
         :raises KeyError: 如果key未注册
@@ -107,7 +107,7 @@ class AgentFactory:
         # 从表中查出agent信息，写入实例
         agent_info: AgentInfo = self.agents.get(key_chain[-1]).model_copy(deep=True)
 
-        # key_chain不可变，应传入深拷贝
+        # key_chain不可变，应传入深拷贝对象
         agent: Agent = Agent(key_chain=key_chain, info=agent_info)
 
         # 根据工作模式添加默认工具
