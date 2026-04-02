@@ -220,7 +220,7 @@ class AgentEngine:
             return core
 
     def run(self, input_queue: Queue[str],
-            key: Union[Tuple[str, str], List[Tuple[List[Tuple[str, str]], Message]]],
+            key: Union[Tuple[str, str], List[Tuple[Tuple[Tuple[str, str], ...], Message]]],
             history_queue: Queue,
             raw_response_queue: Optional[Queue[RequestResponsePair]] = None,
             api_key: Optional[str] = None
