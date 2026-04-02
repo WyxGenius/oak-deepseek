@@ -8,11 +8,11 @@ from oak_deepseek.tools import parse_tool_calls, ToolCall, parse_tool_call
 from oak_deepseek.models import AssistantMessage, UserMessage, SystemMessage, ToolMessage
 
 
-def init(core: AgentCore, task: str):
+def init(core: AgentCore, task: Optional[str]):
     """
     用于Agent初始化
     :param core: AgentCore，会话核心
-    :param task: str，Agent要执行的任务
+    :param task: Optional[str]，Agent要执行的任务
     :return:
     """
     if len(core.agent.messages) == 0:
@@ -83,7 +83,7 @@ def exec_tool(core: AgentCore, tools: Dict[str, Callable], call_info: ToolCall):
 
 def main(core: AgentCore,
          agent_factory: AgentFactory,
-         task: str, tools: Dict[str, Callable], queue: Queue[str]) -> Optional[str]:
+         task: Optional[str], tools: Dict[str, Callable], queue: Queue[str]) -> Optional[str]:
     """
     消息循环。
 
