@@ -98,13 +98,13 @@ def main(core: AgentCore,
     while True:
         assistant_msg: AssistantMessage = core.send()
         if assistant_msg.tool_calls is not None:
-            tool_queue: Queue[Tuple[str, str, Dict]] = parse_tool_calls(assistant_msg.tool_calls)
+            tool_queue: Queue[ToolCall] = parse_tool_calls(assistant_msg.tool_calls)
             while tool_queue.qsize() > 0:
-                call_info: tuple[str, str, dict] = tool_queue.get(block=True)
-                match call_info[1]:
+                call_info: ToolCall = tool_queue.get(block=True)
+                match call_info.name:
                     case "wait_for_input":
                         content: str = queue.get(block=True)
-                        core.update(ToolMessage(content=content, tool_call_id=call_info[0]))
+                        core.update(ToolMessage(content=content, tool_call_id=call_info.id))
                     case "finished":
                         finish(core, call_info)
                         return None
