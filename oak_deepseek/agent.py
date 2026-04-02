@@ -99,11 +99,11 @@ class AgentFactory:
         :raises KeyError: 如果key未注册
         """
         # 检查要构建的agent是否存在
-        if self.agents.get(key) is None:
-            raise KeyError(f"agent {key} 未注册")
+        if self.agents.get(key_chain[-1]) is None:
+            raise KeyError(f"agent {key_chain[-1]} 未注册")
 
         # 从表中查出agent信息，写入实例
-        agent_info: AgentInfo = self.agents.get(key).model_copy(deep=True)
+        agent_info: AgentInfo = self.agents.get(key_chain[-1]).model_copy(deep=True)
         agent: Agent = Agent(key_chain=key_chain, info=agent_info)
 
         # 根据工作模式添加默认工具
