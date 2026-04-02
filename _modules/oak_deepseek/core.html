@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="索引" href="../../genindex.html"><link rel="search" title="搜索" href="../../search.html">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
-        <title>oak_deepseek.core - Oak DeepSeek 0.3.0 文档</title>
+        <title>oak_deepseek.core - Oak DeepSeek 0.4.0 文档</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -160,7 +160,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">Oak DeepSeek 0.3.0 文档</div></a>
+      <a href="../../index.html"><div class="brand">Oak DeepSeek 0.4.0 文档</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -181,7 +181,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
   
-  <span class="sidebar-brand-text">Oak DeepSeek 0.3.0 文档</span>
+  <span class="sidebar-brand-text">Oak DeepSeek 0.4.0 文档</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
   <input class="sidebar-search" placeholder="搜索" name="q" aria-label="搜索">
@@ -228,7 +228,7 @@
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">deque</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">queue</span><span class="w"> </span><span class="kn">import</span> <span class="n">Queue</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">oak_deepseek.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">AssistantMessage</span>
@@ -242,24 +242,24 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Agent运行时的核心，管理当前Agent、调用栈和消息历史。</span>
 
-<span class="sd">    :ivar history_queue: 消息输出队列，每条消息附带所属Agent的key</span>
+<span class="sd">    :ivar history_queue: 消息输出队列，每条消息会附带其调用链</span>
 <span class="sd">    :ivar client: ChatClient实例</span>
 <span class="sd">    :ivar agent: 当前Agent实例</span>
 <span class="sd">    :ivar stack: 调用栈，存储祖先Agent实例</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent</span><span class="p">:</span> <span class="n">Agent</span><span class="p">,</span>
-                 <span class="n">history_queue</span><span class="p">:</span> <span class="n">Queue</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Message</span><span class="p">]],</span>
+                 <span class="n">history_queue</span><span class="p">:</span> <span class="n">Queue</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">],</span> <span class="n">Message</span><span class="p">]],</span>
                  <span class="n">api_key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">raw_response_queue</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Queue</span><span class="p">[</span><span class="n">RequestResponsePair</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        初始化AgentCore。</span>
 
 <span class="sd">        :param agent: 初始的Agent实例</span>
-<span class="sd">        :param history_queue: 消息输出队列，每条消息会附带其所属Agent的key</span>
+<span class="sd">        :param history_queue: 消息输出队列，每条消息会附带其调用链</span>
 <span class="sd">        :param api_key: DeepSeek API密钥</span>
 <span class="sd">        :param raw_response_queue: 可选，原始请求/响应队列</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">history_queue</span><span class="p">:</span> <span class="n">Queue</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Message</span><span class="p">]]</span> <span class="o">=</span> <span class="n">history_queue</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history_queue</span><span class="p">:</span> <span class="n">Queue</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">],</span> <span class="n">Message</span><span class="p">]]</span> <span class="o">=</span> <span class="n">history_queue</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">ChatClient</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span> <span class="n">raw_response_queue</span><span class="o">=</span><span class="n">raw_response_queue</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="p">:</span> <span class="n">Agent</span> <span class="o">=</span> <span class="n">agent</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="p">:</span> <span class="n">deque</span><span class="p">[</span><span class="n">Agent</span><span class="p">]</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
@@ -273,7 +273,7 @@
 <span class="sd">        :param message: 要添加的消息</span>
 <span class="sd">        :return: 传入的消息本身</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">history_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">message</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">key_chain</span><span class="p">,</span> <span class="n">message</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">message</span></div>
 
@@ -289,7 +289,7 @@
 <span class="sd">        :return: 助手消息</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">assistant_msg</span><span class="p">:</span> <span class="n">AssistantMessage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">messages</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">tools</span><span class="p">,</span> <span class="n">thinking</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">history_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">assistant_msg</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">key_chain</span><span class="p">,</span> <span class="n">assistant_msg</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">assistant_msg</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">assistant_msg</span></div>
 
@@ -348,7 +348,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=32729429"></script>
+</div><script src="../../_static/documentation_options.js?v=585d776d"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
