@@ -1,7 +1,7 @@
 import os
 from collections import deque
 from queue import Queue
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 import copy
 
 from oak_deepseek.models import Message, AssistantMessage
@@ -19,7 +19,7 @@ class AgentCore:
     :ivar stack: 调用栈，存储祖先Agent实例
     """
     def __init__(self, agent: Agent,
-                 history_queue: Queue[Tuple[Tuple[str, str], Message]],
+                 history_queue: Queue[Tuple[List[Tuple[str, str]], Message]],
                  api_key: Optional[str] = None,
                  raw_response_queue: Optional[Queue[RequestResponsePair]] = None):
         """
@@ -30,7 +30,7 @@ class AgentCore:
         :param api_key: DeepSeek API密钥
         :param raw_response_queue: 可选，原始请求/响应队列
         """
-        self.history_queue: Queue[Tuple[Tuple[str, str], Message]] = history_queue
+        self.history_queue: Queue[Tuple[List[Tuple[str, str]], Message]] = history_queue
         self.client = ChatClient(api_key=api_key, raw_response_queue=raw_response_queue)
         self.agent: Agent = agent
         self.stack: deque[Agent] = deque()
@@ -42,7 +42,7 @@ class AgentCore:
         :param message: 要添加的消息
         :return: 传入的消息本身
         """
-        self.history_queue.put((self.agent.key, message))
+        self.history_queue.put((self.agent.key_chain, message))
         self.agent.messages.append(message)
         return message
 
@@ -55,7 +55,7 @@ class AgentCore:
         :return: 助手消息
         """
         assistant_msg: AssistantMessage = self.client.send(self.agent.messages, self.agent.info.tools, thinking)
-        self.history_queue.put((self.agent.key, assistant_msg))
+        self.history_queue.put((self.agent.key_chain, assistant_msg))
         self.agent.messages.append(assistant_msg)
         return assistant_msg
 
