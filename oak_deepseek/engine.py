@@ -210,7 +210,7 @@ class AgentEngine:
                 # 所有权转移至子agent
                 else:
                     # 更新调用链
-                    key_chain = copy.deepcopy(current_key_chain)
+                    key_chain = current_key_chain
                     # 创建子agent写入消息
                     sub_agent: Agent = self.agent_factory.build(key_chain)
                     core.sub_agent(sub_agent)
