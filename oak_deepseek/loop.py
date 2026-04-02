@@ -41,7 +41,7 @@ def finish(core: AgentCore, call_info: ToolCall):
     last_tool_call: Dict = core.agent.messages[-1].tool_calls[0]
 
     # tool_call_id从最后一条消息中取
-    parent_call_id: str = parse_tool_call(last_tool_call)[0]
+    parent_call_id: str = parse_tool_call(last_tool_call).id
     core.update(ToolMessage(content=f"{conclusion}", tool_call_id=parent_call_id))
 
 def new_agent(agent_factory: AgentFactory, core: AgentCore, call_info: ToolCall) -> str:
