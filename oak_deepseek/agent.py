@@ -58,7 +58,7 @@ class Agent:
     """
     Agent实例，包含其元数据和消息历史。
 
-    :ivar key: 唯一标识 (namespace, name)
+    :ivar key_chain: 调用链，命名空间ID列表
     :ivar info: AgentInfo对象
     :ivar messages: 该Agent的消息历史列表
     """
