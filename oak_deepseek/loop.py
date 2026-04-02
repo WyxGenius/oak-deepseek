@@ -1,5 +1,5 @@
 from queue import Queue
-from typing import Dict, Callable, Tuple, Optional
+from typing import Dict, Callable, Tuple, Optional, List
 
 from oak_deepseek.agent import AgentFactory, Agent
 from oak_deepseek.core import AgentCore
@@ -56,7 +56,9 @@ def new_agent(agent_factory: AgentFactory, core: AgentCore, call_info: ToolCall)
 
     key: Tuple[str, str] = (args["agent"][0], args["agent"][1])
     task: str = args["task"]
-    agent: Agent = agent_factory.build(key)
+    key_chain: List[Tuple[str, str]] = core.agent.key_chain
+    key_chain.append(key)
+    agent: Agent = agent_factory.build(key_chain)
     core.sub_agent(agent)
     return task
 
