@@ -58,7 +58,7 @@ def parse_tool_calls(tool_calls: List[Dict]) -> Queue[ToolCall]:
     :param tool_calls: List[Dict]，原始tool_calls字段
     :return: Queue[namedtuple("ToolCall", ["id", "name", "args"])]，按顺序放好的调用信息
     """
-    queue: Queue[Tuple[str, str, Dict]] = Queue()
+    queue: Queue[ToolCall] = Queue()
     for tool_call in tool_calls:
         queue.put(parse_tool_call(tool_call))
     return queue

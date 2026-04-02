@@ -27,6 +27,7 @@ def finish(core: AgentCore, call_info: ToolCall):
     :param call_info: namedtuple("ToolCall", ["id", "name", "args"])，调用信息
     :return: 没有返回值，不过对应的分支可能要返回None
     """
+    # 先生成子agent需要的工具信息
     tool_call_id: str = call_info.id
     args: Dict = call_info.args
 
@@ -39,8 +40,8 @@ def finish(core: AgentCore, call_info: ToolCall):
     last_tool_call: Dict = core.agent.messages[-1].tool_calls[0]
 
     # tool_call_id从最后一条消息中取
-    tool_call_id: str = parse_tool_call(last_tool_call)[0]
-    core.update(ToolMessage(content=f"{conclusion}", tool_call_id=tool_call_id))
+    parent_call_id: str = parse_tool_call(last_tool_call)[0]
+    core.update(ToolMessage(content=f"{conclusion}", tool_call_id=parent_call_id))
 
 def new_agent(agent_factory: AgentFactory, engine: AgentCore, call_info: ToolCall) -> str:
     """
