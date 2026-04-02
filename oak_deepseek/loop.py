@@ -59,10 +59,7 @@ def new_agent(agent_factory: AgentFactory, core: AgentCore, call_info: ToolCall)
     task: str = args["task"]
 
     key_chain: List[Tuple[str, str]] = core.agent.key_chain
-    key_chain.append(key)
-
-    # 不需要深拷贝，build方法内是深拷贝
-    agent: Agent = agent_factory.build(key_chain)
+    agent: Agent = agent_factory.build(key_chain + [key])
     core.sub_agent(agent)
     return task
 
