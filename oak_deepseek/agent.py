@@ -88,12 +88,12 @@ class AgentFactory:
         """
         self.agents[key] = agent
 
-    def build(self, key: Tuple[str, str], reactive: bool = False) -> Agent:
+    def build(self, key_chain: List[Tuple[str, str]], reactive: bool = False) -> Agent:
         """
         根据key构建一个Agent实例。
         自动添加finished工具，如有子Agent则添加choose_agent工具并拼接提示词。
 
-        :param key: Agent的唯一标识
+        :param key_chain: 命名空间ID列表，表示调用链
         :param reactive: Agent是否为Reactive工作模式
         :return: 构建好的Agent实例
         :raises KeyError: 如果key未注册
@@ -104,7 +104,7 @@ class AgentFactory:
 
         # 从表中查出agent信息，写入实例
         agent_info: AgentInfo = self.agents.get(key).model_copy(deep=True)
-        agent: Agent = Agent(key_chain=[key], info=agent_info)
+        agent: Agent = Agent(key_chain=key_chain, info=agent_info)
 
         # 根据工作模式添加默认工具
         if reactive:
