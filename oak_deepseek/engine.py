@@ -245,4 +245,5 @@ class AgentEngine:
                 task = return_value
                 depth += 1
             else:
+                task = None
                 depth += -1
