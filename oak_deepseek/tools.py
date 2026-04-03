@@ -4,7 +4,7 @@ from queue import Queue
 from typing import Callable, List, Dict, Literal, Any, Tuple
 from pydantic import TypeAdapter
 
-from oak_deepseek.models import Function, Tool, Message
+from oak_deepseek.models import Function, Tool, Message, AssistantMessage
 
 
 def standardize_tool(func: Callable) -> Tool:
@@ -92,3 +92,10 @@ def if_wait_for_input_in_message(message: Message) -> bool:
 
     tool: ToolCall = parse_tool_call(first_call)
     return tool.name == "wait_for_input"
+
+def is_finished(message: Message):
+    if not isinstance(message, AssistantMessage):
+        return False
+    if not message.content or message.tool_calls:
+        return False
+    return True
