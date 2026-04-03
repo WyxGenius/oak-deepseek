@@ -46,7 +46,7 @@ class AgentCore:
         self.agent.messages.append(message)
         return message
 
-    def send(self, thinking: bool=False) -> AssistantMessage:
+    def send(self, thinking: bool=True) -> AssistantMessage:
         """
         基于当前Agent的消息历史调用DeepSeek API，返回助手消息。
         该消息会自动添加到当前Agent的消息列表，并放入历史队列。
