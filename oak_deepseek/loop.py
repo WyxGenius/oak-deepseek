@@ -96,9 +96,9 @@ def main(core: AgentCore,
     """
     init(core, task)
 
+    # 获取第一条助手消息
     assistant_msg: AssistantMessage
 
-    # 获取第一条助手消息
     if is_finished(core.agent.messages[-1]):
         assistant_msg = core.agent.messages[-1]
     else:
@@ -112,7 +112,7 @@ def main(core: AgentCore,
                 last_tool_call: Dict = core.agent.messages[-1].tool_calls[0]
                 parent_call_id: str = parse_tool_call(last_tool_call).id
                 core.update(ToolMessage(content=f"{assistant_msg.content}", tool_call_id=parent_call_id))
-
+                return None
             else:
                 content: str = queue.get(block=True)
                 core.update(UserMessage(content=content))
@@ -129,6 +129,5 @@ def main(core: AgentCore,
                         exec_tool(core, tools, call_info)
         else:
             pass
-
         # 再次获取
         assistant_msg: AssistantMessage = core.send()

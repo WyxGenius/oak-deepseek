@@ -128,11 +128,12 @@ class AgentEngine:
                     tools_queue: Queue[ToolCall] = parse_tool_calls(last_message.tool_calls)
                     while tools_queue.qsize() > 0:
                         recovery_msg: ToolMessage = ToolMessage(
-                            content=recovery_prompt,
+                            content="工具执行被中断",
                             tool_call_id=tools_queue.get().id
                         )
                         key.append((last_key_chain, recovery_msg))
                         core.history_queue.put((last_key_chain, recovery_msg))
+                    key.append((last_key_chain, SystemMessage(content=recovery_prompt)))
 
 
             # 最后一条是ToolMessage：倒序遍历至当前agent的AssistantMessage
@@ -163,7 +164,7 @@ class AgentEngine:
 
                     while tools_queue.qsize() > 0:
                         recovery_msg: ToolMessage = ToolMessage(
-                            content="工具执行被意外中断，请结合工具幂等性决定如何处理",
+                            content="工具执行被中断",
                             tool_call_id=tools_queue.get().id
                         )
                         key.append((last_key_chain, recovery_msg))
