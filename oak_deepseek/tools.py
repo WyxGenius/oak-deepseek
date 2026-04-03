@@ -63,36 +63,6 @@ def parse_tool_calls(tool_calls: List[Dict]) -> Queue[ToolCall]:
         queue.put(parse_tool_call(tool_call))
     return queue
 
-def if_finished_in_message(message: Message) -> bool:
-    """
-    判断消息中是否包含finished工具调用
-    """
-    tool_calls: List[Dict] = getattr(message, "tool_calls", None)
-    if not tool_calls:
-        return False
-
-    first_call: Dict = tool_calls[0]
-    if first_call is None:
-        return False
-
-    tool: ToolCall = parse_tool_call(first_call)
-    return tool.name == "finished"
-
-def if_wait_for_input_in_message(message: Message) -> bool:
-    """
-    判断消息中是否包含wait_for_input工具调用
-    """
-    tool_calls: List[Dict] = getattr(message, "tool_calls", None)
-    if not tool_calls:
-        return False
-
-    first_call: Dict = tool_calls[0]
-    if first_call is None:
-        return False
-
-    tool: ToolCall = parse_tool_call(first_call)
-    return tool.name == "wait_for_input"
-
 def is_finished(message: Message):
     if not isinstance(message, AssistantMessage):
         return False
