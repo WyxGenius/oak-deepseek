@@ -100,7 +100,7 @@ class AgentEngine:
             # 第一条记录，第一个字段
             # key: List[Tuple[Tuple[Tuple[str, str], ...], Message]]
             key_chain: Tuple[Tuple[str, str], ...] = key[0][0]
-            core: AgentCore = AgentCore(self.agent_factory.build(key_chain, True),
+            core: AgentCore = AgentCore(self.agent_factory.build(key_chain),
                                         history_queue, api_key=api_key, raw_response_queue=raw_response_queue)
 
             # 获取最后一条消息和所有者
