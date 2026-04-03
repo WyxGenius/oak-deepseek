@@ -6,7 +6,7 @@
 <link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="prev" title="欢迎使用 Oak DeepSeek 文档" href="index.html">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
-        <title>API 参考 - Oak DeepSeek 0.4.0 文档</title>
+        <title>API 参考 - Oak DeepSeek 0.5.0 文档</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -161,7 +161,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">Oak DeepSeek 0.4.0 文档</div></a>
+      <a href="index.html"><div class="brand">Oak DeepSeek 0.5.0 文档</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -182,7 +182,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
   
-  <span class="sidebar-brand-text">Oak DeepSeek 0.4.0 文档</span>
+  <span class="sidebar-brand-text">Oak DeepSeek 0.5.0 文档</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder="搜索" name="q" aria-label="搜索">
@@ -302,7 +302,7 @@
 <ol class="arabic simple">
 <li><p>调用 create_core 创建 AgentCore 实例（支持正常启动或历史恢复）。</p></li>
 <li><p>正常启动时，从 input_queue 获取初始任务；恢复时，直接从历史中恢复执行状态，不再读取初始任务。恢复时，传入循环函数的 task 参数为 None，会被 init 函数自动忽略。</p></li>
-<li><p>根据当前Agent的循环模式，反复调用相应的循环函数，直到调用栈为空。</p></li>
+<li><p>反复调用 main 函数处理消息循环，直到调用栈为空</p></li>
 </ol>
 <p>注意：在恢复模式下，input_queue 仍然用于在 ReactiveReAct 循环中接收新的用户输入。</p>
 <dl class="field-list simple">
@@ -346,7 +346,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="oak_deepseek.core.AgentCore.send">
-<span class="sig-name descname"><span class="pre">send</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thinking</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#oak_deepseek.models.AssistantMessage" title="oak_deepseek.models.AssistantMessage"><span class="pre">AssistantMessage</span></a></span></span><a class="reference internal" href="_modules/oak_deepseek/core.html#AgentCore.send"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.core.AgentCore.send" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">send</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thinking</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#oak_deepseek.models.AssistantMessage" title="oak_deepseek.models.AssistantMessage"><span class="pre">AssistantMessage</span></a></span></span><a class="reference internal" href="_modules/oak_deepseek/core.html#AgentCore.send"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.core.AgentCore.send" title="Link to this definition">¶</a></dt>
 <dd><p>基于当前Agent的消息历史调用DeepSeek API，返回助手消息。
 该消息会自动添加到当前Agent的消息列表，并放入历史队列。</p>
 <dl class="field-list simple">
@@ -409,15 +409,12 @@
 <p>Agent工厂，负责注册和构建Agent实例。</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="oak_deepseek.agent.AgentFactory.build">
-<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key_chain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reactive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#oak_deepseek.agent.Agent" title="oak_deepseek.agent.Agent"><span class="pre">Agent</span></a></span></span><a class="reference internal" href="_modules/oak_deepseek/agent.html#AgentFactory.build"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.agent.AgentFactory.build" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key_chain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#oak_deepseek.agent.Agent" title="oak_deepseek.agent.Agent"><span class="pre">Agent</span></a></span></span><a class="reference internal" href="_modules/oak_deepseek/agent.html#AgentFactory.build"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.agent.AgentFactory.build" title="Link to this definition">¶</a></dt>
 <dd><p>根据key构建一个Agent实例。
-自动添加finished工具，如有子Agent则添加choose_agent工具并拼接提示词。</p>
+如有子Agent则自动添加choose_agent工具并拼接提示词。</p>
 <dl class="field-list simple">
 <dt class="field-odd">参数<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>key_chain</strong> -- 一个元组，每个元素都是命名空间ID元组，表示调用链。</p></li>
-<li><p><strong>reactive</strong> -- Agent是否为Reactive工作模式</p></li>
-</ul>
+<dd class="field-odd"><p><strong>key_chain</strong> -- 一个元组，每个元素都是命名空间ID元组，表示调用链。</p>
 </dd>
 <dt class="field-even">返回<span class="colon">:</span></dt>
 <dd class="field-even"><p>构建好的Agent实例</p>
@@ -505,33 +502,6 @@
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="oak_deepseek.agent.finished">
-<span class="sig-prename descclassname"><span class="pre">oak_deepseek.agent.</span></span><span class="sig-name descname"><span class="pre">finished</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">conclusion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oak_deepseek/agent.html#finished"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.agent.finished" title="Link to this definition">¶</a></dt>
-<dd><p>调用此工具时，不能调用其它工具。
-当你要做最终总结时，不能直接发送总结内容，而是写在这个工具的参数里
-请求上级重新发放任务也是用这个</p>
-<dl class="field-list simple">
-<dt class="field-odd">参数<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>conclusion</strong> -- 你的总结</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="oak_deepseek.agent.wait_for_input">
-<span class="sig-prename descclassname"><span class="pre">oak_deepseek.agent.</span></span><span class="sig-name descname"><span class="pre">wait_for_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oak_deepseek/agent.html#wait_for_input"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.agent.wait_for_input" title="Link to this definition">¶</a></dt>
-<dd><p>调用此工具时，不能调用其它工具。
-特殊工具：这是你与用户交互的**唯一**方式，最终总结也通过它发送。
-把你想直接和用户说的内容写在参数里，用户才能看到并回应
-用户**看不到其他任何位置的消息**</p>
-<dl class="field-list simple">
-<dt class="field-odd">参数<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>msg</strong> -- 你发送给用户的消息内容（支持多行文本）</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py function" id="module-oak_deepseek.loop">
 <dt class="sig sig-object py" id="oak_deepseek.loop.exec_tool">
 <span class="sig-prename descclassname"><span class="pre">oak_deepseek.loop.</span></span><span class="sig-name descname"><span class="pre">exec_tool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">core</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#oak_deepseek.core.AgentCore" title="oak_deepseek.core.AgentCore"><span class="pre">AgentCore</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tools</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">call_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#oak_deepseek.tools.ToolCall" title="oak_deepseek.tools.ToolCall"><span class="pre">ToolCall</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oak_deepseek/loop.html#exec_tool"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.loop.exec_tool" title="Link to this definition">¶</a></dt>
@@ -546,23 +516,6 @@
 </dd>
 <dt class="field-even">返回<span class="colon">:</span></dt>
 <dd class="field-even"><p>没有返回值</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="oak_deepseek.loop.finish">
-<span class="sig-prename descclassname"><span class="pre">oak_deepseek.loop.</span></span><span class="sig-name descname"><span class="pre">finish</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">core</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#oak_deepseek.core.AgentCore" title="oak_deepseek.core.AgentCore"><span class="pre">AgentCore</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">call_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#oak_deepseek.tools.ToolCall" title="oak_deepseek.tools.ToolCall"><span class="pre">ToolCall</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oak_deepseek/loop.html#finish"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.loop.finish" title="Link to this definition">¶</a></dt>
-<dd><p>处理Agent的任务总结</p>
-<dl class="field-list simple">
-<dt class="field-odd">参数<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>core</strong> -- AgentCore，会话核心</p></li>
-<li><p><strong>call_info</strong> -- namedtuple(&quot;ToolCall&quot;, [&quot;id&quot;, &quot;name&quot;, &quot;args&quot;])，调用信息</p></li>
-</ul>
-</dd>
-<dt class="field-even">返回<span class="colon">:</span></dt>
-<dd class="field-even"><p>没有返回值，不过对应的分支可能要返回None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1037,15 +990,21 @@
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="oak_deepseek.tools.if_finished_in_message">
-<span class="sig-prename descclassname"><span class="pre">oak_deepseek.tools.</span></span><span class="sig-name descname"><span class="pre">if_finished_in_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#oak_deepseek.models.SystemMessage" title="oak_deepseek.models.SystemMessage"><span class="pre">SystemMessage</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#oak_deepseek.models.UserMessage" title="oak_deepseek.models.UserMessage"><span class="pre">UserMessage</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#oak_deepseek.models.AssistantMessage" title="oak_deepseek.models.AssistantMessage"><span class="pre">AssistantMessage</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#oak_deepseek.models.ToolMessage" title="oak_deepseek.models.ToolMessage"><span class="pre">ToolMessage</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">annotation</span></span><span class="o"><span class="pre">=</span></span><span class="pre">NoneType</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">required</span></span><span class="o"><span class="pre">=</span></span><span class="k"><span class="pre">True</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">discriminator</span></span><span class="o"><span class="pre">=</span></span><span class="s"><span class="pre">'role'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/oak_deepseek/tools.html#if_finished_in_message"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.tools.if_finished_in_message" title="Link to this definition">¶</a></dt>
-<dd><p>判断消息中是否包含finished工具调用</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="oak_deepseek.tools.if_wait_for_input_in_message">
-<span class="sig-prename descclassname"><span class="pre">oak_deepseek.tools.</span></span><span class="sig-name descname"><span class="pre">if_wait_for_input_in_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#oak_deepseek.models.SystemMessage" title="oak_deepseek.models.SystemMessage"><span class="pre">SystemMessage</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#oak_deepseek.models.UserMessage" title="oak_deepseek.models.UserMessage"><span class="pre">UserMessage</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#oak_deepseek.models.AssistantMessage" title="oak_deepseek.models.AssistantMessage"><span class="pre">AssistantMessage</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#oak_deepseek.models.ToolMessage" title="oak_deepseek.models.ToolMessage"><span class="pre">ToolMessage</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">annotation</span></span><span class="o"><span class="pre">=</span></span><span class="pre">NoneType</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">required</span></span><span class="o"><span class="pre">=</span></span><span class="k"><span class="pre">True</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">discriminator</span></span><span class="o"><span class="pre">=</span></span><span class="s"><span class="pre">'role'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/oak_deepseek/tools.html#if_wait_for_input_in_message"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.tools.if_wait_for_input_in_message" title="Link to this definition">¶</a></dt>
-<dd><p>判断消息中是否包含wait_for_input工具调用</p>
+<dt class="sig sig-object py" id="oak_deepseek.tools.is_finished">
+<span class="sig-prename descclassname"><span class="pre">oak_deepseek.tools.</span></span><span class="sig-name descname"><span class="pre">is_finished</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#oak_deepseek.models.SystemMessage" title="oak_deepseek.models.SystemMessage"><span class="pre">SystemMessage</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#oak_deepseek.models.UserMessage" title="oak_deepseek.models.UserMessage"><span class="pre">UserMessage</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#oak_deepseek.models.AssistantMessage" title="oak_deepseek.models.AssistantMessage"><span class="pre">AssistantMessage</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#oak_deepseek.models.ToolMessage" title="oak_deepseek.models.ToolMessage"><span class="pre">ToolMessage</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">annotation</span></span><span class="o"><span class="pre">=</span></span><span class="pre">NoneType</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">required</span></span><span class="o"><span class="pre">=</span></span><span class="k"><span class="pre">True</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">discriminator</span></span><span class="o"><span class="pre">=</span></span><span class="s"><span class="pre">'role'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oak_deepseek/tools.html#is_finished"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.tools.is_finished" title="Link to this definition">¶</a></dt>
+<dd><p>判断一条消息是否为最终答案（任务完成）。</p>
+<p>条件：
+- 是 AssistantMessage 类型
+- content 字段非空
+- 没有 tool_calls（即不再需要调用工具）</p>
+<dl class="field-list simple">
+<dt class="field-odd">参数<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>message</strong> -- 待判断的消息</p>
+</dd>
+<dt class="field-even">返回<span class="colon">:</span></dt>
+<dd class="field-even"><p>是否为最终答案</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -1238,10 +1197,7 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#oak_deepseek.agent.choose_agent"><code class="docutils literal notranslate"><span class="pre">choose_agent()</span></code></a></li>
-<li><a class="reference internal" href="#oak_deepseek.agent.finished"><code class="docutils literal notranslate"><span class="pre">finished()</span></code></a></li>
-<li><a class="reference internal" href="#oak_deepseek.agent.wait_for_input"><code class="docutils literal notranslate"><span class="pre">wait_for_input()</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.loop.exec_tool"><code class="docutils literal notranslate"><span class="pre">exec_tool()</span></code></a></li>
-<li><a class="reference internal" href="#oak_deepseek.loop.finish"><code class="docutils literal notranslate"><span class="pre">finish()</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.loop.init"><code class="docutils literal notranslate"><span class="pre">init()</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.loop.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.loop.new_agent"><code class="docutils literal notranslate"><span class="pre">new_agent()</span></code></a></li>
@@ -1347,8 +1303,7 @@
 <li><a class="reference internal" href="#oak_deepseek.tools.ToolCall.name"><code class="docutils literal notranslate"><span class="pre">ToolCall.name</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#oak_deepseek.tools.if_finished_in_message"><code class="docutils literal notranslate"><span class="pre">if_finished_in_message()</span></code></a></li>
-<li><a class="reference internal" href="#oak_deepseek.tools.if_wait_for_input_in_message"><code class="docutils literal notranslate"><span class="pre">if_wait_for_input_in_message()</span></code></a></li>
+<li><a class="reference internal" href="#oak_deepseek.tools.is_finished"><code class="docutils literal notranslate"><span class="pre">is_finished()</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.tools.parse_tool_call"><code class="docutils literal notranslate"><span class="pre">parse_tool_call()</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.tools.parse_tool_calls"><code class="docutils literal notranslate"><span class="pre">parse_tool_calls()</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.tools.standardize_tool"><code class="docutils literal notranslate"><span class="pre">standardize_tool()</span></code></a></li>
@@ -1373,7 +1328,7 @@
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=585d776d"></script>
+</div><script src="_static/documentation_options.js?v=c71fe3f7"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

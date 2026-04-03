@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="索引" href="../../genindex.html"><link rel="search" title="搜索" href="../../search.html">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
-        <title>oak_deepseek.engine - Oak DeepSeek 0.4.0 文档</title>
+        <title>oak_deepseek.engine - Oak DeepSeek 0.5.0 文档</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -160,7 +160,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">Oak DeepSeek 0.4.0 文档</div></a>
+      <a href="../../index.html"><div class="brand">Oak DeepSeek 0.5.0 文档</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -181,7 +181,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
   
-  <span class="sidebar-brand-text">Oak DeepSeek 0.4.0 文档</span>
+  <span class="sidebar-brand-text">Oak DeepSeek 0.5.0 文档</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
   <input class="sidebar-search" placeholder="搜索" name="q" aria-label="搜索">
@@ -234,9 +234,25 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">oak_deepseek.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentCore</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">oak_deepseek.loop</span><span class="w"> </span><span class="kn">import</span> <span class="n">main</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">oak_deepseek.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tool</span><span class="p">,</span> <span class="n">Message</span><span class="p">,</span> <span class="n">AssistantMessage</span><span class="p">,</span> <span class="n">ToolMessage</span><span class="p">,</span> <span class="n">UserMessage</span><span class="p">,</span> <span class="n">SystemMessage</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">oak_deepseek.tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">standardize_tool</span><span class="p">,</span> <span class="n">parse_tool_calls</span><span class="p">,</span> <span class="n">ToolCall</span><span class="p">,</span> <span class="n">parse_tool_call</span><span class="p">,</span> <span class="n">if_finished_in_message</span><span class="p">,</span> \
-    <span class="n">if_wait_for_input_in_message</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">oak_deepseek.tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">standardize_tool</span><span class="p">,</span> <span class="n">parse_tool_calls</span><span class="p">,</span> <span class="n">ToolCall</span>
 
+<span class="n">recovery_prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;系统恢复通知：执行刚刚被中断，现已重启。</span>
+
+<span class="s2">请检查最近的消息历史，你会发现：</span>
+
+<span class="s2">最后一条 AssistantMessage 中包含了一些 tool_calls（工具调用请求）。</span>
+
+<span class="s2">这些工具调用可能已经实际执行过，但由于中断，它们的返回结果（ToolMessage）未能被保存。</span>
+
+<span class="s2">你需要根据以下原则决定下一步行动：</span>
+
+<span class="s2">对于每个未完成的 tool_calls，判断其对应的操作是否幂等（即多次执行与一次执行效果相同）。</span>
+
+<span class="s2">如果是幂等操作（如查询、计算、设置固定值），你可以安全地重试，重新调用该工具。</span>
+
+<span class="s2">如果不是幂等操作（如发送消息、扣款、增加计数），你应该假设它已经执行过一次，不要重试，而是继续后续推理（可能需要向用户报告或请求确认）。</span>
+
+<span class="s2">如果你不确定某个操作是否幂等，或者重试可能导致问题，请向用户询问（调用 ask_user 工具，或者直接输出 content 提问）。&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="AgentEngine">
 <a class="viewcode-back" href="../../api.html#oak_deepseek.engine.AgentEngine">[文档]</a>
@@ -309,16 +325,16 @@
 <span class="sd">        :param api_key: DeepSeek API密钥，默认从环境变量DEEPSEEK_API_KEY读取</span>
 <span class="sd">        :return: 已初始化的AgentCore实例</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># 保证入口是Reactive模式</span>
+        <span class="c1"># 根据key的类型确认工作模式为初始化或恢复</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">AgentCore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agent_factory</span><span class="o">.</span><span class="n">build</span><span class="p">((</span><span class="n">key</span><span class="p">,),</span> <span class="kc">True</span><span class="p">),</span> <span class="n">history_queue</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span> <span class="n">raw_response_queue</span><span class="o">=</span><span class="n">raw_response_queue</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">AgentCore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agent_factory</span><span class="o">.</span><span class="n">build</span><span class="p">((</span><span class="n">key</span><span class="p">,)),</span> <span class="n">history_queue</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span> <span class="n">raw_response_queue</span><span class="o">=</span><span class="n">raw_response_queue</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;历史记录列表不能为空&quot;</span><span class="p">)</span>
             <span class="c1"># 第一条记录，第一个字段</span>
             <span class="c1"># key: List[Tuple[Tuple[Tuple[str, str], ...], Message]]</span>
             <span class="n">key_chain</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">core</span><span class="p">:</span> <span class="n">AgentCore</span> <span class="o">=</span> <span class="n">AgentCore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agent_factory</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">key_chain</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+            <span class="n">core</span><span class="p">:</span> <span class="n">AgentCore</span> <span class="o">=</span> <span class="n">AgentCore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agent_factory</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">key_chain</span><span class="p">),</span>
                                         <span class="n">history_queue</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span> <span class="n">raw_response_queue</span><span class="o">=</span><span class="n">raw_response_queue</span><span class="p">)</span>
 
             <span class="c1"># 获取最后一条消息和所有者</span>
@@ -333,102 +349,75 @@
             <span class="c1"># 最后一条是SystemMessage：说明任务信息丢失，可以直接结束</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">last_message</span><span class="p">,</span> <span class="n">SystemMessage</span><span class="p">):</span>
                 <span class="c1"># 判断是否在入口</span>
-                <span class="k">if</span> <span class="n">last_key_chain</span> <span class="o">==</span> <span class="n">key_chain</span><span class="p">:</span>
-                    <span class="n">recovery_msg</span><span class="p">:</span> <span class="n">UserMessage</span> <span class="o">=</span> <span class="n">UserMessage</span><span class="p">(</span>
-                        <span class="n">content</span><span class="o">=</span><span class="s2">&quot;执行刚刚被打断，现已重启。请直接调用wait_for_input工具，说“我的执行刚刚被打断，现已重启，请重新指派任务”&quot;</span>
-                    <span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">recovery_msg</span><span class="p">:</span> <span class="n">UserMessage</span> <span class="o">=</span> <span class="n">UserMessage</span><span class="p">(</span>
-                        <span class="n">content</span><span class="o">=</span><span class="s2">&quot;执行刚刚被打断，现已重启。请直接调用finished工具，说“我的执行刚刚被打断，现已重启，请重新指派任务”&quot;</span>
-                    <span class="p">)</span>
+                <span class="n">recovery_msg</span><span class="p">:</span> <span class="n">UserMessage</span> <span class="o">=</span> <span class="n">UserMessage</span><span class="p">(</span>
+                    <span class="n">content</span><span class="o">=</span><span class="s2">&quot;复述：“由于进程被中断，未能接收到任务。请重新指派任务”&quot;</span>
+                <span class="p">)</span>
                 <span class="n">key</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">last_key_chain</span><span class="p">,</span> <span class="n">recovery_msg</span><span class="p">))</span>
                 <span class="n">core</span><span class="o">.</span><span class="n">history_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">last_key_chain</span><span class="p">,</span> <span class="n">recovery_msg</span><span class="p">))</span>
 
-            <span class="c1"># 最后一条是AssistantMessage：先判断工具调用情况</span>
+            <span class="c1"># 最后一条是AssistantMessage，</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">last_message</span><span class="p">,</span> <span class="n">AssistantMessage</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">last_message</span><span class="o">.</span><span class="n">tool_calls</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">pass</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="c1"># 最后一条消息为返回消息</span>
-                    <span class="k">if</span> <span class="n">if_finished_in_message</span><span class="p">(</span><span class="n">last_message</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">last_message</span><span class="o">.</span><span class="n">tool_calls</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">tools_queue</span><span class="p">:</span> <span class="n">Queue</span><span class="p">[</span><span class="n">ToolCall</span><span class="p">]</span> <span class="o">=</span> <span class="n">parse_tool_calls</span><span class="p">(</span><span class="n">last_message</span><span class="o">.</span><span class="n">tool_calls</span><span class="p">)</span>
+                    <span class="k">while</span> <span class="n">tools_queue</span><span class="o">.</span><span class="n">qsize</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                         <span class="n">recovery_msg</span><span class="p">:</span> <span class="n">ToolMessage</span> <span class="o">=</span> <span class="n">ToolMessage</span><span class="p">(</span>
-                            <span class="n">content</span><span class="o">=</span><span class="s2">&quot;执行刚刚被打断，现已重启。请重新调用finished&quot;</span><span class="p">,</span>
-                            <span class="n">tool_call_id</span><span class="o">=</span><span class="n">parse_tool_call</span><span class="p">(</span><span class="n">last_message</span><span class="o">.</span><span class="n">tool_calls</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">id</span>
+                            <span class="n">content</span><span class="o">=</span><span class="s2">&quot;工具执行被中断&quot;</span><span class="p">,</span>
+                            <span class="n">tool_call_id</span><span class="o">=</span><span class="n">tools_queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">id</span>
                         <span class="p">)</span>
                         <span class="n">key</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">last_key_chain</span><span class="p">,</span> <span class="n">recovery_msg</span><span class="p">))</span>
                         <span class="n">core</span><span class="o">.</span><span class="n">history_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">last_key_chain</span><span class="p">,</span> <span class="n">recovery_msg</span><span class="p">))</span>
+                    <span class="c1"># 添加系统提示</span>
+                    <span class="n">key</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">last_key_chain</span><span class="p">,</span> <span class="n">SystemMessage</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">recovery_prompt</span><span class="p">)))</span>
+                    <span class="n">core</span><span class="o">.</span><span class="n">history_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">last_key_chain</span><span class="p">,</span> <span class="n">SystemMessage</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">recovery_prompt</span><span class="p">)))</span>
 
-                    <span class="c1"># 最后一条消息为等待输入消息</span>
-                    <span class="k">elif</span> <span class="n">if_wait_for_input_in_message</span><span class="p">(</span><span class="n">last_message</span><span class="p">):</span>
-                        <span class="n">recovery_msg</span><span class="p">:</span> <span class="n">ToolMessage</span> <span class="o">=</span> <span class="n">ToolMessage</span><span class="p">(</span>
-                            <span class="n">content</span><span class="o">=</span><span class="s2">&quot;执行刚刚被打断，现已重启。请重新调用wait_for_input&quot;</span><span class="p">,</span>
-                            <span class="n">tool_call_id</span><span class="o">=</span><span class="n">parse_tool_call</span><span class="p">(</span><span class="n">last_message</span><span class="o">.</span><span class="n">tool_calls</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">id</span>
-                        <span class="p">)</span>
-                        <span class="n">key</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">last_key_chain</span><span class="p">,</span> <span class="n">recovery_msg</span><span class="p">))</span>
-                        <span class="n">core</span><span class="o">.</span><span class="n">history_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">last_key_chain</span><span class="p">,</span> <span class="n">recovery_msg</span><span class="p">))</span>
 
-                    <span class="c1"># 其他常规工具</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">tools_queue</span><span class="p">:</span> <span class="n">Queue</span><span class="p">[</span><span class="n">ToolCall</span><span class="p">]</span> <span class="o">=</span> <span class="n">parse_tool_calls</span><span class="p">(</span><span class="n">last_message</span><span class="o">.</span><span class="n">tool_calls</span><span class="p">)</span>
-                        <span class="k">while</span> <span class="n">tools_queue</span><span class="o">.</span><span class="n">qsize</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                            <span class="n">recovery_msg</span><span class="p">:</span> <span class="n">ToolMessage</span> <span class="o">=</span> <span class="n">ToolMessage</span><span class="p">(</span>
-                                <span class="n">content</span><span class="o">=</span><span class="s2">&quot;执行刚刚被打断，现已重启。请根据工具幂等性决定是否重试&quot;</span><span class="p">,</span>
-                                <span class="n">tool_call_id</span><span class="o">=</span><span class="n">tools_queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">id</span>
-                            <span class="p">)</span>
-                            <span class="n">key</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">last_key_chain</span><span class="p">,</span> <span class="n">recovery_msg</span><span class="p">))</span>
-                            <span class="n">core</span><span class="o">.</span><span class="n">history_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">last_key_chain</span><span class="p">,</span> <span class="n">recovery_msg</span><span class="p">))</span>
-
-            <span class="c1"># 最后一条是ToolMessage：倒序遍历至AssistantMessage后再决定</span>
+            <span class="c1"># 最后一条是ToolMessage：倒序遍历至当前agent的AssistantMessage</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">last_message</span><span class="p">,</span> <span class="n">ToolMessage</span><span class="p">):</span>
                 <span class="c1"># 倒走遍历至AssistanMessage</span>
                 <span class="n">last_messages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">],</span> <span class="n">Message</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="k">for</span> <span class="n">snapshot</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">snapshot</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">AssistantMessage</span><span class="p">):</span>
+                    <span class="c1"># 确保调用链信息一致</span>
+                    <span class="k">if</span> <span class="n">snapshot</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">last_key_chain</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">snapshot</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">AssistantMessage</span><span class="p">):</span>
+                            <span class="n">last_messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+                            <span class="k">break</span>
                         <span class="n">last_messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
-                        <span class="k">break</span>
-                    <span class="n">last_messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
 
-                <span class="c1"># 获取倒数第二条消息</span>
-                <span class="n">msg_2nd</span><span class="p">:</span> <span class="n">Message</span> <span class="o">=</span> <span class="n">last_messages</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">last_assistant_message</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">],</span> <span class="n">AssistantMessage</span><span class="p">]</span> <span class="o">=</span> <span class="n">last_messages</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+                <span class="n">last_tool_messages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">],</span> <span class="n">ToolMessage</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">last_tool_message</span> <span class="k">for</span> <span class="n">last_tool_message</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">last_messages</span><span class="p">)</span>
+                <span class="p">]</span>
 
-                <span class="c1"># 倒数第二条消息是带finished的AssistantMessage</span>
-                <span class="k">if</span> <span class="n">if_finished_in_message</span><span class="p">(</span><span class="n">msg_2nd</span><span class="p">):</span>
-                    <span class="c1"># 让agent重新调用finished</span>
-                    <span class="n">recovery_msg</span><span class="p">:</span> <span class="n">UserMessage</span> <span class="o">=</span> <span class="n">UserMessage</span><span class="p">(</span>
-                            <span class="n">content</span><span class="o">=</span><span class="s2">&quot;执行刚刚被打断，现已重启。你需要重新调用finished生成总结&quot;</span><span class="p">,</span>
+                <span class="n">completed_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">last_tool_messages</span><span class="p">)</span>
+                <span class="n">tools_queue</span><span class="p">:</span> <span class="n">Queue</span><span class="p">[</span><span class="n">ToolCall</span><span class="p">]</span> <span class="o">=</span> <span class="n">parse_tool_calls</span><span class="p">(</span><span class="n">last_assistant_message</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tool_calls</span><span class="p">)</span>
+
+                <span class="c1"># 调用的工具比完成的多，就触发补全</span>
+                <span class="k">if</span> <span class="n">tools_queue</span><span class="o">.</span><span class="n">qsize</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">completed_count</span><span class="p">:</span>
+                    <span class="k">while</span> <span class="n">completed_count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">tools_queue</span><span class="o">.</span><span class="n">get_nowait</span><span class="p">()</span>
+                        <span class="n">completed_count</span> <span class="o">-=</span> <span class="mi">1</span>
+
+                    <span class="k">while</span> <span class="n">tools_queue</span><span class="o">.</span><span class="n">qsize</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">recovery_msg</span><span class="p">:</span> <span class="n">ToolMessage</span> <span class="o">=</span> <span class="n">ToolMessage</span><span class="p">(</span>
+                            <span class="n">content</span><span class="o">=</span><span class="s2">&quot;工具执行被中断&quot;</span><span class="p">,</span>
+                            <span class="n">tool_call_id</span><span class="o">=</span><span class="n">tools_queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">id</span>
                         <span class="p">)</span>
-                    <span class="c1"># 取倒数第二条消息的key_chain</span>
-                    <span class="n">key_chain_2nd</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">last_messages</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-                    <span class="n">key</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">key_chain_2nd</span><span class="p">,</span> <span class="n">recovery_msg</span><span class="p">))</span>
-                    <span class="n">core</span><span class="o">.</span><span class="n">history_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">key_chain_2nd</span><span class="p">,</span> <span class="n">recovery_msg</span><span class="p">))</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">last_assistant_message</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">],</span> <span class="n">AssistantMessage</span><span class="p">]</span> <span class="o">=</span> <span class="n">last_messages</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-                    <span class="n">last_tool_messages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">],</span> <span class="n">ToolMessage</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
-                        <span class="n">last_tool_message</span> <span class="k">for</span> <span class="n">last_tool_message</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">last_messages</span><span class="p">)</span>
-                    <span class="p">]</span>
+                        <span class="n">key</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">last_key_chain</span><span class="p">,</span> <span class="n">recovery_msg</span><span class="p">))</span>
+                        <span class="n">core</span><span class="o">.</span><span class="n">history_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">last_key_chain</span><span class="p">,</span> <span class="n">recovery_msg</span><span class="p">))</span>
 
-                    <span class="n">completed_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">last_tool_messages</span><span class="p">)</span>
-                    <span class="n">tools_queue</span><span class="p">:</span> <span class="n">Queue</span><span class="p">[</span><span class="n">ToolCall</span><span class="p">]</span> <span class="o">=</span> <span class="n">parse_tool_calls</span><span class="p">(</span><span class="n">last_assistant_message</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tool_calls</span><span class="p">)</span>
+                    <span class="c1"># 添加系统提示</span>
+                    <span class="n">key</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">last_key_chain</span><span class="p">,</span> <span class="n">SystemMessage</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">recovery_prompt</span><span class="p">)))</span>
+                    <span class="n">core</span><span class="o">.</span><span class="n">history_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">last_key_chain</span><span class="p">,</span> <span class="n">SystemMessage</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">recovery_prompt</span><span class="p">)))</span>
 
-                    <span class="c1"># 调用的工具比完成的多，就触发补全</span>
-                    <span class="k">if</span> <span class="n">tools_queue</span><span class="o">.</span><span class="n">qsize</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">completed_count</span><span class="p">:</span>
-                        <span class="k">while</span> <span class="n">completed_count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                            <span class="n">tools_queue</span><span class="o">.</span><span class="n">get_nowait</span><span class="p">()</span>
-                            <span class="n">completed_count</span> <span class="o">-=</span> <span class="mi">1</span>
-
-                        <span class="k">while</span> <span class="n">tools_queue</span><span class="o">.</span><span class="n">qsize</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                            <span class="n">recovery_msg</span><span class="p">:</span> <span class="n">ToolMessage</span> <span class="o">=</span> <span class="n">ToolMessage</span><span class="p">(</span>
-                                <span class="n">content</span><span class="o">=</span><span class="s2">&quot;执行被打断，现已重启。请根据工具幂等性决定是否重试。&quot;</span><span class="p">,</span>
-                                <span class="n">tool_call_id</span><span class="o">=</span><span class="n">tools_queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">id</span>
-                            <span class="p">)</span>
-                            <span class="n">key</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">last_key_chain</span><span class="p">,</span> <span class="n">recovery_msg</span><span class="p">))</span>
-                            <span class="n">core</span><span class="o">.</span><span class="n">history_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">last_key_chain</span><span class="p">,</span> <span class="n">recovery_msg</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="n">tools_queue</span><span class="o">.</span><span class="n">qsize</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">completed_count</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;数据损坏，数据显示已执行工具多于调用得工具&quot;</span><span class="p">)</span>
 
             <span class="c1"># 消息已补全，正式开始恢复</span>
             <span class="k">for</span> <span class="n">snapshot</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
                 <span class="n">current_key_chain</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">snapshot</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="n">current_message</span><span class="p">:</span> <span class="n">Message</span> <span class="o">=</span> <span class="n">snapshot</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-                <span class="c1"># 所有权不变</span>
+
+                <span class="c1"># 所有权标记未改变</span>
                 <span class="k">if</span> <span class="n">current_key_chain</span> <span class="o">==</span> <span class="n">key_chain</span><span class="p">:</span>
                     <span class="c1"># 直接写入消息</span>
                     <span class="n">core</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_message</span><span class="p">)</span>
@@ -468,7 +457,7 @@
 
 <span class="sd">        1. 调用 create_core 创建 AgentCore 实例（支持正常启动或历史恢复）。</span>
 <span class="sd">        2. 正常启动时，从 input_queue 获取初始任务；恢复时，直接从历史中恢复执行状态，不再读取初始任务。恢复时，传入循环函数的 task 参数为 None，会被 init 函数自动忽略。</span>
-<span class="sd">        3. 根据当前Agent的循环模式，反复调用相应的循环函数，直到调用栈为空。</span>
+<span class="sd">        3. 反复调用 main 函数处理消息循环，直到调用栈为空</span>
 
 <span class="sd">        注意：在恢复模式下，input_queue 仍然用于在 ReactiveReAct 循环中接收新的用户输入。</span>
 
@@ -495,6 +484,7 @@
                 <span class="n">task</span> <span class="o">=</span> <span class="n">return_value</span>
                 <span class="n">depth</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">else</span><span class="p">:</span>
+                <span class="n">task</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="n">depth</span> <span class="o">+=</span> <span class="o">-</span><span class="mi">1</span></div>
 </div>
 
@@ -530,7 +520,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=585d776d"></script>
+</div><script src="../../_static/documentation_options.js?v=c71fe3f7"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
