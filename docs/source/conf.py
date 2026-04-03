@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.abspath('../../'))  # 让 Sphinx 能找到 oak_deepse
 project = 'Oak DeepSeek'
 copyright = '2026, WyxGenius'
 author = 'WyxGenius'
-release = '0.4.0'
+release = '0.5.0'
 
 # -- General configuration ---------------------------------------------------
 extensions = [
