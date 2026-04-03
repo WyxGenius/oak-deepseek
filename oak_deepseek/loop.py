@@ -102,7 +102,7 @@ def main(core: AgentCore,
     if is_finished(core.agent.messages[-1]):
         assistant_msg = core.agent.messages[-1]
     else:
-        assistant_msg: AssistantMessage = core.send()
+        assistant_msg = core.send()
 
     while True:
         # 处理助手消息
