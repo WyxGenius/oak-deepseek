@@ -8,8 +8,25 @@ from oak_deepseek.core import AgentCore
 from oak_deepseek.loop import main
 from oak_deepseek.models import Tool, Message, AssistantMessage, ToolMessage, UserMessage, SystemMessage
 from oak_deepseek.tools import standardize_tool, parse_tool_calls, ToolCall, parse_tool_call, if_finished_in_message, \
-    if_wait_for_input_in_message
+    if_wait_for_input_in_message, is_finished
 
+recovery_prompt: str = """系统恢复通知：执行刚刚被中断，现已重启。
+
+请检查最近的消息历史，你会发现：
+
+最后一条 AssistantMessage 中包含了一些 tool_calls（工具调用请求）。
+
+这些工具调用可能已经实际执行过，但由于中断，它们的返回结果（ToolMessage）未能被保存。
+
+你需要根据以下原则决定下一步行动：
+
+对于每个未完成的 tool_calls，判断其对应的操作是否幂等（即多次执行与一次执行效果相同）。
+
+如果是幂等操作（如查询、计算、设置固定值），你可以安全地重试，重新调用该工具。
+
+如果不是幂等操作（如发送消息、扣款、增加计数），你应该假设它已经执行过一次，不要重试，而是继续后续推理（可能需要向用户报告或请求确认）。
+
+如果你不确定某个操作是否幂等，或者重试可能导致问题，请向用户询问（调用 ask_user 工具，或者直接输出 content 提问）。"""
 
 class AgentEngine:
     """
@@ -99,102 +116,71 @@ class AgentEngine:
             # 最后一条是SystemMessage：说明任务信息丢失，可以直接结束
             elif isinstance(last_message, SystemMessage):
                 # 判断是否在入口
-                if last_key_chain == key_chain:
-                    recovery_msg: UserMessage = UserMessage(
-                        content="执行刚刚被打断，现已重启。请直接调用wait_for_input工具，说“我的执行刚刚被打断，现已重启，请重新指派任务”"
-                    )
-                else:
-                    recovery_msg: UserMessage = UserMessage(
-                        content="执行刚刚被打断，现已重启。请直接调用finished工具，说“我的执行刚刚被打断，现已重启，请重新指派任务”"
-                    )
+                recovery_msg: UserMessage = UserMessage(
+                    content="复述：“由于进程被中断，未能接收到任务。请重新指派任务”"
+                )
                 key.append((last_key_chain, recovery_msg))
                 core.history_queue.put((last_key_chain, recovery_msg))
 
-            # 最后一条是AssistantMessage：先判断工具调用情况
+            # 最后一条是AssistantMessage，
             elif isinstance(last_message, AssistantMessage):
-                if last_message.tool_calls is None:
-                    pass
-                else:
-                    # 最后一条消息为返回消息
-                    if if_finished_in_message(last_message):
+                if last_message.tool_calls is not None:
+                    tools_queue: Queue[ToolCall] = parse_tool_calls(last_message.tool_calls)
+                    while tools_queue.qsize() > 0:
                         recovery_msg: ToolMessage = ToolMessage(
-                            content="执行刚刚被打断，现已重启。请重新调用finished",
-                            tool_call_id=parse_tool_call(last_message.tool_calls[0]).id
+                            content=recovery_prompt,
+                            tool_call_id=tools_queue.get().id
                         )
                         key.append((last_key_chain, recovery_msg))
                         core.history_queue.put((last_key_chain, recovery_msg))
 
-                    # 最后一条消息为等待输入消息
-                    elif if_wait_for_input_in_message(last_message):
-                        recovery_msg: ToolMessage = ToolMessage(
-                            content="执行刚刚被打断，现已重启。请重新调用wait_for_input",
-                            tool_call_id=parse_tool_call(last_message.tool_calls[0]).id
-                        )
-                        key.append((last_key_chain, recovery_msg))
-                        core.history_queue.put((last_key_chain, recovery_msg))
 
-                    # 其他常规工具
-                    else:
-                        tools_queue: Queue[ToolCall] = parse_tool_calls(last_message.tool_calls)
-                        while tools_queue.qsize() > 0:
-                            recovery_msg: ToolMessage = ToolMessage(
-                                content="执行刚刚被打断，现已重启。请根据工具幂等性决定是否重试",
-                                tool_call_id=tools_queue.get().id
-                            )
-                            key.append((last_key_chain, recovery_msg))
-                            core.history_queue.put((last_key_chain, recovery_msg))
-
-            # 最后一条是ToolMessage：倒序遍历至AssistantMessage后再决定
+            # 最后一条是ToolMessage：倒序遍历至当前agent的AssistantMessage
             elif isinstance(last_message, ToolMessage):
                 # 倒走遍历至AssistanMessage
                 last_messages: List[Tuple[Tuple[Tuple[str, str], ...], Message]] = []
                 for snapshot in reversed(key):
-                    if isinstance(snapshot[1], AssistantMessage):
+                    # 确保调用链信息一致
+                    if snapshot[0] == last_key_chain:
+                        if isinstance(snapshot[1], AssistantMessage):
+                            last_messages.append(snapshot)
+                            break
                         last_messages.append(snapshot)
-                        break
-                    last_messages.append(snapshot)
 
-                # 获取倒数第二条消息
-                msg_2nd: Message = last_messages[1][1]
+                last_assistant_message: Tuple[Tuple[Tuple[str, str], ...], AssistantMessage] = last_messages.pop()
+                last_tool_messages: List[Tuple[Tuple[Tuple[str, str], ...], ToolMessage]] = [
+                    last_tool_message for last_tool_message in reversed(last_messages)
+                ]
 
-                # 倒数第二条消息是带finished的AssistantMessage
-                if if_finished_in_message(msg_2nd):
-                    # 让agent重新调用finished
-                    recovery_msg: UserMessage = UserMessage(
-                            content="执行刚刚被打断，现已重启。你需要重新调用finished生成总结",
+                completed_count: int = len(last_tool_messages)
+                tools_queue: Queue[ToolCall] = parse_tool_calls(last_assistant_message[1].tool_calls)
+
+                # 调用的工具比完成的多，就触发补全
+                if tools_queue.qsize() > completed_count:
+                    while completed_count > 0:
+                        tools_queue.get_nowait()
+                        completed_count -= 1
+
+                    while tools_queue.qsize() > 0:
+                        recovery_msg: ToolMessage = ToolMessage(
+                            content="工具执行被意外中断，请结合工具幂等性决定如何处理",
+                            tool_call_id=tools_queue.get().id
                         )
-                    # 取倒数第二条消息的key_chain
-                    key_chain_2nd: Tuple[Tuple[str, str], ...] = last_messages[1][0]
-                    key.append((key_chain_2nd, recovery_msg))
-                    core.history_queue.put((key_chain_2nd, recovery_msg))
-                else:
-                    last_assistant_message: Tuple[Tuple[Tuple[str, str], ...], AssistantMessage] = last_messages.pop()
-                    last_tool_messages: List[Tuple[Tuple[Tuple[str, str], ...], ToolMessage]] = [
-                        last_tool_message for last_tool_message in reversed(last_messages)
-                    ]
+                        key.append((last_key_chain, recovery_msg))
+                        core.history_queue.put((last_key_chain, recovery_msg))
 
-                    completed_count: int = len(last_tool_messages)
-                    tools_queue: Queue[ToolCall] = parse_tool_calls(last_assistant_message[1].tool_calls)
+                    # 由于工具执行中断，打断思考
+                    key.append((last_key_chain, SystemMessage(content=recovery_prompt)))
 
-                    # 调用的工具比完成的多，就触发补全
-                    if tools_queue.qsize() > completed_count:
-                        while completed_count > 0:
-                            tools_queue.get_nowait()
-                            completed_count -= 1
-
-                        while tools_queue.qsize() > 0:
-                            recovery_msg: ToolMessage = ToolMessage(
-                                content="执行被打断，现已重启。请根据工具幂等性决定是否重试。",
-                                tool_call_id=tools_queue.get().id
-                            )
-                            key.append((last_key_chain, recovery_msg))
-                            core.history_queue.put((last_key_chain, recovery_msg))
+                elif tools_queue.qsize() < completed_count:
+                    raise ImportError("数据损坏，数据显示已执行工具多于调用得工具")
 
             # 消息已补全，正式开始恢复
             for snapshot in key:
                 current_key_chain: Tuple[Tuple[str, str], ...] = snapshot[0]
                 current_message: Message = snapshot[1]
-                # 所有权不变
+
+                # 所有权标记未改变
                 if current_key_chain == key_chain:
                     # 直接写入消息
                     core.agent.messages.append(current_message)

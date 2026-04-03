@@ -95,9 +95,17 @@ def main(core: AgentCore,
     :return: 如果调用了子Agent，返回子Agent的任务字符串；否则返回None
     """
     init(core, task)
-    while True:
+
+    assistant_msg: AssistantMessage
+
+    # 获取第一条助手消息
+    if is_finished(core.agent.messages[-1]):
+        assistant_msg = core.agent.messages[-1]
+    else:
         assistant_msg: AssistantMessage = core.send()
 
+    while True:
+        # 处理助手消息
         if is_finished(assistant_msg):
             if len(core.agent.key_chain) > 1:
                 core.back()
@@ -121,3 +129,6 @@ def main(core: AgentCore,
                         exec_tool(core, tools, call_info)
         else:
             pass
+
+        # 再次获取
+        assistant_msg: AssistantMessage = core.send()
