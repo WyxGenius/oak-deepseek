@@ -132,7 +132,9 @@ class AgentEngine:
                         )
                         key.append((last_key_chain, recovery_msg))
                         core.history_queue.put((last_key_chain, recovery_msg))
+                    # 添加系统提示
                     key.append((last_key_chain, SystemMessage(content=recovery_prompt)))
+                    core.history_queue.put((last_key_chain, SystemMessage(content=recovery_prompt)))
 
 
             # 最后一条是ToolMessage：倒序遍历至当前agent的AssistantMessage
@@ -169,8 +171,9 @@ class AgentEngine:
                         key.append((last_key_chain, recovery_msg))
                         core.history_queue.put((last_key_chain, recovery_msg))
 
-                    # 由于工具执行中断，打断思考
+                    # 添加系统提示
                     key.append((last_key_chain, SystemMessage(content=recovery_prompt)))
+                    core.history_queue.put((last_key_chain, SystemMessage(content=recovery_prompt)))
 
                 elif tools_queue.qsize() < completed_count:
                     raise ImportError("数据损坏，数据显示已执行工具多于调用得工具")
