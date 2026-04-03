@@ -91,9 +91,9 @@ class AgentEngine:
         :param api_key: DeepSeek API密钥，默认从环境变量DEEPSEEK_API_KEY读取
         :return: 已初始化的AgentCore实例
         """
-        # 保证入口是Reactive模式
+        # 根据key的类型确认工作模式为初始化或恢复
         if isinstance(key, tuple):
-            return AgentCore(self.agent_factory.build((key,), True), history_queue, api_key=api_key, raw_response_queue=raw_response_queue)
+            return AgentCore(self.agent_factory.build((key,)), history_queue, api_key=api_key, raw_response_queue=raw_response_queue)
         else:
             if len(key) < 1:
                 raise ValueError("历史记录列表不能为空")
@@ -220,7 +220,7 @@ class AgentEngine:
 
         1. 调用 create_core 创建 AgentCore 实例（支持正常启动或历史恢复）。
         2. 正常启动时，从 input_queue 获取初始任务；恢复时，直接从历史中恢复执行状态，不再读取初始任务。恢复时，传入循环函数的 task 参数为 None，会被 init 函数自动忽略。
-        3. 根据当前Agent的循环模式，反复调用相应的循环函数，直到调用栈为空。
+        3. 反复调用 main 函数处理消息循环，直到调用栈为空
 
         注意：在恢复模式下，input_queue 仍然用于在 ReactiveReAct 循环中接收新的用户输入。
 

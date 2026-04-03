@@ -72,10 +72,9 @@ class AgentFactory:
     def build(self, key_chain: Tuple[Tuple[str, str], ...]) -> Agent:
         """
         根据key构建一个Agent实例。
-        自动添加finished工具，如有子Agent则添加choose_agent工具并拼接提示词。
+        如有子Agent则自动添加choose_agent工具并拼接提示词。
 
         :param key_chain: 一个元组，每个元素都是命名空间ID元组，表示调用链。
-        :param reactive: Agent是否为Reactive工作模式
         :return: 构建好的Agent实例
         :raises KeyError: 如果key未注册
         """
