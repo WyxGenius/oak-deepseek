@@ -4,7 +4,7 @@ from typing import Dict, Callable, Tuple, Optional, List
 
 from oak_deepseek.agent import AgentFactory, Agent
 from oak_deepseek.core import AgentCore
-from oak_deepseek.tools import parse_tool_calls, ToolCall, parse_tool_call
+from oak_deepseek.tools import parse_tool_calls, ToolCall, parse_tool_call, is_finished
 from oak_deepseek.models import AssistantMessage, UserMessage, SystemMessage, ToolMessage
 
 
@@ -97,19 +97,27 @@ def main(core: AgentCore,
     init(core, task)
     while True:
         assistant_msg: AssistantMessage = core.send()
-        if assistant_msg.tool_calls is not None:
+
+        if is_finished(assistant_msg):
+            if len(core.agent.key_chain) > 1:
+                core.back()
+                last_tool_call: Dict = core.agent.messages[-1].tool_calls[0]
+                parent_call_id: str = parse_tool_call(last_tool_call).id
+                core.update(ToolMessage(content=f"{assistant_msg.content}", tool_call_id=parent_call_id))
+
+            else:
+                content: str = queue.get(block=True)
+                core.update(UserMessage(content=content))
+
+        elif assistant_msg.tool_calls is not None:
             tool_queue: Queue[ToolCall] = parse_tool_calls(assistant_msg.tool_calls)
             while tool_queue.qsize() > 0:
                 call_info: ToolCall = tool_queue.get(block=True)
                 match call_info.name:
-                    case "wait_for_input":
-                        content: str = queue.get(block=True)
-                        core.update(ToolMessage(content=content, tool_call_id=call_info.id))
-                    case "finished":
-                        finish(core, call_info)
-                        return None
                     case "choose_agent":
                         # 这里返回的是子Agent的任务
                         return new_agent(agent_factory, core, call_info)
                     case _:
                         exec_tool(core, tools, call_info)
+        else:
+            pass
