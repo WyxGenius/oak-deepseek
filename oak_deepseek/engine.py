@@ -7,8 +7,7 @@ from oak_deepseek.client import RequestResponsePair
 from oak_deepseek.core import AgentCore
 from oak_deepseek.loop import main
 from oak_deepseek.models import Tool, Message, AssistantMessage, ToolMessage, UserMessage, SystemMessage
-from oak_deepseek.tools import standardize_tool, parse_tool_calls, ToolCall, parse_tool_call, if_finished_in_message, \
-    if_wait_for_input_in_message, is_finished
+from oak_deepseek.tools import standardize_tool, parse_tool_calls, ToolCall
 
 recovery_prompt: str = """系统恢复通知：执行刚刚被中断，现已重启。
 
