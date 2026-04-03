@@ -69,7 +69,7 @@ class AgentFactory:
         """
         self.agents[key] = agent
 
-    def build(self, key_chain: Tuple[Tuple[str, str], ...], reactive: bool = False) -> Agent:
+    def build(self, key_chain: Tuple[Tuple[str, str], ...]) -> Agent:
         """
         根据key构建一个Agent实例。
         自动添加finished工具，如有子Agent则添加choose_agent工具并拼接提示词。
