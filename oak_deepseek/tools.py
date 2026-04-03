@@ -64,6 +64,17 @@ def parse_tool_calls(tool_calls: List[Dict]) -> Queue[ToolCall]:
     return queue
 
 def is_finished(message: Message):
+    """
+    判断一条消息是否为最终答案（任务完成）。
+
+    条件：
+    - 是 AssistantMessage 类型
+    - content 字段非空
+    - 没有 tool_calls（即不再需要调用工具）
+
+    :param message: 待判断的消息
+    :return: 是否为最终答案
+    """
     if not isinstance(message, AssistantMessage):
         return False
     if not message.content or message.tool_calls:
