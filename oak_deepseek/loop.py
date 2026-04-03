@@ -20,30 +20,6 @@ def init(core: AgentCore, task: Optional[str]):
         core.update(SystemMessage(content=core.agent.info.prompt))
         core.update(UserMessage(content=task))
 
-def finish(core: AgentCore, call_info: ToolCall):
-    """
-    处理Agent的任务总结
-
-    :param core: AgentCore，会话核心
-    :param call_info: namedtuple("ToolCall", ["id", "name", "args"])，调用信息
-    :return: 没有返回值，不过对应的分支可能要返回None
-    """
-    # 先生成子agent需要的工具信息
-    tool_call_id: str = call_info.id
-    args: Dict = call_info.args
-
-    # 当前Agent收尾
-    conclusion: str = args["conclusion"]
-    core.update(ToolMessage(content=f"任务摘要：{conclusion}", tool_call_id=tool_call_id))
-
-    # 返回父Agent，构造ToolMessage
-    core.back()
-    last_tool_call: Dict = core.agent.messages[-1].tool_calls[0]
-
-    # tool_call_id从最后一条消息中取
-    parent_call_id: str = parse_tool_call(last_tool_call).id
-    core.update(ToolMessage(content=f"{conclusion}", tool_call_id=parent_call_id))
-
 def new_agent(agent_factory: AgentFactory, core: AgentCore, call_info: ToolCall) -> str:
     """
     处理Agent调用子Agent
