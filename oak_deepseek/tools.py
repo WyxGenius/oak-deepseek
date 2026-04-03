@@ -1,7 +1,7 @@
 import json
 from collections import namedtuple
 from queue import Queue
-from typing import Callable, List, Dict, Literal, Any, Tuple
+from typing import Callable, List, Dict, Literal, Any
 from pydantic import TypeAdapter
 
 from oak_deepseek.models import Function, Tool, Message, AssistantMessage
