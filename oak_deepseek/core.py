@@ -1,7 +1,7 @@
 import os
 from collections import deque
 from queue import Queue
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Dict
 import copy
 
 from oak_deepseek.models import Message, AssistantMessage
@@ -34,6 +34,7 @@ class AgentCore:
         self.client = ChatClient(api_key=api_key, raw_response_queue=raw_response_queue)
         self.agent: Agent = agent
         self.stack: deque[Agent] = deque()
+        self.memory: Dict[Tuple[Tuple[str, str], ...], List[Message]] = {}
 
     def update(self, message: Message) -> Message:
         """
@@ -68,9 +69,13 @@ class AgentCore:
         previous_agent: Agent = copy.deepcopy(self.agent)
         self.stack.append(previous_agent)
         self.agent = agent
+        history: List[Message] = self.memory.get(self.agent.key_chain)
+        if history:
+            self.agent.messages = copy.deepcopy(history)
 
     def back(self):
         """
         返回到父Agent：弹出栈顶，恢复父Agent为当前Agent。
         """
+        self.memory[self.agent.key_chain] = copy.deepcopy(self.agent.messages)
         self.agent = self.stack.pop()
