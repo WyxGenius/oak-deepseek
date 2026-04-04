@@ -9,11 +9,11 @@ from oak_deepseek.tools import standardize_tool
 def choose_agent(agent: Tuple[str, str], task) -> str:
     """
     调用此工具时，不能调用其它工具。
-    在某些时候，你需要使用这个工具给新的AI Agent布置任务。
+    使用这个工具可以和助手对话，这是你与助手沟通的**唯一途径**。
 
     :param agent: (命名空间, 名字)
-    :param task: AI Agent需要完成的任务
-    :return: AI Agent完成任务，或请求重新调用它时，会返回执行摘要
+    :param task: AI Agent需要完成的任务，或者你要对它说的内容
+    :return: AI Agent给你的回复
     """
     pass
 

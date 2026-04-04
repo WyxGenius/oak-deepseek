@@ -9,23 +9,15 @@ from oak_deepseek.loop import main
 from oak_deepseek.models import Tool, Message, AssistantMessage, ToolMessage, UserMessage, SystemMessage
 from oak_deepseek.tools import standardize_tool, parse_tool_calls, ToolCall
 
-recovery_prompt: str = """系统恢复通知：执行刚刚被中断，现已重启。
+recovery_prompt: str = """系统恢复：执行中断，最后一条 AssistantMessage 包含未完成的 tool_calls。
 
-请检查最近的消息历史，你会发现：
+对于每个未完成的调用：
 
-最后一条 AssistantMessage 中包含了一些 tool_calls（工具调用请求）。
+- 如果工具是幂等的，则**主动重试**：重新调用该工具。
+- 否则（非幂等，如发送消息、扣款、修改状态），你无法确定是否已执行。请输出一条简短消息，向用户说明情况并请求指示，例如：
+  “上一个操作可能已经执行，我不确定是否应该重试。请告知是否可以重新执行，或者跳过。”
 
-这些工具调用可能已经实际执行过，但由于中断，它们的返回结果（ToolMessage）未能被保存。
-
-你需要根据以下原则决定下一步行动：
-
-对于每个未完成的 tool_calls，判断其对应的操作是否幂等（即多次执行与一次执行效果相同）。
-
-如果是幂等操作（如查询、计算、设置固定值），你可以安全地重试，重新调用该工具。
-
-如果不是幂等操作（如发送消息、扣款、增加计数），你应该假设它已经执行过一次，不要重试，而是继续后续推理（可能需要向用户报告或请求确认）。
-
-如果你不确定某个操作是否幂等，或者重试可能导致问题，请向用户询问（调用 ask_user 工具，或者直接输出 content 提问）。"""
+之后等待用户输入，不要自动重试非幂等工具。"""
 
 class AgentEngine:
     """
