@@ -25,8 +25,12 @@ class AgentInfo(BaseModel):
     :ivar description: Agent的简短描述
     :ivar prompt: 系统提示词
     :ivar tools: 可调用的工具列表
-    :ivar sub_agents: 可选，可调用的子Agent列表，每个元素为(namespace, name)
+    :ivar sub_agents: 可选，可调用的子 Agent 列表，每个元素为 (namespace, name)。
+                      **注意**：若该列表非空，框架会自动注入 `choose_agent` 工具，
+                      并将子 Agent 信息（命名空间、名字、简介）拼接到提示词中。
+                      若为空或 None，则不会添加 `choose_agent` 工具。
     """
+
     description: str
     prompt: str
     tools: List[Tool]
@@ -37,9 +41,11 @@ class Agent:
     """
     Agent实例，包含其元数据和消息历史。
 
-    :ivar key_chain: 一个元组，每个元素都是命名空间ID元组，表示调用链。
-    :ivar info: AgentInfo对象
-    :ivar messages: 该Agent的消息历史列表
+    :ivar key_chain: 调用链元组，每个元素是 (namespace, name)，表示从根 Agent 到当前 Agent 的路径。
+                     例如 `(('sys','root'), ('sys','calculator'))`。
+    :ivar info: AgentInfo对象，包含静态配置
+    :ivar messages: 该 Agent 的消息历史列表，按时间顺序排列。
+                    消息会被 `AgentCore` 持久化到队列，并在恢复时重新加载。
     """
     def __init__(self, key_chain: Tuple[Tuple[str, str], ...], info: AgentInfo):
         """
@@ -56,27 +62,41 @@ class Agent:
 class AgentFactory:
     """
     Agent工厂，负责注册和构建Agent实例。
+
+    主要功能：
+    - 通过 `register_agent` 注册静态配置（AgentInfo）。
+    - 通过 `build` 根据 `key_chain` 动态创建 Agent 实例。
+    - 如果 Agent 配置了子 Agent（sub_agents 非空），则自动：
+        1. 将 `choose_agent` 工具加入工具列表。
+        2. 将子 Agent 的描述信息（命名空间、名字、简介）拼接到提示词中。
     """
     def __init__(self):
         self.agents: Dict[Tuple[str, str], AgentInfo] = {}
 
     def register_agent(self, key: Tuple[str, str], agent: AgentInfo):
         """
-        注册一个Agent的元数据。
+        注册一个Agent的元数据。如果 key 已存在，则覆盖原有配置。
 
-        :param key: Agent的唯一标识
+        :param key: Agent的唯一标识 (namespace, name)
         :param agent: Agent的元数据
         """
         self.agents[key] = agent
 
     def build(self, key_chain: Tuple[Tuple[str, str], ...]) -> Agent:
         """
-        根据key构建一个Agent实例。
-        如有子Agent则自动添加choose_agent工具并拼接提示词。
+        根据 key_chain 构建一个 Agent 实例。
 
-        :param key_chain: 一个元组，每个元素都是命名空间ID元组，表示调用链。
-        :return: 构建好的Agent实例
-        :raises KeyError: 如果key未注册
+        构建步骤：
+        1. 验证 key_chain[-1] 是否已注册，否则抛出 KeyError。
+        2. 深拷贝对应的 AgentInfo，防止修改原始配置。
+        3. 创建 Agent 实例，初始消息列表为空。
+        4. 如果 sub_agents 非空：
+           - 将 `choose_agent` 工具添加到工具列表。
+           - 遍历 sub_agents，验证每个子 Agent 已注册，并将它们的描述信息拼接到提示词末尾。
+
+        :param key_chain: 调用链元组，最后一个元素是要构建的 Agent 的 key。
+        :return: 构建好的 Agent 实例（消息列表为空）
+        :raises KeyError: 如果 key_chain[-1] 或任何 sub_agent 未注册
         """
         # 检查要构建的agent是否存在
         if self.agents.get(key_chain[-1]) is None:
