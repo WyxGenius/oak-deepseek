@@ -10,13 +10,9 @@ from oak_deepseek.models import Tool, Message, AssistantMessage, ToolMessage, Us
 from oak_deepseek.tools import standardize_tool, parse_tool_calls, ToolCall
 
 recovery_prompt: str = """系统恢复：执行中断，最后一条 AssistantMessage 包含未完成的 tool_calls。
-
 对于每个未完成的调用：
-
 - 如果工具是幂等的，则**主动重试**：重新调用该工具。
-- 否则（非幂等，如发送消息、扣款、修改状态），你无法确定是否已执行。请输出一条简短消息，向用户说明情况并请求指示，例如：
-  “上一个操作可能已经执行，我不确定是否应该重试。请告知是否可以重新执行，或者跳过。”
-
+- 否则（非幂等），你无法确定是否已执行。请向用户说明情况并请求指示。
 之后等待用户输入，不要自动重试非幂等工具。"""
 
 class AgentEngine:

@@ -17,6 +17,7 @@ class AgentCore:
     :ivar client: ChatClient实例
     :ivar agent: 当前Agent实例
     :ivar stack: 调用栈，存储祖先Agent实例
+    :ivar memory: 按 key_chain 索引的消息历史缓存，用于 subagent 的有状态记忆
     """
     def __init__(self, agent: Agent,
                  history_queue: Queue[Tuple[Tuple[Tuple[str, str], ...], Message]],
@@ -63,6 +64,7 @@ class AgentCore:
     def sub_agent(self, agent: Agent):
         """
         切换到子Agent：深拷贝当前Agent入栈，并将当前Agent设为子Agent。
+        如果 memory 中存在该子 Agent 的 key_chain 对应的历史消息，则直接替换子 Agent 的消息列表（不拼接），以实现有状态记忆。
 
         :param agent: 子Agent实例
         """
@@ -75,7 +77,7 @@ class AgentCore:
 
     def back(self):
         """
-        返回到父Agent：弹出栈顶，恢复父Agent为当前Agent。
+        返回到父Agent：将当前 Agent 的消息历史保存到 memory 中，然后弹出栈顶，恢复父Agent为当前Agent。
         """
         self.memory[self.agent.key_chain] = copy.deepcopy(self.agent.messages)
         self.agent = self.stack.pop()

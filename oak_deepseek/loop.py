@@ -29,6 +29,7 @@ def new_agent(agent_factory: AgentFactory, core: AgentCore, call_info: ToolCall)
     :param core: AgentCore，会话核心
     :param call_info: namedtuple("ToolCall", ["id", "name", "args"])，调用信息
     :return: str，新Agent的任务，需要在循环体内返回
+    :raises KeyError: 如果指定的子 Agent 未在 AgentFactory 中注册。
     """
     args: Dict = call_info[2]
 

@@ -75,10 +75,8 @@ class ChatClient:
     def __enter__(self):
         """
         使用示例：
-            with ChatClient() as client
-                client.conn.send(...)
-
-        :return: ChatClient 实例
+            with ChatClient() as client:
+                assistant_msg = client.send(messages, tools)
         """
         return self
 
