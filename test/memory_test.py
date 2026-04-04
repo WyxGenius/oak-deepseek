@@ -1,0 +1,61 @@
+from queue import Queue
+from threading import Thread
+import os
+
+from oak_deepseek.engine import AgentEngine
+
+def add(a: int, b: int) -> str:
+    """
+    这个函数用于两个整数相加，并返回str结果给你
+    :return: 加法结果
+    """
+    return f"{a + b}"
+
+def mul(a: int, b: int) -> str:
+    """
+    这个函数用于两个整数相乘，并返回str结果给你
+    :return: 乘法结果
+    """
+    return f"{a * b}"
+
+engine: AgentEngine = AgentEngine()
+engine.create_agent(
+    key=("sys","sys"),
+    description="一个能进行数学计算的agent",
+    prompt="你是一个严谨细致的数学计算助手，任何计算仅使用工具完成",
+    tools=[add],
+    sub_agents=[("sys","sub")]
+)
+
+engine.create_agent(
+    key=("sys","sub"),
+    description="能进行乘法计算",
+    prompt="你是一个严谨细致的数学计算助手，任何计算仅使用工具完成",
+    tools=[mul]
+)
+history_queue = Queue()
+
+task_queue = Queue()
+task_queue.put("分别计算317498*783914198，7184*98136589，4819965893*3747159，在完成所有计算后，你还要问你的助手还记不记个自己干了什么")
+
+def go():
+    engine.run(task_queue, key=("sys", "sys"), history_queue=history_queue, api_key=os.getenv("DEEPSEEK_API_KEY"))
+
+def messages():
+    while True:
+        msg = history_queue.get(block=True)
+        if msg is None:
+            return
+        print(f"{msg},")
+
+
+if __name__ == "__main__":
+    agent_thread = Thread(target=go)
+    agent_thread.start()
+
+    print_thread = Thread(target=messages)
+    print_thread.start()
+
+    agent_thread.join()
+    history_queue.put(None)
+    print_thread.join()
