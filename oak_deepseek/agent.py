@@ -90,7 +90,7 @@ class AgentFactory:
 
         # 将choose_agent工具加入工具列表，并将可用Agent信息拼接到提示词中
         keys: Optional[List[Tuple[str, str]]] = agent_info.sub_agents
-        if keys is not None:
+        if keys:
             agent.info.tools.append(standardize_tool(choose_agent))
             prompt_about_sub_agent = "\n\n**你可以让这些AI Agent辅助你完成任务：**"
             for sub_agent in keys:
