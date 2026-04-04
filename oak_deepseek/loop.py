@@ -18,6 +18,7 @@ def init(core: AgentCore, task: Optional[str]):
     if len(core.agent.messages) == 0:
         # 当前agent信息在引擎初始化，或调用子agent时在引擎中更新
         core.update(SystemMessage(content=core.agent.info.prompt))
+    if task is not None:
         core.update(UserMessage(content=task))
 
 def new_agent(agent_factory: AgentFactory, core: AgentCore, call_info: ToolCall) -> str:
