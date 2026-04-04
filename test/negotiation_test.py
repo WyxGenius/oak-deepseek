@@ -57,11 +57,7 @@ def messages():
         msg = history_queue.get(block=True)
         if msg is None:
             return
-        # 打印时简化显示，只显示消息类型和部分内容
-        role = msg[1].role
-        content = getattr(msg[1], 'content', '')
-        tool_calls = getattr(msg[1], 'tool_calls', None)
-        print(f"{msg[0]} | {role}: {content if content else '(tool_calls)'}")
+        print(f"{msg},")
 
 if __name__ == "__main__":
     agent_thread = Thread(target=go)
