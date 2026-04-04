@@ -6,7 +6,7 @@ from oak_deepseek.models import Tool, Message
 from oak_deepseek.tools import standardize_tool
 
 
-def choose_agent(agent: Tuple[str, str], task) -> str:
+def choose_agent(agent: Tuple[str, str], task: str) -> str:
     """
     调用此工具时，不能调用其它工具。
     使用这个工具可以和助手对话，这是你与助手沟通的**唯一途径**。
