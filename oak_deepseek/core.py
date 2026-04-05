@@ -71,7 +71,7 @@ class AgentCore:
         previous_agent: Agent = copy.deepcopy(self.agent)
         self.stack.append(previous_agent)
         self.agent = agent
-        history: List[Message] = self.memory.get(self.agent.key_chain)
+        history: Optional[List[Message]] = self.memory.get(self.agent.key_chain)
         if history:
             self.agent.messages = copy.deepcopy(history)
 
