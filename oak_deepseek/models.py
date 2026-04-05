@@ -125,12 +125,8 @@ class DeepSeekRequestBody(BaseModel):
 
     @model_validator(mode='after')
     def set_max_tokens_by_model(self):
-        if self.model == "deepseek-chat":
-            max_allowed: int = 8192
-            default_value: int = 4096
-        else:
-            max_allowed: int = 65536
-            default_value: int = 32768
+        max_allowed: int = 65536
+        default_value: int = 32768
 
         if self.max_tokens is None:
             self.max_tokens = default_value
