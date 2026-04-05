@@ -43,7 +43,7 @@ Message = Annotated[
 ########################################################################################################################
 
 class Thinking(BaseModel):
-    type: Literal["enabled", "disabled"] = "disabled"
+    type: Literal["enabled", "disabled"] = "enabled"
     @classmethod
     def enable(cls):
         return cls(type="enabled")
@@ -118,7 +118,7 @@ class DeepSeekRequestBody(BaseModel):
     ############################################################################################
 
     @model_validator(mode='after')
-    def thinking(self):
+    def validate_thinking(self):
         if self.thinking == Thinking.disable():
             raise ValueError("仅支持推理模式")
         return self
