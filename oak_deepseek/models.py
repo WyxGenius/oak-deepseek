@@ -100,7 +100,7 @@ class ToolChoice(BaseModel):
 
 class DeepSeekRequestBody(BaseModel):
     messages: List[Message]
-    model: Literal["deepseek-chat", "deepseek-reasoner"] = "deepseek-chat"
+    model: Literal["deepseek-reasoner"] = "deepseek-reasoner"
     thinking: Thinking = Thinking.disable()
     frequency_penalty: float = Field(0, ge=-2, le=2)
     max_tokens: Optional[int] = None
