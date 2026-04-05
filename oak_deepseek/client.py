@@ -7,7 +7,7 @@ import requests
 from requests import Session
 
 from oak_deepseek.models import DeepSeekRequestBody, Thinking, Tool, Message, AssistantMessage
-
+from oak_deepseek.stream import Stream
 
 RequestResponsePair = namedtuple("RequestResponsePair", ["request", "response"])
 
@@ -43,13 +43,12 @@ class ChatClient:
 
     def send(self, messages: List[Message],
              tools: Optional[List[Tool]]=None,
-             thinking: bool=False) -> AssistantMessage:
+             with_stream: bool=False) -> AssistantMessage:
         """
         发送请求并返回助手消息。
 
         :param messages: 消息历史列表
         :param tools: 可选，可用的工具列表
-        :param thinking: 是否启用思考模式
         :return: AssistantMessage对象
         :raises RuntimeError: 如果API返回的响应中没有choices字段
         """
@@ -57,20 +56,26 @@ class ChatClient:
         payload: DeepSeekRequestBody = DeepSeekRequestBody(
             messages=messages,
             tools=tools,
-            thinking=Thinking.enable() if thinking else Thinking.disable()
         ).model_dump(exclude_none=True)
 
-        response = self.conn.post(url=self.url, headers=self.headers, json=payload)
+        if with_stream:
+            response = self.conn.post(url=self.url, headers=self.headers, json=payload , stream=True)
+            stream: Stream = Stream(response.iter_lines())
+            if self.raw_response_queue is not None:
+                self.raw_response_queue.put(RequestResponsePair(payload, stream))
 
-        if self.raw_response_queue is not None:
-            self.raw_response_queue.put(RequestResponsePair(payload, response))
+            return AssistantMessage(**stream.build_message())
 
-        response_dict: Dict = json.loads(response.text)
+        else:
+            response = self.conn.post(url=self.url, headers=self.headers, json=payload)
 
-        if response_dict["choices"] is not None:
-            return AssistantMessage(**response_dict["choices"][0]["message"])
+            response_dict: Dict = json.loads(response.text)
+            if self.raw_response_queue is not None:
+                self.raw_response_queue.put(RequestResponsePair(payload, response_dict))
 
-        raise RuntimeError(response.text)
+            if response_dict["choices"] is not None:
+                return AssistantMessage(**response_dict["choices"][0]["message"])
+            raise RuntimeError(response.text)
 
     def __enter__(self):
         """
