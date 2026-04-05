@@ -118,6 +118,12 @@ class DeepSeekRequestBody(BaseModel):
     ############################################################################################
 
     @model_validator(mode='after')
+    def thinking(self):
+        if self.thinking == Thinking.disable():
+            raise ValueError("仅支持推理模式")
+        return self
+
+    @model_validator(mode='after')
     def set_max_tokens_by_model(self):
         max_allowed: int = 65536
         default_value: int = 32768
