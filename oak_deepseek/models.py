@@ -101,7 +101,7 @@ class ToolChoice(BaseModel):
 class DeepSeekRequestBody(BaseModel):
     messages: List[Message]
     model: Literal["deepseek-reasoner"] = "deepseek-reasoner"
-    thinking: Thinking = Thinking.disable()
+    thinking: Thinking = Thinking.enable()
     max_tokens: Optional[int] = None
     response_format: Optional[ResponseFormat] = Field(default_factory=ResponseFormat.text)
     stop: Optional[Union[List[str], str]] = None
