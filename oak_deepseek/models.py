@@ -102,15 +102,11 @@ class DeepSeekRequestBody(BaseModel):
     messages: List[Message]
     model: Literal["deepseek-reasoner"] = "deepseek-reasoner"
     thinking: Thinking = Thinking.disable()
-    frequency_penalty: float = Field(0, ge=-2, le=2)
     max_tokens: Optional[int] = None
-    presence_penalty: float = Field(0, ge=-2, le=2)
     response_format: Optional[ResponseFormat] = Field(default_factory=ResponseFormat.text)
     stop: Optional[Union[List[str], str]] = None
     stream: bool = False
     stream_options: Optional[StreamOptions] = None
-    temperature: float = Field(1, ge=0, le=2)
-    top_p: float = Field(1, ge=0, le=1)
     tools: Optional[List[Tool]] = None
     tool_choice: Optional[
         Union[
@@ -118,8 +114,6 @@ class DeepSeekRequestBody(BaseModel):
             ToolChoice
         ]
     ] = None
-    logprobs : bool = False
-    top_logprobs : Optional[int] = Field(None, ge=0, le=20)
 
     ############################################################################################
 
@@ -141,12 +135,4 @@ class DeepSeekRequestBody(BaseModel):
     def check_stream_options(self):
         if not self.stream and self.stream_options:
             raise ValueError("设置了 stream_options 但是未开启 stream")
-        return self
-
-    @model_validator(mode='after')
-    def check_logprobs(self):
-        if not self.logprobs and self.top_logprobs is not None:
-            raise ValueError("设置了 top_logprobs 但是未开启 logprobs")
-        if self.logprobs and self.top_logprobs is None:
-            raise ValueError("logprobs=True 时必须提供 top_logprobs")
         return self
