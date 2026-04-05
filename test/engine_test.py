@@ -36,7 +36,7 @@ engine.create_agent(
 history_queue = Queue()
 
 task_queue = Queue()
-task_queue.put("计算(679+678)*(2+78)")
+task_queue.put("计算(679+678)*(2+78)，你需要同时完成所有加法")
 
 def go():
     engine.run(task_queue, key=("sys", "sys"), history_queue=history_queue, api_key=os.getenv("DEEPSEEK_API_KEY"))

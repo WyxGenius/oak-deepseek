@@ -80,3 +80,5 @@ def is_finished(message: Message):
     if not message.content or message.tool_calls:
         return False
     return True
+
+

@@ -43,12 +43,13 @@ class ChatClient:
 
     def send(self, messages: List[Message],
              tools: Optional[List[Tool]]=None,
-             with_stream: bool=False) -> AssistantMessage:
+             with_stream: bool=True) -> AssistantMessage:
         """
         发送请求并返回助手消息。
 
         :param messages: 消息历史列表
         :param tools: 可选，可用的工具列表
+        :param with_stream: 可选，是否启用流式输出
         :return: AssistantMessage对象
         :raises RuntimeError: 如果API返回的响应中没有choices字段
         """
@@ -56,24 +57,24 @@ class ChatClient:
         payload: DeepSeekRequestBody = DeepSeekRequestBody(
             messages=messages,
             tools=tools,
-        ).model_dump(exclude_none=True)
+        )
 
         if with_stream:
-            response = self.conn.post(url=self.url, headers=self.headers, json=payload , stream=True)
+            payload.stream = True
+            response = self.conn.post(url=self.url, headers=self.headers, json=payload.model_dump(exclude_none=True), stream=True)
             stream: Stream = Stream(response.iter_lines())
+            for chunk in stream.get_from_chunks():
+                print(chunk)
             if self.raw_response_queue is not None:
                 self.raw_response_queue.put(RequestResponsePair(payload, stream))
-
-            return AssistantMessage(**stream.build_message())
+            return AssistantMessage(**stream.build_full_response()["choices"][0]["message"])
 
         else:
-            response = self.conn.post(url=self.url, headers=self.headers, json=payload)
-
+            response = self.conn.post(url=self.url, headers=self.headers, json=payload.model_dump(exclude_none=True))
             response_dict: Dict = json.loads(response.text)
             if self.raw_response_queue is not None:
                 self.raw_response_queue.put(RequestResponsePair(payload, response_dict))
-
-            if response_dict["choices"] is not None:
+            if response_dict.get("choices") is not None:
                 return AssistantMessage(**response_dict["choices"][0]["message"])
             raise RuntimeError(response.text)
 
