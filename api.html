@@ -335,13 +335,14 @@
 <li><p><strong>client</strong> -- ChatClient实例</p></li>
 <li><p><strong>agent</strong> -- 当前Agent实例</p></li>
 <li><p><strong>stack</strong> -- 调用栈，存储祖先Agent实例</p></li>
+<li><p><strong>memory</strong> -- 按 key_chain 索引的消息历史缓存，用于 subagent 的有状态记忆</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="oak_deepseek.core.AgentCore.back">
 <span class="sig-name descname"><span class="pre">back</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/oak_deepseek/core.html#AgentCore.back"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.core.AgentCore.back" title="Link to this definition">¶</a></dt>
-<dd><p>返回到父Agent：弹出栈顶，恢复父Agent为当前Agent。</p>
+<dd><p>返回到父Agent：将当前 Agent 的消息历史保存到 memory 中，然后弹出栈顶，恢复父Agent为当前Agent。</p>
 </dd></dl>
 
 <dl class="py method">
@@ -362,7 +363,8 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="oak_deepseek.core.AgentCore.sub_agent">
 <span class="sig-name descname"><span class="pre">sub_agent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#oak_deepseek.agent.Agent" title="oak_deepseek.agent.Agent"><span class="pre">Agent</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oak_deepseek/core.html#AgentCore.sub_agent"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.core.AgentCore.sub_agent" title="Link to this definition">¶</a></dt>
-<dd><p>切换到子Agent：深拷贝当前Agent入栈，并将当前Agent设为子Agent。</p>
+<dd><p>切换到子Agent：深拷贝当前Agent入栈，并将当前Agent设为子Agent。
+如果 memory 中存在该子 Agent 的 key_chain 对应的历史消息，则直接替换子 Agent 的消息列表（不拼接），以实现有状态记忆。</p>
 <dl class="field-list simple">
 <dt class="field-odd">参数<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>agent</strong> -- 子Agent实例</p>
@@ -394,9 +396,11 @@
 <dl class="field-list simple">
 <dt class="field-odd">变量<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>key_chain</strong> -- 一个元组，每个元素都是命名空间ID元组，表示调用链。</p></li>
-<li><p><strong>info</strong> -- AgentInfo对象</p></li>
-<li><p><strong>messages</strong> -- 该Agent的消息历史列表</p></li>
+<li><p><strong>key_chain</strong> -- 调用链元组，每个元素是 (namespace, name)，表示从根 Agent 到当前 Agent 的路径。
+例如 <cite>(('sys','root'), ('sys','calculator'))</cite>。</p></li>
+<li><p><strong>info</strong> -- AgentInfo对象，包含静态配置</p></li>
+<li><p><strong>messages</strong> -- 该 Agent 的消息历史列表，按时间顺序排列。
+消息会被 <cite>AgentCore</cite> 持久化到队列，并在恢复时重新加载。</p></li>
 </ul>
 </dd>
 </dl>
@@ -407,20 +411,40 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">oak_deepseek.agent.</span></span><span class="sig-name descname"><span class="pre">AgentFactory</span></span><a class="reference internal" href="_modules/oak_deepseek/agent.html#AgentFactory"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.agent.AgentFactory" title="Link to this definition">¶</a></dt>
 <dd><p>基类：<code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Agent工厂，负责注册和构建Agent实例。</p>
+<p>主要功能：
+- 通过 <cite>register_agent</cite> 注册静态配置（AgentInfo）。
+- 通过 <cite>build</cite> 根据 <cite>key_chain</cite> 动态创建 Agent 实例。
+- 如果 Agent 配置了子 Agent（sub_agents 非空），则自动：</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>将 <cite>choose_agent</cite> 工具加入工具列表。</p></li>
+<li><p>将子 Agent 的描述信息（命名空间、名字、简介）拼接到提示词中。</p></li>
+</ol>
+</div></blockquote>
 <dl class="py method">
 <dt class="sig sig-object py" id="oak_deepseek.agent.AgentFactory.build">
 <span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key_chain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#oak_deepseek.agent.Agent" title="oak_deepseek.agent.Agent"><span class="pre">Agent</span></a></span></span><a class="reference internal" href="_modules/oak_deepseek/agent.html#AgentFactory.build"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.agent.AgentFactory.build" title="Link to this definition">¶</a></dt>
-<dd><p>根据key构建一个Agent实例。
-如有子Agent则自动添加choose_agent工具并拼接提示词。</p>
+<dd><p>根据 key_chain 构建一个 Agent 实例。</p>
+<p>构建步骤：
+1. 验证 key_chain[-1] 是否已注册，否则抛出 KeyError。
+2. 深拷贝对应的 AgentInfo，防止修改原始配置。
+3. 创建 Agent 实例，初始消息列表为空。
+4. 如果 sub_agents 非空：</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>将 <cite>choose_agent</cite> 工具添加到工具列表。</p></li>
+<li><p>遍历 sub_agents，验证每个子 Agent 已注册，并将它们的描述信息拼接到提示词末尾。</p></li>
+</ul>
+</div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">参数<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>key_chain</strong> -- 一个元组，每个元素都是命名空间ID元组，表示调用链。</p>
+<dd class="field-odd"><p><strong>key_chain</strong> -- 调用链元组，最后一个元素是要构建的 Agent 的 key。</p>
 </dd>
 <dt class="field-even">返回<span class="colon">:</span></dt>
-<dd class="field-even"><p>构建好的Agent实例</p>
+<dd class="field-even"><p>构建好的 Agent 实例（消息列表为空）</p>
 </dd>
 <dt class="field-odd">抛出<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>KeyError</strong> -- 如果key未注册</p>
+<dd class="field-odd"><p><strong>KeyError</strong> -- 如果 key_chain[-1] 或任何 sub_agent 未注册</p>
 </dd>
 </dl>
 </dd></dl>
@@ -428,11 +452,11 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="oak_deepseek.agent.AgentFactory.register_agent">
 <span class="sig-name descname"><span class="pre">register_agent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#oak_deepseek.agent.AgentInfo" title="oak_deepseek.agent.AgentInfo"><span class="pre">AgentInfo</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oak_deepseek/agent.html#AgentFactory.register_agent"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.agent.AgentFactory.register_agent" title="Link to this definition">¶</a></dt>
-<dd><p>注册一个Agent的元数据。</p>
+<dd><p>注册一个Agent的元数据。如果 key 已存在，则覆盖原有配置。</p>
 <dl class="field-list simple">
 <dt class="field-odd">参数<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>key</strong> -- Agent的唯一标识</p></li>
+<li><p><strong>key</strong> -- Agent的唯一标识 (namespace, name)</p></li>
 <li><p><strong>agent</strong> -- Agent的元数据</p></li>
 </ul>
 </dd>
@@ -452,7 +476,10 @@
 <li><p><strong>description</strong> -- Agent的简短描述</p></li>
 <li><p><strong>prompt</strong> -- 系统提示词</p></li>
 <li><p><strong>tools</strong> -- 可调用的工具列表</p></li>
-<li><p><strong>sub_agents</strong> -- 可选，可调用的子Agent列表，每个元素为(namespace, name)</p></li>
+<li><p><strong>sub_agents</strong> -- 可选，可调用的子 Agent 列表，每个元素为 (namespace, name)。
+<strong>注意</strong>：若该列表非空，框架会自动注入 <cite>choose_agent</cite> 工具，
+并将子 Agent 信息（命名空间、名字、简介）拼接到提示词中。
+若为空或 None，则不会添加 <cite>choose_agent</cite> 工具。</p></li>
 </ul>
 </dd>
 </dl>
@@ -486,18 +513,18 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="oak_deepseek.agent.choose_agent">
-<span class="sig-prename descclassname"><span class="pre">oak_deepseek.agent.</span></span><span class="sig-name descname"><span class="pre">choose_agent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/oak_deepseek/agent.html#choose_agent"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.agent.choose_agent" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">oak_deepseek.agent.</span></span><span class="sig-name descname"><span class="pre">choose_agent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/oak_deepseek/agent.html#choose_agent"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.agent.choose_agent" title="Link to this definition">¶</a></dt>
 <dd><p>调用此工具时，不能调用其它工具。
-在某些时候，你需要使用这个工具给新的AI Agent布置任务。</p>
+使用这个工具可以和助手对话，这是你与助手沟通的**唯一途径**。</p>
 <dl class="field-list simple">
 <dt class="field-odd">参数<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>agent</strong> -- (命名空间, 名字)</p></li>
-<li><p><strong>task</strong> -- AI Agent需要完成的任务</p></li>
+<li><p><strong>task</strong> -- AI Agent需要完成的任务，或者你要对它说的内容</p></li>
 </ul>
 </dd>
 <dt class="field-even">返回<span class="colon">:</span></dt>
-<dd class="field-even"><p>AI Agent完成任务，或请求重新调用它时，会返回执行摘要</p>
+<dd class="field-even"><p>AI Agent给你的回复</p>
 </dd>
 </dl>
 </dd></dl>
@@ -564,6 +591,9 @@
 <dt class="field-even">返回<span class="colon">:</span></dt>
 <dd class="field-even"><p>str，新Agent的任务，需要在循环体内返回</p>
 </dd>
+<dt class="field-odd">抛出<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>KeyError</strong> -- 如果指定的子 Agent 未在 AgentFactory 中注册。</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -611,26 +641,11 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="oak_deepseek.models.DeepSeekRequestBody">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">oak_deepseek.models.</span></span><span class="sig-name descname"><span class="pre">DeepSeekRequestBody</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">*,</span> <span class="pre">messages:</span> <span class="pre">~typing.List[~typing.Annotated[~oak_deepseek.models.SystemMessage</span> <span class="pre">|</span> <span class="pre">~oak_deepseek.models.UserMessage</span> <span class="pre">|</span> <span class="pre">~oak_deepseek.models.AssistantMessage</span> <span class="pre">|</span> <span class="pre">~oak_deepseek.models.ToolMessage,</span> <span class="pre">FieldInfo(annotation=NoneType,</span> <span class="pre">required=True,</span> <span class="pre">discriminator='role')]],</span> <span class="pre">model:</span> <span class="pre">~typing.Literal['deepseek-chat',</span> <span class="pre">'deepseek-reasoner']</span> <span class="pre">=</span> <span class="pre">'deepseek-chat',</span> <span class="pre">thinking:</span> <span class="pre">~oak_deepseek.models.Thinking</span> <span class="pre">=</span> <span class="pre">Thinking(type='disabled'),</span> <span class="pre">frequency_penalty:</span> <span class="pre">~typing.Annotated[float,</span> <span class="pre">~annotated_types.Ge(ge=-2),</span> <span class="pre">~annotated_types.Le(le=2)]</span> <span class="pre">=</span> <span class="pre">0,</span> <span class="pre">max_tokens:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">presence_penalty:</span> <span class="pre">~typing.Annotated[float,</span> <span class="pre">~annotated_types.Ge(ge=-2),</span> <span class="pre">~annotated_types.Le(le=2)]</span> <span class="pre">=</span> <span class="pre">0,</span> <span class="pre">response_format:</span> <span class="pre">~oak_deepseek.models.ResponseFormat</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;,</span> <span class="pre">stop:</span> <span class="pre">~typing.List[str]</span> <span class="pre">|</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">stream:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">stream_options:</span> <span class="pre">~oak_deepseek.models.StreamOptions</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">temperature:</span> <span class="pre">~typing.Annotated[float,</span> <span class="pre">~annotated_types.Ge(ge=0),</span> <span class="pre">~annotated_types.Le(le=2)]</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">top_p:</span> <span class="pre">~typing.Annotated[float,</span> <span class="pre">~annotated_types.Ge(ge=0),</span> <span class="pre">~annotated_types.Le(le=1)]</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">tools:</span> <span class="pre">~typing.List[~oak_deepseek.models.Tool]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">tool_choice:</span> <span class="pre">~typing.Literal['none',</span> <span class="pre">'auto',</span> <span class="pre">'required']</span> <span class="pre">|</span> <span class="pre">~oak_deepseek.models.ToolChoice</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">logprobs:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">top_logprobs:</span> <span class="pre">~typing.Annotated[int</span> <span class="pre">|</span> <span class="pre">None,</span> <span class="pre">~annotated_types.Ge(ge=0),</span> <span class="pre">~annotated_types.Le(le=20)]</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oak_deepseek/models.html#DeepSeekRequestBody"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.models.DeepSeekRequestBody" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">oak_deepseek.models.</span></span><span class="sig-name descname"><span class="pre">DeepSeekRequestBody</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">*,</span> <span class="pre">messages:</span> <span class="pre">~typing.List[~typing.Annotated[~oak_deepseek.models.SystemMessage</span> <span class="pre">|</span> <span class="pre">~oak_deepseek.models.UserMessage</span> <span class="pre">|</span> <span class="pre">~oak_deepseek.models.AssistantMessage</span> <span class="pre">|</span> <span class="pre">~oak_deepseek.models.ToolMessage,</span> <span class="pre">FieldInfo(annotation=NoneType,</span> <span class="pre">required=True,</span> <span class="pre">discriminator='role')]],</span> <span class="pre">model:</span> <span class="pre">~typing.Literal['deepseek-reasoner']</span> <span class="pre">=</span> <span class="pre">'deepseek-reasoner',</span> <span class="pre">thinking:</span> <span class="pre">~oak_deepseek.models.Thinking</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">DeepSeekRequestBody.thinking&gt;,</span> <span class="pre">max_tokens:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">response_format:</span> <span class="pre">~oak_deepseek.models.ResponseFormat</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;,</span> <span class="pre">stop:</span> <span class="pre">~typing.List[str]</span> <span class="pre">|</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">stream:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">stream_options:</span> <span class="pre">~oak_deepseek.models.StreamOptions</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">tools:</span> <span class="pre">~typing.List[~oak_deepseek.models.Tool]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">tool_choice:</span> <span class="pre">~typing.Literal['none',</span> <span class="pre">'auto',</span> <span class="pre">'required']</span> <span class="pre">|</span> <span class="pre">~oak_deepseek.models.ToolChoice</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oak_deepseek/models.html#DeepSeekRequestBody"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.models.DeepSeekRequestBody" title="Link to this definition">¶</a></dt>
 <dd><p>基类：<code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="oak_deepseek.models.DeepSeekRequestBody.check_logprobs">
-<span class="sig-name descname"><span class="pre">check_logprobs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/oak_deepseek/models.html#DeepSeekRequestBody.check_logprobs"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.models.DeepSeekRequestBody.check_logprobs" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="oak_deepseek.models.DeepSeekRequestBody.check_stream_options">
 <span class="sig-name descname"><span class="pre">check_stream_options</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/oak_deepseek/models.html#DeepSeekRequestBody.check_stream_options"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.models.DeepSeekRequestBody.check_stream_options" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="oak_deepseek.models.DeepSeekRequestBody.frequency_penalty">
-<span class="sig-name descname"><span class="pre">frequency_penalty</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#oak_deepseek.models.DeepSeekRequestBody.frequency_penalty" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="oak_deepseek.models.DeepSeekRequestBody.logprobs">
-<span class="sig-name descname"><span class="pre">logprobs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#oak_deepseek.models.DeepSeekRequestBody.logprobs" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -645,7 +660,7 @@
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="oak_deepseek.models.DeepSeekRequestBody.model">
-<span class="sig-name descname"><span class="pre">model</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'deepseek-chat'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'deepseek-reasoner'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#oak_deepseek.models.DeepSeekRequestBody.model" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">model</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'deepseek-reasoner'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#oak_deepseek.models.DeepSeekRequestBody.model" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -653,11 +668,6 @@
 <span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#oak_deepseek.models.DeepSeekRequestBody.model_config" title="Link to this definition">¶</a></dt>
 <dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
 </dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="oak_deepseek.models.DeepSeekRequestBody.presence_penalty">
-<span class="sig-name descname"><span class="pre">presence_penalty</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#oak_deepseek.models.DeepSeekRequestBody.presence_penalty" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="oak_deepseek.models.DeepSeekRequestBody.response_format">
@@ -685,11 +695,6 @@
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="oak_deepseek.models.DeepSeekRequestBody.temperature">
-<span class="sig-name descname"><span class="pre">temperature</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#oak_deepseek.models.DeepSeekRequestBody.temperature" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
 <dt class="sig sig-object py" id="oak_deepseek.models.DeepSeekRequestBody.thinking">
 <span class="sig-name descname"><span class="pre">thinking</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#oak_deepseek.models.Thinking" title="oak_deepseek.models.Thinking"><span class="pre">Thinking</span></a></em><a class="headerlink" href="#oak_deepseek.models.DeepSeekRequestBody.thinking" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -702,16 +707,6 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="oak_deepseek.models.DeepSeekRequestBody.tools">
 <span class="sig-name descname"><span class="pre">tools</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#oak_deepseek.models.Tool" title="oak_deepseek.models.Tool"><span class="pre">Tool</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#oak_deepseek.models.DeepSeekRequestBody.tools" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="oak_deepseek.models.DeepSeekRequestBody.top_logprobs">
-<span class="sig-name descname"><span class="pre">top_logprobs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#oak_deepseek.models.DeepSeekRequestBody.top_logprobs" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="oak_deepseek.models.DeepSeekRequestBody.top_p">
-<span class="sig-name descname"><span class="pre">top_p</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#oak_deepseek.models.DeepSeekRequestBody.top_p" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1210,26 +1205,19 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#oak_deepseek.models.DeepSeekRequestBody"><code class="docutils literal notranslate"><span class="pre">DeepSeekRequestBody</span></code></a><ul>
-<li><a class="reference internal" href="#oak_deepseek.models.DeepSeekRequestBody.check_logprobs"><code class="docutils literal notranslate"><span class="pre">DeepSeekRequestBody.check_logprobs()</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.models.DeepSeekRequestBody.check_stream_options"><code class="docutils literal notranslate"><span class="pre">DeepSeekRequestBody.check_stream_options()</span></code></a></li>
-<li><a class="reference internal" href="#oak_deepseek.models.DeepSeekRequestBody.frequency_penalty"><code class="docutils literal notranslate"><span class="pre">DeepSeekRequestBody.frequency_penalty</span></code></a></li>
-<li><a class="reference internal" href="#oak_deepseek.models.DeepSeekRequestBody.logprobs"><code class="docutils literal notranslate"><span class="pre">DeepSeekRequestBody.logprobs</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.models.DeepSeekRequestBody.max_tokens"><code class="docutils literal notranslate"><span class="pre">DeepSeekRequestBody.max_tokens</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.models.DeepSeekRequestBody.messages"><code class="docutils literal notranslate"><span class="pre">DeepSeekRequestBody.messages</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.models.DeepSeekRequestBody.model"><code class="docutils literal notranslate"><span class="pre">DeepSeekRequestBody.model</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.models.DeepSeekRequestBody.model_config"><code class="docutils literal notranslate"><span class="pre">DeepSeekRequestBody.model_config</span></code></a></li>
-<li><a class="reference internal" href="#oak_deepseek.models.DeepSeekRequestBody.presence_penalty"><code class="docutils literal notranslate"><span class="pre">DeepSeekRequestBody.presence_penalty</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.models.DeepSeekRequestBody.response_format"><code class="docutils literal notranslate"><span class="pre">DeepSeekRequestBody.response_format</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.models.DeepSeekRequestBody.set_max_tokens_by_model"><code class="docutils literal notranslate"><span class="pre">DeepSeekRequestBody.set_max_tokens_by_model()</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.models.DeepSeekRequestBody.stop"><code class="docutils literal notranslate"><span class="pre">DeepSeekRequestBody.stop</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.models.DeepSeekRequestBody.stream"><code class="docutils literal notranslate"><span class="pre">DeepSeekRequestBody.stream</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.models.DeepSeekRequestBody.stream_options"><code class="docutils literal notranslate"><span class="pre">DeepSeekRequestBody.stream_options</span></code></a></li>
-<li><a class="reference internal" href="#oak_deepseek.models.DeepSeekRequestBody.temperature"><code class="docutils literal notranslate"><span class="pre">DeepSeekRequestBody.temperature</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.models.DeepSeekRequestBody.thinking"><code class="docutils literal notranslate"><span class="pre">DeepSeekRequestBody.thinking</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.models.DeepSeekRequestBody.tool_choice"><code class="docutils literal notranslate"><span class="pre">DeepSeekRequestBody.tool_choice</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.models.DeepSeekRequestBody.tools"><code class="docutils literal notranslate"><span class="pre">DeepSeekRequestBody.tools</span></code></a></li>
-<li><a class="reference internal" href="#oak_deepseek.models.DeepSeekRequestBody.top_logprobs"><code class="docutils literal notranslate"><span class="pre">DeepSeekRequestBody.top_logprobs</span></code></a></li>
-<li><a class="reference internal" href="#oak_deepseek.models.DeepSeekRequestBody.top_p"><code class="docutils literal notranslate"><span class="pre">DeepSeekRequestBody.top_p</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#oak_deepseek.models.Function"><code class="docutils literal notranslate"><span class="pre">Function</span></code></a><ul>

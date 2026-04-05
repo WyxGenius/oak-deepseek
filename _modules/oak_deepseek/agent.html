@@ -235,14 +235,14 @@
 
 <div class="viewcode-block" id="choose_agent">
 <a class="viewcode-back" href="../../api.html#oak_deepseek.agent.choose_agent">[文档]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">choose_agent</span><span class="p">(</span><span class="n">agent</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">task</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">choose_agent</span><span class="p">(</span><span class="n">agent</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    调用此工具时，不能调用其它工具。</span>
-<span class="sd">    在某些时候，你需要使用这个工具给新的AI Agent布置任务。</span>
+<span class="sd">    使用这个工具可以和助手对话，这是你与助手沟通的**唯一途径**。</span>
 
 <span class="sd">    :param agent: (命名空间, 名字)</span>
-<span class="sd">    :param task: AI Agent需要完成的任务</span>
-<span class="sd">    :return: AI Agent完成任务，或请求重新调用它时，会返回执行摘要</span>
+<span class="sd">    :param task: AI Agent需要完成的任务，或者你要对它说的内容</span>
+<span class="sd">    :return: AI Agent给你的回复</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">pass</span></div>
 
@@ -257,8 +257,12 @@
 <span class="sd">    :ivar description: Agent的简短描述</span>
 <span class="sd">    :ivar prompt: 系统提示词</span>
 <span class="sd">    :ivar tools: 可调用的工具列表</span>
-<span class="sd">    :ivar sub_agents: 可选，可调用的子Agent列表，每个元素为(namespace, name)</span>
+<span class="sd">    :ivar sub_agents: 可选，可调用的子 Agent 列表，每个元素为 (namespace, name)。</span>
+<span class="sd">                      **注意**：若该列表非空，框架会自动注入 `choose_agent` 工具，</span>
+<span class="sd">                      并将子 Agent 信息（命名空间、名字、简介）拼接到提示词中。</span>
+<span class="sd">                      若为空或 None，则不会添加 `choose_agent` 工具。</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">description</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">tools</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tool</span><span class="p">]</span>
@@ -272,9 +276,11 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Agent实例，包含其元数据和消息历史。</span>
 
-<span class="sd">    :ivar key_chain: 一个元组，每个元素都是命名空间ID元组，表示调用链。</span>
-<span class="sd">    :ivar info: AgentInfo对象</span>
-<span class="sd">    :ivar messages: 该Agent的消息历史列表</span>
+<span class="sd">    :ivar key_chain: 调用链元组，每个元素是 (namespace, name)，表示从根 Agent 到当前 Agent 的路径。</span>
+<span class="sd">                     例如 `((&#39;sys&#39;,&#39;root&#39;), (&#39;sys&#39;,&#39;calculator&#39;))`。</span>
+<span class="sd">    :ivar info: AgentInfo对象，包含静态配置</span>
+<span class="sd">    :ivar messages: 该 Agent 的消息历史列表，按时间顺序排列。</span>
+<span class="sd">                    消息会被 `AgentCore` 持久化到队列，并在恢复时重新加载。</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_chain</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">],</span> <span class="n">info</span><span class="p">:</span> <span class="n">AgentInfo</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -294,6 +300,13 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">AgentFactory</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Agent工厂，负责注册和构建Agent实例。</span>
+
+<span class="sd">    主要功能：</span>
+<span class="sd">    - 通过 `register_agent` 注册静态配置（AgentInfo）。</span>
+<span class="sd">    - 通过 `build` 根据 `key_chain` 动态创建 Agent 实例。</span>
+<span class="sd">    - 如果 Agent 配置了子 Agent（sub_agents 非空），则自动：</span>
+<span class="sd">        1. 将 `choose_agent` 工具加入工具列表。</span>
+<span class="sd">        2. 将子 Agent 的描述信息（命名空间、名字、简介）拼接到提示词中。</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">agents</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">AgentInfo</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
@@ -302,9 +315,9 @@
 <a class="viewcode-back" href="../../api.html#oak_deepseek.agent.AgentFactory.register_agent">[文档]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">register_agent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">agent</span><span class="p">:</span> <span class="n">AgentInfo</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        注册一个Agent的元数据。</span>
+<span class="sd">        注册一个Agent的元数据。如果 key 已存在，则覆盖原有配置。</span>
 
-<span class="sd">        :param key: Agent的唯一标识</span>
+<span class="sd">        :param key: Agent的唯一标识 (namespace, name)</span>
 <span class="sd">        :param agent: Agent的元数据</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">agents</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">agent</span></div>
@@ -314,12 +327,19 @@
 <a class="viewcode-back" href="../../api.html#oak_deepseek.agent.AgentFactory.build">[文档]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_chain</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Agent</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        根据key构建一个Agent实例。</span>
-<span class="sd">        如有子Agent则自动添加choose_agent工具并拼接提示词。</span>
+<span class="sd">        根据 key_chain 构建一个 Agent 实例。</span>
 
-<span class="sd">        :param key_chain: 一个元组，每个元素都是命名空间ID元组，表示调用链。</span>
-<span class="sd">        :return: 构建好的Agent实例</span>
-<span class="sd">        :raises KeyError: 如果key未注册</span>
+<span class="sd">        构建步骤：</span>
+<span class="sd">        1. 验证 key_chain[-1] 是否已注册，否则抛出 KeyError。</span>
+<span class="sd">        2. 深拷贝对应的 AgentInfo，防止修改原始配置。</span>
+<span class="sd">        3. 创建 Agent 实例，初始消息列表为空。</span>
+<span class="sd">        4. 如果 sub_agents 非空：</span>
+<span class="sd">           - 将 `choose_agent` 工具添加到工具列表。</span>
+<span class="sd">           - 遍历 sub_agents，验证每个子 Agent 已注册，并将它们的描述信息拼接到提示词末尾。</span>
+
+<span class="sd">        :param key_chain: 调用链元组，最后一个元素是要构建的 Agent 的 key。</span>
+<span class="sd">        :return: 构建好的 Agent 实例（消息列表为空）</span>
+<span class="sd">        :raises KeyError: 如果 key_chain[-1] 或任何 sub_agent 未注册</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># 检查要构建的agent是否存在</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">agents</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key_chain</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -333,7 +353,7 @@
 
         <span class="c1"># 将choose_agent工具加入工具列表，并将可用Agent信息拼接到提示词中</span>
         <span class="n">keys</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">agent_info</span><span class="o">.</span><span class="n">sub_agents</span>
-        <span class="k">if</span> <span class="n">keys</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">keys</span><span class="p">:</span>
             <span class="n">agent</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">standardize_tool</span><span class="p">(</span><span class="n">choose_agent</span><span class="p">))</span>
             <span class="n">prompt_about_sub_agent</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">**你可以让这些AI Agent辅助你完成任务：**&quot;</span>
             <span class="k">for</span> <span class="n">sub_agent</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
