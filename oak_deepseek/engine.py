@@ -31,6 +31,7 @@ class AgentEngine:
                      description: str,
                      prompt: str,
                      tools: Optional[List[Callable]]=None,
+                     with_stream: bool = False,
                      sub_agents: Optional[List[Tuple[str, str]]]=None):
         """
         注册一个Agent至引擎，以后可以用唯一命名空间+名字来指定。
@@ -51,7 +52,7 @@ class AgentEngine:
                 tools_info.append(standardize_tool(tool))
 
         self.agent_factory.register_agent(key, AgentInfo(
-            description=description, prompt=prompt, tools=tools_info, sub_agents=sub_agents
+            description=description, prompt=prompt, tools=tools_info, with_stream=with_stream, sub_agents=sub_agents
         ))
 
     def create_core(self, key: Union[Tuple[str, str], List[Tuple[Tuple[Tuple[str, str], ...], Message]]],
