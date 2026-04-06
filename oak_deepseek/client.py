@@ -43,7 +43,7 @@ class ChatClient:
 
     def send(self, messages: List[Message],
              tools: Optional[List[Tool]]=None,
-             with_stream: bool=True) -> AssistantMessage:
+             with_stream: bool=False) -> AssistantMessage:
         """
         发送请求并返回助手消息。
 
