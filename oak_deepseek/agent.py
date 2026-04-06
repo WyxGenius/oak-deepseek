@@ -34,6 +34,7 @@ class AgentInfo(BaseModel):
     description: str
     prompt: str
     tools: List[Tool]
+    with_stream: bool = False
     sub_agents: Optional[List[Tuple[str, str]]] = None
 
 # agent自己维护好自己的消息记录
