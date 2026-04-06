@@ -151,6 +151,6 @@ class Stream:
             full_tool_calls: List[Dict] = []
             for tool_call in tool_calls_iterator:
                 full_tool_calls.append(tool_call)
-            parsed_response['choices'][0]['message']['tool_calls']: List[Dict] = full_tool_calls
+            parsed_response['choices'][0]['message']['tool_calls'] = full_tool_calls
 
         return parsed_response
