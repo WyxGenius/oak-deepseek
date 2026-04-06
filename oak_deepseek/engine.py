@@ -101,7 +101,7 @@ class AgentEngine:
             if isinstance(last_message, UserMessage):
                 pass
 
-            # 最后一条是SystemMessage：说明任务信息丢失，可以直接结束
+            # 最后一条是SystemMessage：说明任务信息丢失，需要重新从上级获取
             elif isinstance(last_message, SystemMessage):
                 # 判断是否在入口
                 recovery_msg: UserMessage = UserMessage(

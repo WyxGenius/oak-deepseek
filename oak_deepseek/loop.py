@@ -70,7 +70,7 @@ def main(core: AgentCore,
     :param task: 当前Agent的任务
     :param tools: 可用的工具字典
     :param queue: 用户输入队列
-    :return: 如果调用了子Agent，返回子Agent的任务字符串；否则返回None
+    :return: 如果调用了子Agent，返回子Agent的任务字符串。子agent完成任务时返回None
     """
     init(core, task)
 
