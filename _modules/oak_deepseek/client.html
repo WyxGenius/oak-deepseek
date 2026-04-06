@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="索引" href="../../genindex.html"><link rel="search" title="搜索" href="../../search.html">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
-        <title>oak_deepseek.client - Oak DeepSeek 0.6.0 文档</title>
+        <title>oak_deepseek.client - Oak DeepSeek 0.7.0 文档</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -160,7 +160,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">Oak DeepSeek 0.6.0 文档</div></a>
+      <a href="../../index.html"><div class="brand">Oak DeepSeek 0.7.0 文档</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -181,7 +181,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
   
-  <span class="sidebar-brand-text">Oak DeepSeek 0.6.0 文档</span>
+  <span class="sidebar-brand-text">Oak DeepSeek 0.7.0 文档</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
   <input class="sidebar-search" placeholder="搜索" name="q" aria-label="搜索">
@@ -234,7 +234,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">requests</span><span class="w"> </span><span class="kn">import</span> <span class="n">Session</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">oak_deepseek.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeepSeekRequestBody</span><span class="p">,</span> <span class="n">Thinking</span><span class="p">,</span> <span class="n">Tool</span><span class="p">,</span> <span class="n">Message</span><span class="p">,</span> <span class="n">AssistantMessage</span>
-
+<span class="kn">from</span><span class="w"> </span><span class="nn">oak_deepseek.stream</span><span class="w"> </span><span class="kn">import</span> <span class="n">Stream</span>
 
 <span class="n">RequestResponsePair</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;RequestResponsePair&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;request&quot;</span><span class="p">,</span> <span class="s2">&quot;response&quot;</span><span class="p">])</span>
 
@@ -274,13 +274,13 @@
 <a class="viewcode-back" href="../../api.html#oak_deepseek.client.ChatClient.send">[文档]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Message</span><span class="p">],</span>
              <span class="n">tools</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tool</span><span class="p">]]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-             <span class="n">thinking</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssistantMessage</span><span class="p">:</span>
+             <span class="n">with_stream</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AssistantMessage</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        发送请求并返回助手消息。</span>
 
 <span class="sd">        :param messages: 消息历史列表</span>
 <span class="sd">        :param tools: 可选，可用的工具列表</span>
-<span class="sd">        :param thinking: 是否启用思考模式</span>
+<span class="sd">        :param with_stream: 可选，是否启用流式输出</span>
 <span class="sd">        :return: AssistantMessage对象</span>
 <span class="sd">        :raises RuntimeError: 如果API返回的响应中没有choices字段</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -288,20 +288,24 @@
         <span class="n">payload</span><span class="p">:</span> <span class="n">DeepSeekRequestBody</span> <span class="o">=</span> <span class="n">DeepSeekRequestBody</span><span class="p">(</span>
             <span class="n">messages</span><span class="o">=</span><span class="n">messages</span><span class="p">,</span>
             <span class="n">tools</span><span class="o">=</span><span class="n">tools</span><span class="p">,</span>
-            <span class="n">thinking</span><span class="o">=</span><span class="n">Thinking</span><span class="o">.</span><span class="n">enable</span><span class="p">()</span> <span class="k">if</span> <span class="n">thinking</span> <span class="k">else</span> <span class="n">Thinking</span><span class="o">.</span><span class="n">disable</span><span class="p">()</span>
-        <span class="p">)</span><span class="o">.</span><span class="n">model_dump</span><span class="p">(</span><span class="n">exclude_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="p">)</span>
 
-        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">with_stream</span><span class="p">:</span>
+            <span class="n">payload</span><span class="o">.</span><span class="n">stream</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">payload</span><span class="o">.</span><span class="n">model_dump</span><span class="p">(</span><span class="n">exclude_none</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">stream</span><span class="p">:</span> <span class="n">Stream</span> <span class="o">=</span> <span class="n">Stream</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">iter_lines</span><span class="p">())</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_response_queue</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">raw_response_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">RequestResponsePair</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">stream</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">AssistantMessage</span><span class="p">(</span><span class="o">**</span><span class="n">stream</span><span class="o">.</span><span class="n">build_full_response</span><span class="p">()[</span><span class="s2">&quot;choices&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;message&quot;</span><span class="p">])</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_response_queue</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">raw_response_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">RequestResponsePair</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">response</span><span class="p">))</span>
-
-        <span class="n">response_dict</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">response_dict</span><span class="p">[</span><span class="s2">&quot;choices&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">AssistantMessage</span><span class="p">(</span><span class="o">**</span><span class="n">response_dict</span><span class="p">[</span><span class="s2">&quot;choices&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;message&quot;</span><span class="p">])</span>
-
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span></div>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">payload</span><span class="o">.</span><span class="n">model_dump</span><span class="p">(</span><span class="n">exclude_none</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+            <span class="n">response_dict</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_response_queue</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">raw_response_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">RequestResponsePair</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">response_dict</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">response_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;choices&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">AssistantMessage</span><span class="p">(</span><span class="o">**</span><span class="n">response_dict</span><span class="p">[</span><span class="s2">&quot;choices&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;message&quot;</span><span class="p">])</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -353,7 +357,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=bda95818"></script>
+</div><script src="../../_static/documentation_options.js?v=22ebcc82"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
