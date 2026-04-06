@@ -25,6 +25,7 @@ class AgentInfo(BaseModel):
     :ivar description: Agent的简短描述
     :ivar prompt: 系统提示词
     :ivar tools: 可调用的工具列表
+    :ivar with_stream: 是否启用流式输出（默认 False）
     :ivar sub_agents: 可选，可调用的子 Agent 列表，每个元素为 (namespace, name)。
                       **注意**：若该列表非空，框架会自动注入 `choose_agent` 工具，
                       并将子 Agent 信息（命名空间、名字、简介）拼接到提示词中。
