@@ -33,7 +33,7 @@ class AgentInfo(BaseModel):
 
     description: str
     prompt: str
-    tools: List[Tool]
+    tools: Optional[List[Tool]]
     with_stream: bool = False
     sub_agents: Optional[List[Tuple[str, str]]] = None
 
