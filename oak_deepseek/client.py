@@ -1,7 +1,7 @@
 import json
 from collections import namedtuple
 from queue import Queue
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Tuple
 import os
 import requests
 from requests import Session
@@ -9,7 +9,7 @@ from requests import Session
 from oak_deepseek.models import DeepSeekRequestBody, Thinking, Tool, Message, AssistantMessage
 from oak_deepseek.stream import Stream
 
-ResponseData = namedtuple("ResponseData", ["payload", "llm_response", "http_remnants"])
+ResponseData = namedtuple("ResponseData", ["key_chain", "payload", "llm_response", "http_remnants"])
 
 class ChatClient:
     """
@@ -41,7 +41,8 @@ class ChatClient:
         }
         self.raw_response_queue: Optional[Queue[ResponseData]] = raw_response_queue
 
-    def send(self, messages: List[Message],
+    def send(self, key_chain: Tuple[Tuple[str,str], ...],
+             messages: List[Message],
              tools: Optional[List[Tool]]=None,
              with_stream: bool=False) -> AssistantMessage:
         """
@@ -66,7 +67,7 @@ class ChatClient:
 
             stream: Stream = Stream(response.iter_lines())
             if self.raw_response_queue:
-                self.raw_response_queue.put(ResponseData(payload, stream, response))
+                self.raw_response_queue.put(ResponseData(key_chain, payload, stream, response))
 
             response_dict = stream.build_full_response()
             return AssistantMessage(**response_dict["choices"][0]["message"])
@@ -81,7 +82,7 @@ class ChatClient:
             assistant_msg: AssistantMessage = AssistantMessage(**response_dict["choices"][0]["message"])
 
             if self.raw_response_queue:
-                self.raw_response_queue.put(ResponseData(payload, response_dict, response))
+                self.raw_response_queue.put(ResponseData(key_chain, payload, response_dict, response))
 
             return assistant_msg
 
