@@ -63,8 +63,6 @@ class ChatClient:
             payload.stream = True
             response = self.conn.post(url=self.url, headers=self.headers, json=payload.model_dump(exclude_none=True), stream=True)
             stream: Stream = Stream(response.iter_lines())
-            for chunk in stream.get_from_chunks():
-                print(chunk)
             if self.raw_response_queue is not None:
                 self.raw_response_queue.put(RequestResponsePair(payload, stream))
             return AssistantMessage(**stream.build_full_response()["choices"][0]["message"])
