@@ -5,7 +5,7 @@ from typing import Optional, Tuple, List, Dict
 import copy
 
 from oak_deepseek.models import Message, AssistantMessage
-from oak_deepseek.client import ChatClient, RequestResponsePair
+from oak_deepseek.client import ChatClient, ResponseData
 from oak_deepseek.agent import Agent
 
 
@@ -22,7 +22,7 @@ class AgentCore:
     def __init__(self, agent: Agent,
                  history_queue: Queue[Tuple[Tuple[Tuple[str, str], ...], Message]],
                  api_key: Optional[str] = None,
-                 raw_response_queue: Optional[Queue[RequestResponsePair]] = None):
+                 raw_response_queue: Optional[Queue[ResponseData]] = None):
         """
         初始化AgentCore。
 

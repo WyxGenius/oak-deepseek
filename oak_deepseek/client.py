@@ -9,7 +9,7 @@ from requests import Session
 from oak_deepseek.models import DeepSeekRequestBody, Thinking, Tool, Message, AssistantMessage
 from oak_deepseek.stream import Stream
 
-RequestResponsePair = namedtuple("RequestResponsePair", ["request", "response"])
+ResponseData = namedtuple("ResponseData", ["payload", "llm_response", "http_remnants"])
 
 class ChatClient:
     """
@@ -21,7 +21,7 @@ class ChatClient:
     :ivar raw_response_queue: 可选队列，记录原始请求与响应
     """
     def __init__(self, api_key: Optional[str],
-                 raw_response_queue: Optional[Queue[RequestResponsePair]] = None):
+                 raw_response_queue: Optional[Queue[ResponseData]] = None):
         """
         初始化客户端。
 
@@ -39,7 +39,7 @@ class ChatClient:
             'Accept': 'application/json',
             'Authorization': f'Bearer {self.api_key}'
         }
-        self.raw_response_queue: Optional[Queue[RequestResponsePair]] = raw_response_queue
+        self.raw_response_queue: Optional[Queue[ResponseData]] = raw_response_queue
 
     def send(self, messages: List[Message],
              tools: Optional[List[Tool]]=None,
@@ -62,19 +62,28 @@ class ChatClient:
         if with_stream:
             payload.stream = True
             response = self.conn.post(url=self.url, headers=self.headers, json=payload.model_dump(exclude_none=True), stream=True)
+            response.raise_for_status()
+
             stream: Stream = Stream(response.iter_lines())
-            if self.raw_response_queue is not None:
-                self.raw_response_queue.put(RequestResponsePair(payload, stream))
-            return AssistantMessage(**stream.build_full_response()["choices"][0]["message"])
+            if self.raw_response_queue:
+                self.raw_response_queue.put(ResponseData(payload, stream, response))
+
+            response_dict = stream.build_full_response()
+            return AssistantMessage(**response_dict["choices"][0]["message"])
 
         else:
             response = self.conn.post(url=self.url, headers=self.headers, json=payload.model_dump(exclude_none=True))
+            response.raise_for_status()
+
             response_dict: Dict = json.loads(response.text)
-            if self.raw_response_queue is not None:
-                self.raw_response_queue.put(RequestResponsePair(payload, response_dict))
-            if response_dict.get("choices") is not None:
-                return AssistantMessage(**response_dict["choices"][0]["message"])
-            raise RuntimeError(response.text)
+
+            # 提前建好，避免后续被修改
+            assistant_msg: AssistantMessage = AssistantMessage(**response_dict["choices"][0]["message"])
+
+            if self.raw_response_queue:
+                self.raw_response_queue.put(ResponseData(payload, response_dict, response))
+
+            return assistant_msg
 
     def __enter__(self):
         """

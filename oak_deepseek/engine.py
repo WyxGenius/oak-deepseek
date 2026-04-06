@@ -3,7 +3,7 @@ from queue import Queue
 from typing import List, Callable, Literal, Optional, Tuple, Dict, Union
 
 from oak_deepseek.agent import AgentInfo, AgentFactory, Agent
-from oak_deepseek.client import RequestResponsePair
+from oak_deepseek.client import ResponseData
 from oak_deepseek.core import AgentCore
 from oak_deepseek.loop import main
 from oak_deepseek.models import Tool, Message, AssistantMessage, ToolMessage, UserMessage, SystemMessage
@@ -57,7 +57,7 @@ class AgentEngine:
 
     def create_core(self, key: Union[Tuple[str, str], List[Tuple[Tuple[Tuple[str, str], ...], Message]]],
                     history_queue: Queue,
-                    raw_response_queue: Optional[Queue[RequestResponsePair]] = None,
+                    raw_response_queue: Optional[Queue[ResponseData]] = None,
                     api_key: Optional[str] = None
                     ) -> AgentCore:
         """
@@ -200,7 +200,7 @@ class AgentEngine:
     def run(self, input_queue: Queue[str],
             key: Union[Tuple[str, str], List[Tuple[Tuple[Tuple[str, str], ...], Message]]],
             history_queue: Queue,
-            raw_response_queue: Optional[Queue[RequestResponsePair]] = None,
+            raw_response_queue: Optional[Queue[ResponseData]] = None,
             api_key: Optional[str] = None
             ):
         """
