@@ -24,6 +24,7 @@ engine.create_agent(
     description="一个能进行数学计算的agent",
     prompt="你是一个严谨细致的数学计算助手，任何计算仅使用工具完成",
     tools=[add],
+    with_stream=True,
     sub_agents=[("sys","sub")]
 )
 
@@ -36,7 +37,7 @@ engine.create_agent(
 history_queue = Queue()
 
 task_queue = Queue()
-task_queue.put("计算(679+678)*(2+78)，你需要同时完成所有加法")
+task_queue.put("计算(679+678)*(2+78)，你需要每次都尽可能多的调用工具来加速任务")
 
 def go():
     engine.run(task_queue, key=("sys", "sys"), history_queue=history_queue, api_key=os.getenv("DEEPSEEK_API_KEY"))
