@@ -35,3 +35,8 @@ API 参考
    :members:
    :undoc-members:
    :show-inheritance:
+
+.. automodule:: oak_deepseek.stream
+   :members:
+   :undoc-members:
+   :show-inheritance:
