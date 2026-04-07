@@ -128,7 +128,7 @@ class AgentEngine:
 
             # 最后一条是ToolMessage：倒序遍历至当前agent的AssistantMessage
             elif isinstance(last_message, ToolMessage):
-                # 倒走遍历至AssistanMessage
+                # 倒走遍历至AssistantMessage
                 last_messages: List[Tuple[Tuple[Tuple[str, str], ...], Message]] = []
                 for snapshot in reversed(key):
                     # 确保调用链信息一致
