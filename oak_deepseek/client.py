@@ -48,11 +48,11 @@ class ChatClient:
         """
         发送请求并返回助手消息。
 
+        :param key_chain: 调用链元组，表示当前 Agent 的路径
         :param messages: 消息历史列表
         :param tools: 可选，可用的工具列表
         :param with_stream: 可选，是否启用流式输出
         :return: AssistantMessage对象
-        :raises RuntimeError: 如果API返回的响应中没有choices字段
         """
 
         payload: DeepSeekRequestBody = DeepSeekRequestBody(
