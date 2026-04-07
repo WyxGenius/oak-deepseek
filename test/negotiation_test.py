@@ -3,7 +3,7 @@ from threading import Thread
 import os
 from oak_deepseek.engine import AgentEngine
 
-# 数值存储子 Agent（无工具，仅通过 prompt 返回固定值）
+
 def store_lookup(value_name: str) -> str:
     """返回数值存储中的值（模拟工具）"""
     store = {"a": 2, "b": 3, "c": 4, "d": 5}
