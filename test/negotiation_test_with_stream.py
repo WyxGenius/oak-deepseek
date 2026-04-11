@@ -1,9 +1,14 @@
 from queue import Queue
 from threading import Thread
 import os
+from typing import Union, Tuple
+
 from oak_deepseek.engine import AgentEngine
-from oak_deepseek.models import AssistantMessage
+from oak_deepseek.models import AssistantMessage, Message
 from oak_deepseek.stream import Stream
+from oak_deepseek.utils import StreamDisplay, is_response, is_stream
+from oak_deepseek.client import ResponseData
+from oak_deepseek.core import KeyChain
 
 
 def store_lookup(value_name: str) -> str:
@@ -51,8 +56,8 @@ engine.create_agent(
 )
 
 history_queue = Queue()
-
 raw_response_queue = Queue()
+stream_display: StreamDisplay = StreamDisplay(history_queue, raw_response_queue)
 
 task_queue = Queue()
 task_queue.put("请计算表达式 (a * b) + (c * d)")
@@ -62,24 +67,23 @@ def go():
                api_key=os.getenv("DEEPSEEK_API_KEY"), raw_response_queue=raw_response_queue)
 
 def messages():
+    display_queue: Queue[Union[ResponseData, Tuple[KeyChain, Message]]] = stream_display.get_display()
     while True:
-        msg = history_queue.get(block=True)
-        if msg is None:
-            return
-        if isinstance(msg[1], AssistantMessage):
-            continue
-        #print(f"{msg},")
+        msg = display_queue.get(block=True)
+        if is_response(msg):
+            if is_stream(msg):
+                stream: Stream = msg.llm_response
+                data_type = None
+                for chunk in stream.get_from_chunks():
+                    if chunk[0] != data_type:
+                        data_type = chunk[0]
+                        print()
+                    print(chunk[1], end='')
+            else:
+                print(msg.llm_response)
+        else:
+            print(msg)
 
-def print_stream():
-    while True:
-        raw_response = raw_response_queue.get(block=True)
-        stream: Stream = raw_response[2]
-        mode: str = ""
-        for chunk in stream.get_from_chunks():
-            if chunk[0] != mode:
-                mode = chunk[0]
-                print(f"\n\n********************** {chunk[0]} from {raw_response[0]} **********************\n")
-            print(chunk[1], end='')
 
 if __name__ == "__main__":
     agent_thread = Thread(target=go)
@@ -88,10 +92,8 @@ if __name__ == "__main__":
     print_thread = Thread(target=messages)
     print_thread.start()
 
-    stream_thread = Thread(target=print_stream)
-    stream_thread.start()
-
     agent_thread.join()
     history_queue.put(None)
     print_thread.join()
-    stream_thread.join()
+
+    stream_display.quit()
