@@ -4,11 +4,8 @@ import os
 from typing import Union, Tuple
 
 from oak_deepseek.engine import AgentEngine
-from oak_deepseek.models import Message
 from oak_deepseek.stream import Stream
 from oak_deepseek.utils import StreamDisplay, is_response, is_stream
-from oak_deepseek.client import ResponseData
-from oak_deepseek.core import KeyChain
 
 
 def store_lookup(value_name: str) -> str:
@@ -67,7 +64,7 @@ def go():
                api_key=os.getenv("DEEPSEEK_API_KEY"), raw_response_queue=raw_response_queue)
 
 def messages():
-    display_queue: Queue[Union[ResponseData, Tuple[KeyChain, Message]]] = stream_display.get_display()
+    display_queue: Queue = stream_display.get_display()
     while True:
         msg = display_queue.get(block=True)
         if is_response(msg):
