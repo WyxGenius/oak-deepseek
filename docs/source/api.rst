@@ -6,6 +6,16 @@ API 参考
    :undoc-members:
    :show-inheritance:
 
+.. automodule:: oak_deepseek.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: oak_deepseek.stream
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 .. automodule:: oak_deepseek.core
    :members:
    :undoc-members:
@@ -32,11 +42,6 @@ API 参考
    :show-inheritance:
 
 .. automodule:: oak_deepseek.client
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. automodule:: oak_deepseek.stream
    :members:
    :undoc-members:
    :show-inheritance:
