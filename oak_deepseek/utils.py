@@ -39,10 +39,10 @@ class StreamDisplay:
         self.display_thread: Thread = Thread(target=get_assistant_message)
         self.display_thread.start()
 
-    def get_context(self):
+    def get_context(self) -> Queue[Tuple[KeyChain, Message]]:
         return self.context_queue
 
-    def get_display(self):
+    def get_display(self) -> Queue[Union[ResponseData, Tuple[KeyChain, Message]]]:
         return self.display_queue
 
     def quit(self):
