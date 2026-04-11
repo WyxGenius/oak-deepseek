@@ -4,7 +4,7 @@ import os
 from typing import Union, Tuple
 
 from oak_deepseek.engine import AgentEngine
-from oak_deepseek.models import AssistantMessage, Message
+from oak_deepseek.models import Message
 from oak_deepseek.stream import Stream
 from oak_deepseek.utils import StreamDisplay, is_response, is_stream
 from oak_deepseek.client import ResponseData
