@@ -5,6 +5,7 @@ from typing import Union, Tuple, Optional
 from oak_deepseek.client import ResponseData
 from oak_deepseek.models import AssistantMessage, Message
 from oak_deepseek.core import KeyChain
+from oak_deepseek.stream import Stream
 
 
 class StreamDisplay:
@@ -50,7 +51,7 @@ class StreamDisplay:
 
 
 def is_response(data: Union[ResponseData, Tuple[KeyChain, Message]]) -> bool:
-    if isinstance(data, ResponseData):
-        return True
-    else:
-        return False
+    return isinstance(data, ResponseData)
+
+def is_stream(data: ResponseData) -> bool:
+    return isinstance(data.llm_response, Stream)
