@@ -79,6 +79,8 @@ def messages():
                         data_type = chunk[0]
                         print()
                     print(chunk[1], end='')
+                print()
+                print(stream.build_full_response())
             else:
                 print(msg.llm_response)
         else:
