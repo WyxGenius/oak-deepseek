@@ -49,7 +49,7 @@ class StreamDisplay:
         self.raw_response_queue.put(None)
 
 
-def is_stream(data: Union[ResponseData, Tuple[KeyChain, Message]]) -> bool:
+def is_response(data: Union[ResponseData, Tuple[KeyChain, Message]]) -> bool:
     if isinstance(data, ResponseData):
         return True
     else:
