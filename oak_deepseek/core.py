@@ -9,6 +9,8 @@ from oak_deepseek.client import ChatClient, ResponseData
 from oak_deepseek.agent import Agent
 
 
+KeyChain = Tuple[Tuple[str, str], ...]
+
 class AgentCore:
     """
     Agent运行时的核心，管理当前Agent、调用栈和消息历史。
@@ -20,7 +22,7 @@ class AgentCore:
     :ivar memory: 按 key_chain 索引的消息历史缓存，用于 subagent 的有状态记忆
     """
     def __init__(self, agent: Agent,
-                 history_queue: Queue[Tuple[Tuple[Tuple[str, str], ...], Message]],
+                 history_queue: Queue[Tuple[KeyChain, Message]],
                  api_key: Optional[str] = None,
                  raw_response_queue: Optional[Queue[ResponseData]] = None):
         """
@@ -31,11 +33,11 @@ class AgentCore:
         :param api_key: DeepSeek API密钥
         :param raw_response_queue: 可选，原始请求/响应队列
         """
-        self.history_queue: Queue[Tuple[Tuple[Tuple[str, str], ...], Message]] = history_queue
+        self.history_queue: Queue[Tuple[KeyChain, Message]] = history_queue
         self.client = ChatClient(api_key=api_key, raw_response_queue=raw_response_queue)
         self.agent: Agent = agent
         self.stack: deque[Agent] = deque()
-        self.memory: Dict[Tuple[Tuple[str, str], ...], List[Message]] = {}
+        self.memory: Dict[KeyChain, List[Message]] = {}
 
     def update(self, message: Message) -> Message:
         """
