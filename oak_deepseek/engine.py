@@ -58,7 +58,8 @@ class AgentEngine:
     def create_core(self, key: Union[Tuple[str, str], List[Tuple[Tuple[Tuple[str, str], ...], Message]]],
                     history_queue: Queue,
                     raw_response_queue: Optional[Queue[ResponseData]] = None,
-                    api_key: Optional[str] = None
+                    api_key: Optional[str] = None,
+                    exception_queue: Queue = None
                     ) -> AgentCore:
         """
         初始化引擎，指定入口Agent和消息记录队列。
@@ -82,7 +83,11 @@ class AgentEngine:
         """
         # 根据key的类型确认工作模式为初始化或恢复
         if isinstance(key, tuple):
-            return AgentCore(self.agent_factory.build((key,)), history_queue, api_key=api_key, raw_response_queue=raw_response_queue)
+            return AgentCore(self.agent_factory.build((key,)),
+                             history_queue,
+                             api_key=api_key,
+                             raw_response_queue=raw_response_queue,
+                             exception_queue=exception_queue)
         else:
             if len(key) < 1:
                 raise ValueError("历史记录列表不能为空")
@@ -90,7 +95,10 @@ class AgentEngine:
             # key: List[Tuple[Tuple[Tuple[str, str], ...], Message]]
             key_chain: Tuple[Tuple[str, str], ...] = key[0][0]
             core: AgentCore = AgentCore(self.agent_factory.build(key_chain),
-                                        history_queue, api_key=api_key, raw_response_queue=raw_response_queue)
+                                        history_queue,
+                                        api_key=api_key,
+                                        raw_response_queue=raw_response_queue,
+                                        exception_queue=exception_queue)
 
             # 获取最后一条消息和所有者
             # key: List[Tuple[Tuple[Tuple[str, str], ...], Message]]
@@ -201,7 +209,8 @@ class AgentEngine:
             key: Union[Tuple[str, str], List[Tuple[Tuple[Tuple[str, str], ...], Message]]],
             history_queue: Queue,
             raw_response_queue: Optional[Queue[ResponseData]] = None,
-            api_key: Optional[str] = None
+            api_key: Optional[str] = None,
+            exception_queue: Queue = None
             ):
         """
         开始任务，阻塞直到所有Agent完成工作。
@@ -220,7 +229,11 @@ class AgentEngine:
         :param api_key: DeepSeek API密钥
         :return: None
         """
-        core: AgentCore = self.create_core(key=key, history_queue=history_queue, raw_response_queue=raw_response_queue, api_key=api_key)
+        core: AgentCore = self.create_core(key=key,
+                                           history_queue=history_queue,
+                                           raw_response_queue=raw_response_queue,
+                                           api_key=api_key,
+                                           exception_queue=exception_queue)
         depth: int = len(core.stack) + 1
 
         task: Optional[str]

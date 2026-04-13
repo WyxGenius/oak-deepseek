@@ -24,7 +24,8 @@ class AgentCore:
     def __init__(self, agent: Agent,
                  history_queue: Queue[Tuple[KeyChain, Message]],
                  api_key: Optional[str] = None,
-                 raw_response_queue: Optional[Queue[ResponseData]] = None):
+                 raw_response_queue: Optional[Queue[ResponseData]] = None,
+                 exception_queue: Queue = None):
         """
         初始化AgentCore。
 
@@ -34,7 +35,7 @@ class AgentCore:
         :param raw_response_queue: 可选，原始请求/响应队列
         """
         self.history_queue: Queue[Tuple[KeyChain, Message]] = history_queue
-        self.client = ChatClient(api_key=api_key, raw_response_queue=raw_response_queue)
+        self.client = ChatClient(api_key=api_key, raw_response_queue=raw_response_queue, exception_queue=exception_queue)
         self.agent: Agent = agent
         self.stack: deque[Agent] = deque()
         self.memory: Dict[KeyChain, List[Message]] = {}
