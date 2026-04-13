@@ -21,7 +21,8 @@ class ChatClient:
     :ivar raw_response_queue: 可选队列，记录原始请求与响应
     """
     def __init__(self, api_key: Optional[str],
-                 raw_response_queue: Optional[Queue[ResponseData]] = None):
+                 raw_response_queue: Optional[Queue[ResponseData]] = None,
+                 exception_queue: Optional[Queue] = None):
         """
         初始化客户端。
 
@@ -40,6 +41,7 @@ class ChatClient:
             'Authorization': f'Bearer {self.api_key}'
         }
         self.raw_response_queue: Optional[Queue[ResponseData]] = raw_response_queue
+        self.exception_queue: Optional[Queue] = exception_queue
 
     def send(self, key_chain: Tuple[Tuple[str,str], ...],
              messages: List[Message],
@@ -60,31 +62,45 @@ class ChatClient:
             tools=tools,
         )
 
-        if with_stream:
-            payload.stream = True
-            response = self.conn.post(url=self.url, headers=self.headers, json=payload.model_dump(exclude_none=True), stream=True)
-            response.raise_for_status()
+        while True:
+            try:
+                if with_stream:
+                    payload.stream = True
+                    response = self.conn.post(url=self.url, headers=self.headers,
+                                              json=payload.model_dump(exclude_none=True), stream=True)
+                    response.raise_for_status()
 
-            stream: Stream = Stream(response.iter_lines())
-            if self.raw_response_queue:
-                self.raw_response_queue.put(ResponseData(key_chain, payload, stream, response))
+                    stream: Stream = Stream(response.iter_lines())
+                    if self.raw_response_queue:
+                        self.raw_response_queue.put(ResponseData(key_chain, payload, stream, response))
 
-            response_dict = stream.build_full_response()
-            return AssistantMessage(**response_dict["choices"][0]["message"])
+                    response_dict = stream.build_full_response()
+                    return AssistantMessage(**response_dict["choices"][0]["message"])
 
-        else:
-            response = self.conn.post(url=self.url, headers=self.headers, json=payload.model_dump(exclude_none=True))
-            response.raise_for_status()
+                else:
+                    response = self.conn.post(url=self.url, headers=self.headers,
+                                              json=payload.model_dump(exclude_none=True))
+                    response.raise_for_status()
 
-            response_dict: Dict = json.loads(response.text)
+                    response_dict: Dict = json.loads(response.text)
 
-            # 提前建好，避免后续被修改
-            assistant_msg: AssistantMessage = AssistantMessage(**response_dict["choices"][0]["message"])
+                    # 提前建好，避免后续被修改
+                    assistant_msg: AssistantMessage = AssistantMessage(**response_dict["choices"][0]["message"])
 
-            if self.raw_response_queue:
-                self.raw_response_queue.put(ResponseData(key_chain, payload, response_dict, response))
+                    if self.raw_response_queue:
+                        self.raw_response_queue.put(ResponseData(key_chain, payload, response_dict, response))
 
-            return assistant_msg
+                    return assistant_msg
+            except Exception as e:
+                if self.exception_queue is None:
+                    raise e
+                self.exception_queue.put(e)
+                cmd: str = self.exception_queue.get(block=True)
+                if cmd == "retry":
+                    continue
+                else:
+                    raise e
+
 
     def __enter__(self):
         """

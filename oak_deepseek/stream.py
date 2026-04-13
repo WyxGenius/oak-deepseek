@@ -41,17 +41,21 @@ class Stream:
         self.chunks: List[Dict] = []
         self._cond: Condition = Condition()
         self._finished: bool = False
+        self._error: Optional[Exception] = None
 
         def init():
-            for chunk in iterator:
-                if chunk:
-                    if isinstance(chunk, bytes):
-                        chunk = parse_stream(chunk)
-                        if chunk is None:
-                            break
-                    with self._cond:
-                        self.chunks.append(chunk)
-                        self._cond.notify_all()
+            try:
+                for chunk in iterator:
+                    if chunk:
+                        if isinstance(chunk, bytes):
+                            chunk = parse_stream(chunk)
+                            if chunk is None:
+                                break
+                        with self._cond:
+                            self.chunks.append(chunk)
+                            self._cond.notify_all()
+            except Exception as e:
+                self._error = e
             with self._cond:
                 self._finished = True
                 self._cond.notify_all()
@@ -69,6 +73,8 @@ class Stream:
         """
         idx: int = 0
         while True:
+            if self._error:
+                raise self._error
             with self._cond:
                 while idx >= len(self.chunks) and not self._finished:
                     self._cond.wait()
