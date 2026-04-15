@@ -32,7 +32,9 @@ class AgentEngine:
                      prompt: str,
                      tools: Optional[List[Callable]]=None,
                      with_stream: bool = False,
-                     sub_agents: Optional[List[Tuple[str, str]]]=None):
+                     sub_agents: Optional[List[Tuple[str, str]]]=None,
+                     rm_rf_memory: bool = False
+                     ):
         """
         注册一个Agent至引擎，以后可以用唯一命名空间+名字来指定。
 
@@ -40,7 +42,9 @@ class AgentEngine:
         :param description: Agent的简短描述
         :param prompt: Agent的系统提示词
         :param tools: 可选，Agent可调用的工具函数列表
+        :param with_stream: 可选，是否启用流式输出，默认为False
         :param sub_agents: 可选，可调用的子Agent列表，每个元素为子Agent的key
+        :param rm_rf_memory: 可选，完成任务后是否清理自身与下级的记忆，默认为False
         :return: None
         """
 
@@ -52,7 +56,7 @@ class AgentEngine:
                 tools_info.append(standardize_tool(tool))
 
         self.agent_factory.register_agent(key, AgentInfo(
-            description=description, prompt=prompt, tools=tools_info, with_stream=with_stream, sub_agents=sub_agents
+            description=description, prompt=prompt, tools=tools_info, with_stream=with_stream, sub_agents=sub_agents, rm_rf_memory=rm_rf_memory
         ))
 
     def create_core(self, key: Union[Tuple[str, str], List[Tuple[Tuple[Tuple[str, str], ...], Message]]],
