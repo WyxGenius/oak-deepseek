@@ -81,5 +81,17 @@ class AgentCore:
         """
         返回到父Agent：将当前 Agent 的消息历史保存到 memory 中，然后弹出栈顶，恢复父Agent为当前Agent。
         """
-        self.memory[self.agent.key_chain] = copy.deepcopy(self.agent.messages)
+        if not self.agent.info.rm_rf_memory:
+            self.memory[self.agent.key_chain] = copy.deepcopy(self.agent.messages)
+        else:
+            self.rm_rf()
         self.agent = self.stack.pop()
+
+    def rm_rf(self):
+        key_chain_list: List[KeyChain] = list(self.memory.keys())
+        current_key_chain: KeyChain = self.agent.key_chain
+        length: int = len(current_key_chain)
+
+        for key_chain in key_chain_list:
+            if key_chain[:length] == current_key_chain:
+                del self.memory[key_chain]

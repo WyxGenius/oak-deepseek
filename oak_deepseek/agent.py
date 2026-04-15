@@ -37,6 +37,7 @@ class AgentInfo(BaseModel):
     tools: Optional[List[Tool]]
     with_stream: bool = False
     sub_agents: Optional[List[Tuple[str, str]]] = None
+    rm_rf_memory: bool = False
 
 # agent自己维护好自己的消息记录
 class Agent:
