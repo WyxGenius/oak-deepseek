@@ -102,5 +102,5 @@ class AgentCore:
         length: int = len(current_key_chain)
 
         for key_chain in key_chain_list:
-            if key_chain[:length] == current_key_chain:
+            if key_chain[:length] == current_key_chain and len(key_chain) > length:
                 del self.memory[key_chain]
