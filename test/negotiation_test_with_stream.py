@@ -20,7 +20,8 @@ engine.create_agent(
     description="数值存储库，可以查询 a,b,c,d 的值",
     prompt="你是一个数值存储助手。用户会询问某个变量的值，请调用工具 store_lookup 获取并返回。",
     with_stream=True,
-    tools=[store_lookup]
+    tools=[store_lookup],
+    rm_rf_memory=True
 )
 
 # 注册计算子 Agent（无工具，只能通过 choose_agent 向父 Agent 询问）
