@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="索引" href="../../genindex.html"><link rel="search" title="搜索" href="../../search.html">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
-        <title>oak_deepseek.engine - Oak DeepSeek 0.7.2 文档</title>
+        <title>oak_deepseek.engine - Oak DeepSeek 1.0.0 文档</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -160,7 +160,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">Oak DeepSeek 0.7.2 文档</div></a>
+      <a href="../../index.html"><div class="brand">Oak DeepSeek 1.0.0 文档</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -181,7 +181,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
   
-  <span class="sidebar-brand-text">Oak DeepSeek 0.7.2 文档</span>
+  <span class="sidebar-brand-text">Oak DeepSeek 1.0.0 文档</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
   <input class="sidebar-search" placeholder="搜索" name="q" aria-label="搜索">
@@ -292,7 +292,8 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">create_core</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">],</span> <span class="n">Message</span><span class="p">]]],</span>
                     <span class="n">history_queue</span><span class="p">:</span> <span class="n">Queue</span><span class="p">,</span>
                     <span class="n">raw_response_queue</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Queue</span><span class="p">[</span><span class="n">ResponseData</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="n">api_key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="n">api_key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">exception_queue</span><span class="p">:</span> <span class="n">Queue</span> <span class="o">=</span> <span class="kc">None</span>
                     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AgentCore</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        初始化引擎，指定入口Agent和消息记录队列。</span>
@@ -306,8 +307,9 @@
 <span class="sd">        :param key: 启动方式。</span>
 
 <span class="sd">        - 若为元组 (namespace, name)，表示正常启动，该元组为入口 Agent 的 key。</span>
-<span class="sd">        - 若为列表，表示断点恢复模式。列表元素为 (key_chain, message)，按时间顺序排列。传入空列表时，会抛出 ValueError。</span>
-<span class="sd">        - 注意：恢复模式下传入的历史消息列表可能会被修改（恢复时会补全缺失消息以确保符合API规范）</span>
+<span class="sd">        - 若为列表，表示断点恢复模式。列表元素为 (key_chain, message)，其中 key_chain 的类型为 Tuple[Tuple[str, str], ...]。</span>
+<span class="sd">          按时间顺序排列。**注意：传入的列表可能被原地修改**（恢复时会补全缺失消息以确保符合API规范）。</span>
+<span class="sd">          若传入空列表，将引发 ValueError。</span>
 
 <span class="sd">        :param history_queue: 消息输出队列，运行期间产生的所有消息（附带调用链信息）都会被放入此队列</span>
 <span class="sd">        :param raw_response_queue: 可选，用于输出原始请求/响应对的队列</span>
@@ -316,7 +318,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># 根据key的类型确认工作模式为初始化或恢复</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">AgentCore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agent_factory</span><span class="o">.</span><span class="n">build</span><span class="p">((</span><span class="n">key</span><span class="p">,)),</span> <span class="n">history_queue</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span> <span class="n">raw_response_queue</span><span class="o">=</span><span class="n">raw_response_queue</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">AgentCore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agent_factory</span><span class="o">.</span><span class="n">build</span><span class="p">((</span><span class="n">key</span><span class="p">,)),</span>
+                             <span class="n">history_queue</span><span class="p">,</span>
+                             <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+                             <span class="n">raw_response_queue</span><span class="o">=</span><span class="n">raw_response_queue</span><span class="p">,</span>
+                             <span class="n">exception_queue</span><span class="o">=</span><span class="n">exception_queue</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;历史记录列表不能为空&quot;</span><span class="p">)</span>
@@ -324,7 +330,10 @@
             <span class="c1"># key: List[Tuple[Tuple[Tuple[str, str], ...], Message]]</span>
             <span class="n">key_chain</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">core</span><span class="p">:</span> <span class="n">AgentCore</span> <span class="o">=</span> <span class="n">AgentCore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agent_factory</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">key_chain</span><span class="p">),</span>
-                                        <span class="n">history_queue</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span> <span class="n">raw_response_queue</span><span class="o">=</span><span class="n">raw_response_queue</span><span class="p">)</span>
+                                        <span class="n">history_queue</span><span class="p">,</span>
+                                        <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+                                        <span class="n">raw_response_queue</span><span class="o">=</span><span class="n">raw_response_queue</span><span class="p">,</span>
+                                        <span class="n">exception_queue</span><span class="o">=</span><span class="n">exception_queue</span><span class="p">)</span>
 
             <span class="c1"># 获取最后一条消息和所有者</span>
             <span class="c1"># key: List[Tuple[Tuple[Tuple[str, str], ...], Message]]</span>
@@ -438,14 +447,17 @@
             <span class="n">key</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">],</span> <span class="n">Message</span><span class="p">]]],</span>
             <span class="n">history_queue</span><span class="p">:</span> <span class="n">Queue</span><span class="p">,</span>
             <span class="n">raw_response_queue</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Queue</span><span class="p">[</span><span class="n">ResponseData</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">api_key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">api_key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">exception_queue</span><span class="p">:</span> <span class="n">Queue</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        开始任务，阻塞直到所有Agent完成工作。</span>
 <span class="sd">        此方法会：</span>
 
 <span class="sd">        1. 调用 create_core 创建 AgentCore 实例（支持正常启动或历史恢复）。</span>
-<span class="sd">        2. 正常启动时，从 input_queue 获取初始任务；恢复时，直接从历史中恢复执行状态，不再读取初始任务。恢复时，传入循环函数的 task 参数为 None，会被 init 函数自动忽略。</span>
+<span class="sd">        2. 正常启动时，从 input_queue 获取初始任务；恢复时，直接从历史中恢复执行状态，不再读取初始任务。</span>
+<span class="sd">           恢复时，传入循环函数的 task 参数为 None，会被 init 函数自动忽略。</span>
+<span class="sd">           注意：在恢复后的后续循环中，若子 Agent 返回 None，task 仍保持为 None，直到新的用户输入被读入。</span>
 <span class="sd">        3. 反复调用 main 函数处理消息循环，直到调用栈为空</span>
 
 <span class="sd">        注意：在恢复模式下，input_queue 仍然用于在 ReactiveReAct 循环中接收新的用户输入。</span>
@@ -457,7 +469,11 @@
 <span class="sd">        :param api_key: DeepSeek API密钥</span>
 <span class="sd">        :return: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">core</span><span class="p">:</span> <span class="n">AgentCore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_core</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">history_queue</span><span class="o">=</span><span class="n">history_queue</span><span class="p">,</span> <span class="n">raw_response_queue</span><span class="o">=</span><span class="n">raw_response_queue</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">)</span>
+        <span class="n">core</span><span class="p">:</span> <span class="n">AgentCore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_core</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span>
+                                           <span class="n">history_queue</span><span class="o">=</span><span class="n">history_queue</span><span class="p">,</span>
+                                           <span class="n">raw_response_queue</span><span class="o">=</span><span class="n">raw_response_queue</span><span class="p">,</span>
+                                           <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+                                           <span class="n">exception_queue</span><span class="o">=</span><span class="n">exception_queue</span><span class="p">)</span>
         <span class="n">depth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">core</span><span class="o">.</span><span class="n">stack</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
 
         <span class="n">task</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
@@ -509,7 +525,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=0767b4b6"></script>
+</div><script src="../../_static/documentation_options.js?v=34088549"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="索引" href="../../genindex.html"><link rel="search" title="搜索" href="../../search.html">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
-        <title>oak_deepseek.loop - Oak DeepSeek 0.7.2 文档</title>
+        <title>oak_deepseek.loop - Oak DeepSeek 1.0.0 文档</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -160,7 +160,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">Oak DeepSeek 0.7.2 文档</div></a>
+      <a href="../../index.html"><div class="brand">Oak DeepSeek 1.0.0 文档</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -181,7 +181,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
   
-  <span class="sidebar-brand-text">Oak DeepSeek 0.7.2 文档</span>
+  <span class="sidebar-brand-text">Oak DeepSeek 1.0.0 文档</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
   <input class="sidebar-search" placeholder="搜索" name="q" aria-label="搜索">
@@ -239,10 +239,11 @@
 <a class="viewcode-back" href="../../api.html#oak_deepseek.loop.init">[文档]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">init</span><span class="p">(</span><span class="n">core</span><span class="p">:</span> <span class="n">AgentCore</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    用于Agent初始化</span>
+<span class="sd">    用于Agent初始化。若消息列表为空，则注入系统提示词；若提供了任务，则添加用户消息。</span>
+
 <span class="sd">    :param core: AgentCore，会话核心</span>
-<span class="sd">    :param task: Optional[str]，Agent要执行的任务</span>
-<span class="sd">    :return:</span>
+<span class="sd">    :param task: 可选，Agent要执行的任务字符串。若为 None 则不添加用户消息。</span>
+<span class="sd">    :return: None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">core</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">messages</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="c1"># 当前agent信息在引擎初始化，或调用子agent时在引擎中更新</span>
@@ -380,7 +381,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=0767b4b6"></script>
+</div><script src="../../_static/documentation_options.js?v=34088549"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

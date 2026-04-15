@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="索引" href="../../genindex.html"><link rel="search" title="搜索" href="../../search.html">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
-        <title>oak_deepseek.utils - Oak DeepSeek 0.7.2 文档</title>
+        <title>oak_deepseek.utils - Oak DeepSeek 1.0.0 文档</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -160,7 +160,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">Oak DeepSeek 0.7.2 文档</div></a>
+      <a href="../../index.html"><div class="brand">Oak DeepSeek 1.0.0 文档</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -181,7 +181,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
   
-  <span class="sidebar-brand-text">Oak DeepSeek 0.7.2 文档</span>
+  <span class="sidebar-brand-text">Oak DeepSeek 1.0.0 文档</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
   <input class="sidebar-search" placeholder="搜索" name="q" aria-label="搜索">
@@ -248,13 +248,14 @@
 <span class="sd">    - `display_queue`：存放需要实时展示的内容，包括非助手消息以及来自</span>
 <span class="sd">      `raw_response_queue` 的原始响应数据（`ResponseData`）。</span>
 
-<span class="sd">    内部启动两个后台线程持续消费输入队列，直到接收到 `None` 停止信号。</span>
-<span class="sd">    使用完毕后必须调用 `quit()` 方法发送停止信号，否则线程将持续阻塞。</span>
+<span class="sd">    `ResponseData` 是一个命名元组，定义于 `client.py`，包含以下字段：</span>
+<span class="sd">        - key_chain : Tuple[Tuple[str, str], ...]</span>
+<span class="sd">        - payload   : DeepSeekRequestBody (请求体)</span>
+<span class="sd">        - llm_response : Union[Dict, Stream] (响应数据或流对象)</span>
+<span class="sd">        - http_remnants : requests.Response (原始HTTP响应对象)</span>
 
-<span class="sd">    :ivar history_queue: 输入队列，来自 AgentEngine 的历史消息队列，元素为可选的 (KeyChain, Message) 元组。</span>
-<span class="sd">    :ivar raw_response_queue: 输入队列，来自 AgentEngine 的原始响应队列，元素为可选的 ResponseData 对象。</span>
-<span class="sd">    :ivar context_queue: 输出队列，存放持久化的完整结构化消息，元素为 (KeyChain, Message) 元组。</span>
-<span class="sd">    :ivar display_queue: 输出队列，存放待展示的数据，元素为 ResponseData 或 (KeyChain, Message) 元组。</span>
+<span class="sd">    使用 `is_response()` 和 `is_stream()` 可判断 `display_queue` 中元素的类型。</span>
+<span class="sd">    ...</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">history_queue</span><span class="p">:</span> <span class="n">Queue</span><span class="p">,</span> <span class="n">raw_response_queue</span><span class="p">:</span> <span class="n">Queue</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -417,7 +418,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=0767b4b6"></script>
+</div><script src="../../_static/documentation_options.js?v=34088549"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
