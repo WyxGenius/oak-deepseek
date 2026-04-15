@@ -28,6 +28,10 @@ class ChatClient:
 
         :param api_key: DeepSeek API密钥，默认从环境变量DEEPSEEK_API_KEY读取
         :param raw_response_queue: 可选队列，存储原始请求和响应对
+        :param exception_queue: 可选队列，用于异常处理控制。当请求发生异常时，
+            异常对象会被放入该队列，随后客户端阻塞等待从同一队列获取指令。
+            若收到字符串 "retry" 则重试请求，否则重新抛出异常。
+            若未提供该队列，异常将直接抛出。
         """
         if api_key is None:
             self.api_key: str = os.getenv("DEEPSEEK_API_KEY")

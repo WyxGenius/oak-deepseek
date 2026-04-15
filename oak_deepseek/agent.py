@@ -96,6 +96,9 @@ class AgentFactory:
            - 将 `choose_agent` 工具添加到工具列表。
            - 遍历 sub_agents，验证每个子 Agent 已注册，并将它们的描述信息拼接到提示词末尾。
 
+        注意：由于每次调用 `build` 都会深拷贝 `AgentInfo` 并拼接子 Agent 信息，
+        因此构建出的 `Agent` 实例不应跨会话重复使用，以免提示词重复拼接。
+
         :param key_chain: 调用链元组，最后一个元素是要构建的 Agent 的 key。
         :return: 构建好的 Agent 实例（消息列表为空）
         :raises KeyError: 如果 key_chain[-1] 或任何 sub_agent 未注册

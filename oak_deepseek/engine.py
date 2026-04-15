@@ -73,8 +73,9 @@ class AgentEngine:
         :param key: 启动方式。
 
         - 若为元组 (namespace, name)，表示正常启动，该元组为入口 Agent 的 key。
-        - 若为列表，表示断点恢复模式。列表元素为 (key_chain, message)，按时间顺序排列。传入空列表时，会抛出 ValueError。
-        - 注意：恢复模式下传入的历史消息列表可能会被修改（恢复时会补全缺失消息以确保符合API规范）
+        - 若为列表，表示断点恢复模式。列表元素为 (key_chain, message)，其中 key_chain 的类型为 Tuple[Tuple[str, str], ...]。
+          按时间顺序排列。**注意：传入的列表可能被原地修改**（恢复时会补全缺失消息以确保符合API规范）。
+          若传入空列表，将引发 ValueError。
 
         :param history_queue: 消息输出队列，运行期间产生的所有消息（附带调用链信息）都会被放入此队列
         :param raw_response_queue: 可选，用于输出原始请求/响应对的队列
@@ -217,7 +218,9 @@ class AgentEngine:
         此方法会：
 
         1. 调用 create_core 创建 AgentCore 实例（支持正常启动或历史恢复）。
-        2. 正常启动时，从 input_queue 获取初始任务；恢复时，直接从历史中恢复执行状态，不再读取初始任务。恢复时，传入循环函数的 task 参数为 None，会被 init 函数自动忽略。
+        2. 正常启动时，从 input_queue 获取初始任务；恢复时，直接从历史中恢复执行状态，不再读取初始任务。
+           恢复时，传入循环函数的 task 参数为 None，会被 init 函数自动忽略。
+           注意：在恢复后的后续循环中，若子 Agent 返回 None，task 仍保持为 None，直到新的用户输入被读入。
         3. 反复调用 main 函数处理消息循环，直到调用栈为空
 
         注意：在恢复模式下，input_queue 仍然用于在 ReactiveReAct 循环中接收新的用户输入。

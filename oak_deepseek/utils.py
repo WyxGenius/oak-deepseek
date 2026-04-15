@@ -19,13 +19,14 @@ class StreamDisplay:
     - `display_queue`：存放需要实时展示的内容，包括非助手消息以及来自
       `raw_response_queue` 的原始响应数据（`ResponseData`）。
 
-    内部启动两个后台线程持续消费输入队列，直到接收到 `None` 停止信号。
-    使用完毕后必须调用 `quit()` 方法发送停止信号，否则线程将持续阻塞。
+    `ResponseData` 是一个命名元组，定义于 `client.py`，包含以下字段：
+        - key_chain : Tuple[Tuple[str, str], ...]
+        - payload   : DeepSeekRequestBody (请求体)
+        - llm_response : Union[Dict, Stream] (响应数据或流对象)
+        - http_remnants : requests.Response (原始HTTP响应对象)
 
-    :ivar history_queue: 输入队列，来自 AgentEngine 的历史消息队列，元素为可选的 (KeyChain, Message) 元组。
-    :ivar raw_response_queue: 输入队列，来自 AgentEngine 的原始响应队列，元素为可选的 ResponseData 对象。
-    :ivar context_queue: 输出队列，存放持久化的完整结构化消息，元素为 (KeyChain, Message) 元组。
-    :ivar display_queue: 输出队列，存放待展示的数据，元素为 ResponseData 或 (KeyChain, Message) 元组。
+    使用 `is_response()` 和 `is_stream()` 可判断 `display_queue` 中元素的类型。
+    ...
     """
     def __init__(self, history_queue: Queue, raw_response_queue: Queue):
         """

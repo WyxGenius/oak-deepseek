@@ -10,10 +10,11 @@ from oak_deepseek.models import AssistantMessage, UserMessage, SystemMessage, To
 
 def init(core: AgentCore, task: Optional[str]):
     """
-    用于Agent初始化
+    用于Agent初始化。若消息列表为空，则注入系统提示词；若提供了任务，则添加用户消息。
+
     :param core: AgentCore，会话核心
-    :param task: Optional[str]，Agent要执行的任务
-    :return:
+    :param task: 可选，Agent要执行的任务字符串。若为 None 则不添加用户消息。
+    :return: None
     """
     if len(core.agent.messages) == 0:
         # 当前agent信息在引擎初始化，或调用子agent时在引擎中更新
