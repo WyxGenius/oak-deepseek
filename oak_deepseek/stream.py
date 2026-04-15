@@ -207,7 +207,7 @@ class Stream:
 
         for data, delta in self._deltas():
             content: Optional[str] = delta.get('content')
-            tool_calls: Optional[str] = delta.get('tool_calls')
+            tool_calls: Optional[List[Dict]] = delta.get('tool_calls')
             reasoning_content: Optional[str] = delta.get('reasoning_content')
 
             if content:
