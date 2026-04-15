@@ -80,6 +80,9 @@ class AgentCore:
     def back(self):
         """
         返回到父Agent：将当前 Agent 的消息历史保存到 memory 中，然后弹出栈顶，恢复父Agent为当前Agent。
+
+        若当前 Agent 的 `rm_rf_memory` 为 True，则不保存记忆，而是调用 `rm_rf()` 方法
+        递归删除以当前 Agent 的 `KeyChain` 为前缀的所有 memory 条目。
         """
         if not self.agent.info.rm_rf_memory:
             self.memory[self.agent.key_chain] = copy.deepcopy(self.agent.messages)
@@ -88,6 +91,12 @@ class AgentCore:
         self.agent = self.stack.pop()
 
     def rm_rf(self):
+        """
+        递归清理记忆缓存。
+
+        删除 `self.memory` 字典中，键以当前 Agent 的 `KeyChain` 为前缀的所有条目。
+        清理范围包括当前 Agent 自身，以及其所有后代子 Agent 的记忆。
+        """
         key_chain_list: List[KeyChain] = list(self.memory.keys())
         current_key_chain: KeyChain = self.agent.key_chain
         length: int = len(current_key_chain)

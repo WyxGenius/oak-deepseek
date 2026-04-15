@@ -30,6 +30,11 @@ class AgentInfo(BaseModel):
                       **注意**：若该列表非空，框架会自动注入 `choose_agent` 工具，
                       并将子 Agent 信息（命名空间、名字、简介）拼接到提示词中。
                       若为空或 None，则不会添加 `choose_agent` 工具。
+    :ivar rm_rf_memory: 是否在返回父 Agent 时递归清理记忆缓存。
+                        若为 True，则在该 Agent 完成并调用 `back()` 时，
+                        会删除 `AgentCore.memory` 中以当前 Agent 的 `KeyChain` 为前缀的所有条目
+                        （包含自身及其子树），实现彻底的记忆清理。
+                        默认 False。
     """
 
     description: str
