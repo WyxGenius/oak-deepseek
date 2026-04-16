@@ -6,7 +6,7 @@
 <link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="prev" title="欢迎使用 Oak DeepSeek 文档" href="index.html">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
-        <title>API 参考 - Oak DeepSeek 1.0.0 文档</title>
+        <title>API 参考 - Oak DeepSeek 1.1.0 文档</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -161,7 +161,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">Oak DeepSeek 1.0.0 文档</div></a>
+      <a href="index.html"><div class="brand">Oak DeepSeek 1.1.0 文档</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -182,7 +182,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
   
-  <span class="sidebar-brand-text">Oak DeepSeek 1.0.0 文档</span>
+  <span class="sidebar-brand-text">Oak DeepSeek 1.1.0 文档</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder="搜索" name="q" aria-label="搜索">
@@ -242,7 +242,7 @@
 支持断点重连：通过create_core传入历史消息列表即可恢复之前的执行状态。</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="oak_deepseek.engine.AgentEngine.create_agent">
-<span class="sig-name descname"><span class="pre">create_agent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tools</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_stream</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_agents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oak_deepseek/engine.html#AgentEngine.create_agent"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.engine.AgentEngine.create_agent" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">create_agent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tools</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_stream</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_agents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rm_rf_memory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oak_deepseek/engine.html#AgentEngine.create_agent"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.engine.AgentEngine.create_agent" title="Link to this definition">¶</a></dt>
 <dd><p>注册一个Agent至引擎，以后可以用唯一命名空间+名字来指定。</p>
 <dl class="field-list simple">
 <dt class="field-odd">参数<span class="colon">:</span></dt>
@@ -251,7 +251,9 @@
 <li><p><strong>description</strong> -- Agent的简短描述</p></li>
 <li><p><strong>prompt</strong> -- Agent的系统提示词</p></li>
 <li><p><strong>tools</strong> -- 可选，Agent可调用的工具函数列表</p></li>
+<li><p><strong>with_stream</strong> -- 可选，是否启用流式输出，默认为False</p></li>
 <li><p><strong>sub_agents</strong> -- 可选，可调用的子Agent列表，每个元素为子Agent的key</p></li>
+<li><p><strong>rm_rf_memory</strong> -- 可选，完成任务后是否清理自身与下级的记忆，默认为False</p></li>
 </ul>
 </dd>
 <dt class="field-even">返回<span class="colon">:</span></dt>
@@ -572,6 +574,16 @@
 <dt class="sig sig-object py" id="oak_deepseek.core.AgentCore.back">
 <span class="sig-name descname"><span class="pre">back</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/oak_deepseek/core.html#AgentCore.back"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.core.AgentCore.back" title="Link to this definition">¶</a></dt>
 <dd><p>返回到父Agent：将当前 Agent 的消息历史保存到 memory 中，然后弹出栈顶，恢复父Agent为当前Agent。</p>
+<p>若当前 Agent 的 <cite>rm_rf_memory</cite> 为 True，则不保存记忆，而是调用 <cite>rm_rf()</cite> 方法
+递归删除以当前 Agent 的 <cite>KeyChain</cite> 为前缀的所有 memory 条目。</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oak_deepseek.core.AgentCore.rm_rf">
+<span class="sig-name descname"><span class="pre">rm_rf</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/oak_deepseek/core.html#AgentCore.rm_rf"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.core.AgentCore.rm_rf" title="Link to this definition">¶</a></dt>
+<dd><p>递归清理记忆缓存。</p>
+<p>删除 <cite>self.memory</cite> 字典中，键以当前 Agent 的 <cite>KeyChain</cite> 为前缀的所有条目。
+清理范围包括当前 Agent 自身，以及其所有后代子 Agent 的记忆。</p>
 </dd></dl>
 
 <dl class="py method">
@@ -695,7 +707,7 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="oak_deepseek.agent.AgentInfo">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">oak_deepseek.agent.</span></span><span class="sig-name descname"><span class="pre">AgentInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tools</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#oak_deepseek.models.Tool" title="oak_deepseek.models.Tool"><span class="pre">Tool</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_stream</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_agents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oak_deepseek/agent.html#AgentInfo"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.agent.AgentInfo" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">oak_deepseek.agent.</span></span><span class="sig-name descname"><span class="pre">AgentInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tools</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#oak_deepseek.models.Tool" title="oak_deepseek.models.Tool"><span class="pre">Tool</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_stream</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_agents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rm_rf_memory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oak_deepseek/agent.html#AgentInfo"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.agent.AgentInfo" title="Link to this definition">¶</a></dt>
 <dd><p>基类：<code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
 <p>Agent的元数据，描述Agent的静态配置。</p>
 <dl class="field-list simple">
@@ -709,6 +721,11 @@
 <strong>注意</strong>：若该列表非空，框架会自动注入 <cite>choose_agent</cite> 工具，
 并将子 Agent 信息（命名空间、名字、简介）拼接到提示词中。
 若为空或 None，则不会添加 <cite>choose_agent</cite> 工具。</p></li>
+<li><p><strong>rm_rf_memory</strong> -- 是否在返回父 Agent 时递归清理记忆缓存。
+若为 True，则在该 Agent 完成并调用 <cite>back()</cite> 时，
+会删除 <cite>AgentCore.memory</cite> 中以当前 Agent 的 <cite>KeyChain</cite> 为前缀的所有条目
+（包含自身及其子树），实现彻底的记忆清理。
+默认 False。</p></li>
 </ul>
 </dd>
 </dl>
@@ -726,6 +743,11 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="oak_deepseek.agent.AgentInfo.prompt">
 <span class="sig-name descname"><span class="pre">prompt</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#oak_deepseek.agent.AgentInfo.prompt" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="oak_deepseek.agent.AgentInfo.rm_rf_memory">
+<span class="sig-name descname"><span class="pre">rm_rf_memory</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#oak_deepseek.agent.AgentInfo.rm_rf_memory" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -1444,6 +1466,7 @@
 <li><a class="reference internal" href="#oak_deepseek.stream.parse_stream"><code class="docutils literal notranslate"><span class="pre">parse_stream()</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.core.AgentCore"><code class="docutils literal notranslate"><span class="pre">AgentCore</span></code></a><ul>
 <li><a class="reference internal" href="#oak_deepseek.core.AgentCore.back"><code class="docutils literal notranslate"><span class="pre">AgentCore.back()</span></code></a></li>
+<li><a class="reference internal" href="#oak_deepseek.core.AgentCore.rm_rf"><code class="docutils literal notranslate"><span class="pre">AgentCore.rm_rf()</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.core.AgentCore.send"><code class="docutils literal notranslate"><span class="pre">AgentCore.send()</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.core.AgentCore.sub_agent"><code class="docutils literal notranslate"><span class="pre">AgentCore.sub_agent()</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.core.AgentCore.update"><code class="docutils literal notranslate"><span class="pre">AgentCore.update()</span></code></a></li>
@@ -1459,6 +1482,7 @@
 <li><a class="reference internal" href="#oak_deepseek.agent.AgentInfo.description"><code class="docutils literal notranslate"><span class="pre">AgentInfo.description</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.agent.AgentInfo.model_config"><code class="docutils literal notranslate"><span class="pre">AgentInfo.model_config</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.agent.AgentInfo.prompt"><code class="docutils literal notranslate"><span class="pre">AgentInfo.prompt</span></code></a></li>
+<li><a class="reference internal" href="#oak_deepseek.agent.AgentInfo.rm_rf_memory"><code class="docutils literal notranslate"><span class="pre">AgentInfo.rm_rf_memory</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.agent.AgentInfo.sub_agents"><code class="docutils literal notranslate"><span class="pre">AgentInfo.sub_agents</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.agent.AgentInfo.tools"><code class="docutils literal notranslate"><span class="pre">AgentInfo.tools</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.agent.AgentInfo.with_stream"><code class="docutils literal notranslate"><span class="pre">AgentInfo.with_stream</span></code></a></li>
@@ -1592,7 +1616,7 @@
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=34088549"></script>
+</div><script src="_static/documentation_options.js?v=ab4a11d3"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

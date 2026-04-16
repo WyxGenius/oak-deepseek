@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="索引" href="../../genindex.html"><link rel="search" title="搜索" href="../../search.html">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
-        <title>oak_deepseek.core - Oak DeepSeek 1.0.0 文档</title>
+        <title>oak_deepseek.core - Oak DeepSeek 1.1.0 文档</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -160,7 +160,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">Oak DeepSeek 1.0.0 文档</div></a>
+      <a href="../../index.html"><div class="brand">Oak DeepSeek 1.1.0 文档</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -181,7 +181,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
   
-  <span class="sidebar-brand-text">Oak DeepSeek 1.0.0 文档</span>
+  <span class="sidebar-brand-text">Oak DeepSeek 1.1.0 文档</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
   <input class="sidebar-search" placeholder="搜索" name="q" aria-label="搜索">
@@ -320,9 +320,33 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">back</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        返回到父Agent：将当前 Agent 的消息历史保存到 memory 中，然后弹出栈顶，恢复父Agent为当前Agent。</span>
+
+<span class="sd">        若当前 Agent 的 `rm_rf_memory` 为 True，则不保存记忆，而是调用 `rm_rf()` 方法</span>
+<span class="sd">        递归删除以当前 Agent 的 `KeyChain` 为前缀的所有 memory 条目。</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">memory</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">key_chain</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">messages</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">rm_rf_memory</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">memory</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">key_chain</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">messages</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rm_rf</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">agent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="AgentCore.rm_rf">
+<a class="viewcode-back" href="../../api.html#oak_deepseek.core.AgentCore.rm_rf">[文档]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rm_rf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        递归清理记忆缓存。</span>
+
+<span class="sd">        删除 `self.memory` 字典中，键以当前 Agent 的 `KeyChain` 为前缀的所有条目。</span>
+<span class="sd">        清理范围包括当前 Agent 自身，以及其所有后代子 Agent 的记忆。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">key_chain_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">KeyChain</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">current_key_chain</span><span class="p">:</span> <span class="n">KeyChain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">key_chain</span>
+        <span class="n">length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">current_key_chain</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">key_chain</span> <span class="ow">in</span> <span class="n">key_chain_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key_chain</span><span class="p">[:</span><span class="n">length</span><span class="p">]</span> <span class="o">==</span> <span class="n">current_key_chain</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">key_chain</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">length</span><span class="p">:</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">memory</span><span class="p">[</span><span class="n">key_chain</span><span class="p">]</span></div>
 </div>
 
 </pre></div>
@@ -357,7 +381,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=34088549"></script>
+</div><script src="../../_static/documentation_options.js?v=ab4a11d3"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
