@@ -96,14 +96,16 @@ class ChatClient:
 
                     return assistant_msg
             except Exception as e:
+                if 'response' in locals():
+                    e.args = e.args + (response.text, )
                 if self.exception_queue is None:
-                    raise e
+                    raise
                 self.exception_queue.put(e)
                 cmd: str = self.exception_queue.get(block=True)
                 if cmd == "retry":
                     continue
                 else:
-                    raise e
+                    raise
 
 
     def __enter__(self):
