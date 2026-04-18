@@ -55,8 +55,13 @@ def exec_tool(core: AgentCore, tools: Dict[str, Callable], call_info: ToolCall):
     name: str = call_info[1]
     args: Dict = call_info[2]
 
-    content: str = tools.get(name)(**args)
-    core.update(ToolMessage(content=content, tool_call_id=tool_call_id))
+    tool: Optional[Callable] = tools.get(name)
+
+    if tool:
+        content: str = tools.get(name)(**args)
+        core.update(ToolMessage(content=content, tool_call_id=tool_call_id))
+    else:
+        core.update(ToolMessage(content=f"请确认工具是否存在：{name}", tool_call_id=tool_call_id))
 
 ########################################################################################################################
 
