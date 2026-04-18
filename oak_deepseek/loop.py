@@ -63,6 +63,17 @@ def exec_tool(core: AgentCore, tools: Dict[str, Callable], call_info: ToolCall):
     else:
         core.update(ToolMessage(content=f"请确认工具是否存在：{name}", tool_call_id=tool_call_id))
 
+def fix_invalid_choose_agent(core: AgentCore, call_info: ToolCall):
+    """
+    告知Agent进行了非法的choose_agent工具调用
+
+    :param core: AgentCore，会话核心
+    :param call_info: namedtuple("ToolCall", ["id", "name", "args"])，调用信息
+    :return: 没有返回值
+    """
+    tool_call_id: str = call_info[0]
+    core.update(ToolMessage(content=f"choose_agent工具不能与任何工具被一起调用，包括它自己", tool_call_id=tool_call_id))
+
 ########################################################################################################################
 
 def main(core: AgentCore,
@@ -103,12 +114,17 @@ def main(core: AgentCore,
 
         elif assistant_msg.tool_calls is not None:
             tool_queue: Queue[ToolCall] = parse_tool_calls(assistant_msg.tool_calls)
+
+            tool_count: int = tool_queue.qsize()
             while tool_queue.qsize() > 0:
                 call_info: ToolCall = tool_queue.get(block=True)
                 match call_info.name:
                     case "choose_agent":
-                        # 这里返回的是子Agent的任务
-                        return new_agent(agent_factory, core, call_info)
+                        if tool_count > 1:
+                            fix_invalid_choose_agent(core, call_info)
+                        else:
+                            # 这里返回的是子Agent的任务
+                            return new_agent(agent_factory, core, call_info)
                     case _:
                         exec_tool(core, tools, call_info)
         else:
