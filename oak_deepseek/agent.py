@@ -8,7 +8,7 @@ from oak_deepseek.tools import standardize_tool
 
 def choose_agent(agent: Tuple[str, str], task: str) -> str:
     """
-    调用此工具时，不能调用其它工具。
+    此工具不能与任何工具**同时被调用**，包括 `choose_agent` 工具
     使用这个工具可以和助手对话，这是你与助手沟通的**唯一途径**。
 
     :param agent: (命名空间, 名字)
