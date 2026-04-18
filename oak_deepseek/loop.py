@@ -72,7 +72,7 @@ def fix_invalid_choose_agent(core: AgentCore, call_info: ToolCall):
     :return: 没有返回值
     """
     tool_call_id: str = call_info[0]
-    core.update(ToolMessage(content=f"choose_agent工具不能与任何工具被一起调用，包括它自己", tool_call_id=tool_call_id))
+    core.update(ToolMessage(content=f"choose_agent工具不能与任何工具被同时调用，包括它自己", tool_call_id=tool_call_id))
 
 ########################################################################################################################
 
