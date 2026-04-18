@@ -6,7 +6,7 @@
 <link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="prev" title="欢迎使用 Oak DeepSeek 文档" href="index.html">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
-        <title>API 参考 - Oak DeepSeek 1.1.2 文档</title>
+        <title>API 参考 - Oak DeepSeek 1.1.3 文档</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -161,7 +161,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">Oak DeepSeek 1.1.2 文档</div></a>
+      <a href="index.html"><div class="brand">Oak DeepSeek 1.1.3 文档</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -182,7 +182,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
   
-  <span class="sidebar-brand-text">Oak DeepSeek 1.1.2 文档</span>
+  <span class="sidebar-brand-text">Oak DeepSeek 1.1.3 文档</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder="搜索" name="q" aria-label="搜索">
@@ -770,7 +770,7 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="oak_deepseek.agent.choose_agent">
 <span class="sig-prename descclassname"><span class="pre">oak_deepseek.agent.</span></span><span class="sig-name descname"><span class="pre">choose_agent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/oak_deepseek/agent.html#choose_agent"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.agent.choose_agent" title="Link to this definition">¶</a></dt>
-<dd><p>调用此工具时，不能调用其它工具。
+<dd><p>此工具不能与任何工具**同时被调用**，包括 <cite>choose_agent</cite> 工具
 使用这个工具可以和助手对话，这是你与助手沟通的**唯一途径**。</p>
 <dl class="field-list simple">
 <dt class="field-odd">参数<span class="colon">:</span></dt>
@@ -794,6 +794,23 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>core</strong> -- AgentCore，会话核心</p></li>
 <li><p><strong>tools</strong> -- Dict[str, Callable]，当前会话的可用工具</p></li>
+<li><p><strong>call_info</strong> -- namedtuple(&quot;ToolCall&quot;, [&quot;id&quot;, &quot;name&quot;, &quot;args&quot;])，调用信息</p></li>
+</ul>
+</dd>
+<dt class="field-even">返回<span class="colon">:</span></dt>
+<dd class="field-even"><p>没有返回值</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="oak_deepseek.loop.fix_invalid_choose_agent">
+<span class="sig-prename descclassname"><span class="pre">oak_deepseek.loop.</span></span><span class="sig-name descname"><span class="pre">fix_invalid_choose_agent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">core</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#oak_deepseek.core.AgentCore" title="oak_deepseek.core.AgentCore"><span class="pre">AgentCore</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">call_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#oak_deepseek.tools.ToolCall" title="oak_deepseek.tools.ToolCall"><span class="pre">ToolCall</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oak_deepseek/loop.html#fix_invalid_choose_agent"><span class="viewcode-link"><span class="pre">[源代码]</span></span></a><a class="headerlink" href="#oak_deepseek.loop.fix_invalid_choose_agent" title="Link to this definition">¶</a></dt>
+<dd><p>告知Agent进行了非法的choose_agent工具调用</p>
+<dl class="field-list simple">
+<dt class="field-odd">参数<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>core</strong> -- AgentCore，会话核心</p></li>
 <li><p><strong>call_info</strong> -- namedtuple(&quot;ToolCall&quot;, [&quot;id&quot;, &quot;name&quot;, &quot;args&quot;])，调用信息</p></li>
 </ul>
 </dd>
@@ -1490,6 +1507,7 @@
 </li>
 <li><a class="reference internal" href="#oak_deepseek.agent.choose_agent"><code class="docutils literal notranslate"><span class="pre">choose_agent()</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.loop.exec_tool"><code class="docutils literal notranslate"><span class="pre">exec_tool()</span></code></a></li>
+<li><a class="reference internal" href="#oak_deepseek.loop.fix_invalid_choose_agent"><code class="docutils literal notranslate"><span class="pre">fix_invalid_choose_agent()</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.loop.init"><code class="docutils literal notranslate"><span class="pre">init()</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.loop.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
 <li><a class="reference internal" href="#oak_deepseek.loop.new_agent"><code class="docutils literal notranslate"><span class="pre">new_agent()</span></code></a></li>
@@ -1616,7 +1634,7 @@
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=8ec669e7"></script>
+</div><script src="_static/documentation_options.js?v=9c0055fd"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
