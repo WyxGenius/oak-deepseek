@@ -6,8 +6,8 @@ import os
 import requests
 from requests import Session
 
-from oak_deepseek.models import DeepSeekRequestBody, Thinking, Tool
-from oak_deepseek.types import AssistantMessage, Message
+from oak_deepseek.models import DeepSeekRequestBody, Thinking
+from oak_deepseek.types import AssistantMessage, Message, Tool
 from oak_deepseek.stream import Stream
 
 ResponseData = namedtuple("ResponseData", ["key_chain", "payload", "llm_response", "http_remnants"])

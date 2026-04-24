@@ -1,7 +1,7 @@
-from typing import List, Dict, Optional, Literal, Any, Union
+from typing import List, Optional, Literal, Union
 from pydantic import BaseModel, Field, model_validator
 
-from oak_deepseek.types import Message
+from oak_deepseek.types import Message, Tool
 
 
 class Thinking(BaseModel):
@@ -35,19 +35,6 @@ class StreamOptions(BaseModel):
     @classmethod
     def false(cls):
         return cls(include_usage=False)
-
-########################################################################################################################
-
-class Function(BaseModel):
-    """描述一个可供模型调用的函数。"""
-    description: str = Field(...)
-    name: str = Field(...)
-    parameters: Optional[Dict[str, Any]] = Field(None, description="JSON Schema 对象")
-    strict: bool = False
-
-class Tool(BaseModel):
-    type: Literal["function"] = "function"
-    function: Function = Field(..., description="具体函数")
 
 ########################################################################################################################
 

@@ -2,8 +2,7 @@ import copy
 from typing import Optional, List, Tuple, Dict
 from pydantic import BaseModel
 
-from oak_deepseek.models import Tool
-from oak_deepseek.types import Message
+from oak_deepseek.types import Message, Tool
 from oak_deepseek.tools import standardize_tool
 
 

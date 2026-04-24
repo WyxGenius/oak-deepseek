@@ -4,8 +4,7 @@ from queue import Queue
 from typing import Callable, List, Dict, Literal, Any
 from pydantic import TypeAdapter
 
-from oak_deepseek.models import Function, Tool
-from oak_deepseek.types import AssistantMessage, Message
+from oak_deepseek.types import AssistantMessage, Message, Function, Tool
 
 
 def standardize_tool(func: Callable) -> Tool:

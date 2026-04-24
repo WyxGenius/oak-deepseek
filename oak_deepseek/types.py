@@ -1,4 +1,4 @@
-from typing import Literal, Optional, List, Dict, Annotated, Union
+from typing import Literal, Optional, List, Dict, Annotated, Union, Any
 
 from pydantic import BaseModel, Field
 
@@ -40,3 +40,16 @@ Message = Annotated[
     Union[SystemMessage, UserMessage, AssistantMessage, ToolMessage],
     Field(discriminator="role")
 ]
+
+
+class Function(BaseModel):
+    """描述一个可供模型调用的函数。"""
+    description: str = Field(...)
+    name: str = Field(...)
+    parameters: Optional[Dict[str, Any]] = Field(None, description="JSON Schema 对象")
+    strict: bool = False
+
+
+class Tool(BaseModel):
+    type: Literal["function"] = "function"
+    function: Function = Field(..., description="具体函数")
