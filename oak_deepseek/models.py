@@ -49,7 +49,7 @@ class ToolChoice(BaseModel):
 
 class DeepSeekRequestBody(BaseModel):
     messages: List[Message]
-    model: Literal["deepseek-reasoner"] = "deepseek-v4-flash"
+    model: Literal["deepseek-v4-flash", "deepseek-v4-pro"] = "deepseek-v4-flash"
     thinking: Thinking = Thinking.enable()
     reasoning_effort: Literal["high", "max"] = "max"
     max_tokens: Optional[int] = None
