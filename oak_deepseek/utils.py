@@ -17,7 +17,7 @@ class StreamDisplay:
     - `display_queue`：存放需要实时展示的内容，包括非助手消息以及来自
       `raw_response_queue` 的原始响应数据（`ResponseData`）。
 
-    `ResponseData` 是一个命名元组，定义于 `client.py`，包含以下字段：
+    `ResponseData` 是一个命名元组，定义于 `types.py`，包含以下字段：
         - key_chain : Tuple[Tuple[str, str], ...]
         - payload   : DeepSeekRequestBody (请求体)
         - llm_response : Union[Dict, Stream] (响应数据或流对象)

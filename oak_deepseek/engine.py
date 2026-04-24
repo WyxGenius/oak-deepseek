@@ -183,7 +183,7 @@ class AgentEngine:
                     core.history_queue.put((last_key_chain, SystemMessage(content=recovery_prompt)))
 
                 elif tools_queue.qsize() < completed_count:
-                    raise ImportError("数据损坏，数据显示已执行工具多于调用得工具")
+                    raise ValueError("数据损坏，数据显示已执行工具多于调用得工具")
 
             # 消息已补全，正式开始恢复
             for snapshot in key:

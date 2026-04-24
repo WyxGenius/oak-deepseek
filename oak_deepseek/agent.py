@@ -31,10 +31,14 @@ class AgentInfo(BaseModel):
                       并将子 Agent 信息（命名空间、名字、简介）拼接到提示词中。
                       若为空或 None，则不会添加 `choose_agent` 工具。
     :ivar rm_rf_memory: 是否在返回父 Agent 时递归清理记忆缓存。
-                        若为 True，则在该 Agent 完成并调用 `back()` 时，
-                        会删除 `AgentCore.memory` 中以当前 Agent 的 `KeyChain` 为前缀的所有条目
-                        （包含自身及其子树），实现彻底的记忆清理。
+                        若为 True，则在该 Agent 返回父 Agent 时：
+
+                        1. 不保存当前 Agent 自身的消息历史（相当于遗忘本次对话状态）；
+                        2. 递归删除所有后代子 Agent 的记忆缓存。
+
+                        从而实现彻底的记忆清理。
                         默认 False。
+    :ivar llm_config: LLM 配置对象，包含模型名、推理力度等设置。
     """
 
     description: str
@@ -61,7 +65,7 @@ class Agent:
         """
         初始化Agent实例。
 
-        :param key_chain: 一个元组，每个元素都是命名空间ID元组，表示调用链。
+        :param key_chain: 一个元组，每个元素都是 (namespace, name) 元组，表示调用链。
         :param info: Agent的元数据
         """
         self.key_chain: Tuple[Tuple[str, str], ...] = key_chain

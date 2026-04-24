@@ -11,7 +11,7 @@ def standardize_tool(func: Callable) -> Tool:
     """
     将 Python 函数转换为框架可用的 Tool 对象。
 
-    :param func: 工具函数，需包含类型注解和文档字符串
+    :param func: 工具函数，需包含类型注解和文档字符串，函数的参数类型必须能被Pydantic处理，以生成JSON Schema。
     :return: Tool 对象
     """
     return Tool(

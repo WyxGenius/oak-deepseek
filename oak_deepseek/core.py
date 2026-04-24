@@ -30,6 +30,7 @@ class AgentCore:
         :param history_queue: 消息输出队列，每条消息会附带其调用链
         :param api_key: DeepSeek API密钥
         :param raw_response_queue: 可选，原始请求/响应队列
+        :param exception_queue: 可选队列，用于异常处理控制。功能与 ChatClient 中的 exception_queue 一致。
         """
         self.history_queue: Queue[Tuple[KeyChain, Message]] = history_queue
         self.client = ChatClient(api_key=api_key, raw_response_queue=raw_response_queue, exception_queue=exception_queue)
@@ -89,10 +90,8 @@ class AgentCore:
 
     def rm_rf(self):
         """
-        递归清理记忆缓存。
-
-        删除 `self.memory` 字典中，键以当前 Agent 的 `KeyChain` 为前缀的所有条目。
-        清理范围包括当前 Agent 自身，以及其所有后代子 Agent 的记忆。
+        递归清理后代子 Agent 的记忆缓存。
+        注意：当前 Agent 自身的记忆已在 back() 中通过不保存的方式丢弃。
         """
         key_chain_list: List[KeyChain] = list(self.memory.keys())
         current_key_chain: KeyChain = self.agent.key_chain
