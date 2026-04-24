@@ -1,5 +1,5 @@
 import copy
-from typing import Optional, List, Tuple, Dict
+from typing import Optional, List, Tuple, Dict, Literal
 from pydantic import BaseModel
 
 from oak_deepseek.types import Message, Tool
@@ -17,6 +17,17 @@ def choose_agent(agent: Tuple[str, str], task: str) -> str:
     """
     pass
 
+# llm参数设置
+class LLMConfig(BaseModel):
+    """
+    Agent的llm配置
+
+    :ivar with_stream: 是否启用流式输出（默认 False）
+    """
+    model: Literal["deepseek-v4-flash", "deepseek-v4-pro"] = "deepseek-v4-flash"
+    reasoning_effort: Literal["high", "max"] = "max"
+    with_stream: bool = False
+
 # agent元数据
 class AgentInfo(BaseModel):
     """
@@ -25,7 +36,6 @@ class AgentInfo(BaseModel):
     :ivar description: Agent的简短描述
     :ivar prompt: 系统提示词
     :ivar tools: 可调用的工具列表
-    :ivar with_stream: 是否启用流式输出（默认 False）
     :ivar sub_agents: 可选，可调用的子 Agent 列表，每个元素为 (namespace, name)。
                       **注意**：若该列表非空，框架会自动注入 `choose_agent` 工具，
                       并将子 Agent 信息（命名空间、名字、简介）拼接到提示词中。
@@ -43,6 +53,8 @@ class AgentInfo(BaseModel):
     with_stream: bool = False
     sub_agents: Optional[List[Tuple[str, str]]] = None
     rm_rf_memory: bool = False
+
+    llm_config: LLMConfig = LLMConfig()
 
 # agent自己维护好自己的消息记录
 class Agent:

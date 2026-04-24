@@ -2,7 +2,7 @@ import copy
 from queue import Queue
 from typing import List, Callable, Literal, Optional, Tuple, Dict, Union
 
-from oak_deepseek.agent import AgentInfo, AgentFactory, Agent
+from oak_deepseek.agent import AgentInfo, AgentFactory, Agent, LLMConfig
 from oak_deepseek.core import AgentCore
 from oak_deepseek.loop import main
 from oak_deepseek.types import SystemMessage, UserMessage, AssistantMessage, ToolMessage, Message, Tool, ResponseData
@@ -30,9 +30,9 @@ class AgentEngine:
                      description: str,
                      prompt: str,
                      tools: Optional[List[Callable]]=None,
-                     with_stream: bool = False,
                      sub_agents: Optional[List[Tuple[str, str]]]=None,
-                     rm_rf_memory: bool = False
+                     rm_rf_memory: bool = False,
+                     llm_config: LLMConfig = LLMConfig()
                      ):
         """
         注册一个Agent至引擎，以后可以用唯一命名空间+名字来指定。
@@ -41,9 +41,9 @@ class AgentEngine:
         :param description: Agent的简短描述
         :param prompt: Agent的系统提示词
         :param tools: 可选，Agent可调用的工具函数列表
-        :param with_stream: 可选，是否启用流式输出，默认为False
         :param sub_agents: 可选，可调用的子Agent列表，每个元素为子Agent的key
         :param rm_rf_memory: 可选，完成任务后是否清理自身与下级的记忆，默认为False
+        :param llm_config: 可选，模型配置信息
         :return: None
         """
 
@@ -55,7 +55,12 @@ class AgentEngine:
                 tools_info.append(standardize_tool(tool))
 
         self.agent_factory.register_agent(key, AgentInfo(
-            description=description, prompt=prompt, tools=tools_info, with_stream=with_stream, sub_agents=sub_agents, rm_rf_memory=rm_rf_memory
+            description=description,
+            prompt=prompt,
+            tools=tools_info,
+            sub_agents=sub_agents,
+            rm_rf_memory=rm_rf_memory,
+            llm_config=llm_config
         ))
 
     def create_core(self, key: Union[Tuple[str, str], List[Tuple[Tuple[Tuple[str, str], ...], Message]]],

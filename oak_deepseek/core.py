@@ -55,7 +55,7 @@ class AgentCore:
 
         :return: 助手消息
         """
-        assistant_msg: AssistantMessage = self.client.send(self.agent.key_chain, self.agent.messages, self.agent.info.tools, self.agent.info.with_stream)
+        assistant_msg: AssistantMessage = self.client.send(self.agent.key_chain, self.agent.messages, self.agent.info.tools, self.agent.info.llm_config)
         self.history_queue.put((self.agent.key_chain, assistant_msg))
         self.agent.messages.append(assistant_msg)
         return assistant_msg

@@ -5,6 +5,7 @@ import os
 import requests
 from requests import Session
 
+from oak_deepseek.agent import LLMConfig
 from oak_deepseek.models import DeepSeekRequestBody
 from oak_deepseek.types import AssistantMessage, Message, Tool, ResponseData
 from oak_deepseek.stream import Stream
@@ -49,25 +50,27 @@ class ChatClient:
     def send(self, key_chain: Tuple[Tuple[str,str], ...],
              messages: List[Message],
              tools: Optional[List[Tool]]=None,
-             with_stream: bool=False) -> AssistantMessage:
+             llm_config: LLMConfig=LLMConfig()) -> AssistantMessage:
         """
         发送请求并返回助手消息。
 
         :param key_chain: 调用链元组，表示当前 Agent 的路径
         :param messages: 消息历史列表
         :param tools: 可选，可用的工具列表
-        :param with_stream: 可选，是否启用流式输出
+        :param llm_config: 可选，llm相关配置
         :return: AssistantMessage对象
         """
 
         payload: DeepSeekRequestBody = DeepSeekRequestBody(
             messages=messages,
             tools=tools,
+            model=llm_config.model,
+            reasoning_effort=llm_config.reasoning_effort
         )
 
         while True:
             try:
-                if with_stream:
+                if llm_config.with_stream:
                     payload.stream = True
                     response = self.conn.post(url=self.url, headers=self.headers,
                                               json=payload.model_dump(exclude_none=True), stream=True)

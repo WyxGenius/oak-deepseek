@@ -3,6 +3,7 @@ from threading import Thread
 import os
 from typing import Union, Tuple
 
+from oak_deepseek.agent import LLMConfig
 from oak_deepseek.engine import AgentEngine
 from oak_deepseek.stream import Stream
 from oak_deepseek.utils import StreamDisplay, is_response, is_stream
@@ -19,7 +20,6 @@ engine.create_agent(
     key=("sys", "store"),
     description="数值存储库，可以查询 a,b,c,d 的值",
     prompt="你是一个数值存储助手。用户会询问某个变量的值，请调用工具 store_lookup 获取并返回。",
-    with_stream=True,
     tools=[store_lookup],
     rm_rf_memory=True
 )
@@ -35,7 +35,6 @@ engine.create_agent(
         "所有数值都获得后，再进行乘法计算并返回结果。\n"
         "注意：每次只问一个数值，不要一次性问多个。"
     ),
-    with_stream=True,
     sub_agents=[]  # 没有子 Agent，只依赖父 Agent
 )
 
@@ -49,8 +48,8 @@ engine.create_agent(
         "同时，当 calculator 向你询问某个数值时，你需要向 store 子 Agent 查询该数值，然后将结果返回给 calculator。\n"
         "不要自己编造数值，必须通过 store 获取。"
     ),
-    with_stream=True,
-    sub_agents=[("sys", "calculator"), ("sys", "store")]
+    sub_agents=[("sys", "calculator"), ("sys", "store")],
+    llm_config=LLMConfig(with_stream=True)
 )
 
 history_queue = Queue()
