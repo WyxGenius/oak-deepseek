@@ -49,7 +49,7 @@ class ToolChoice(BaseModel):
 
 class DeepSeekRequestBody(BaseModel):
     messages: List[Message]
-    model: Literal["deepseek-reasoner"] = "deepseek-reasoner"
+    model: Literal["deepseek-reasoner"] = "deepseek-v4-flash"
     thinking: Thinking = Thinking.enable()
     max_tokens: Optional[int] = None
     response_format: Optional[ResponseFormat] = Field(default_factory=ResponseFormat.text)
