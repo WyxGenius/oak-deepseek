@@ -1,3 +1,4 @@
+from collections import namedtuple
 from typing import Literal, Optional, List, Dict, Annotated, Union, Any, Tuple
 
 from pydantic import BaseModel, Field
@@ -58,3 +59,5 @@ class Tool(BaseModel):
 
 
 KeyChain = Tuple[Tuple[str, str], ...]
+
+ResponseData = namedtuple("ResponseData", ["key_chain", "payload", "llm_response", "http_remnants"])

@@ -3,8 +3,8 @@ from queue import Queue
 from typing import Optional, Tuple, List, Dict
 import copy
 
-from oak_deepseek.types import AssistantMessage, Message, KeyChain
-from oak_deepseek.client import ChatClient, ResponseData
+from oak_deepseek.types import AssistantMessage, Message, KeyChain, ResponseData
+from oak_deepseek.client import ChatClient
 from oak_deepseek.agent import Agent
 
 

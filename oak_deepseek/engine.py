@@ -3,10 +3,9 @@ from queue import Queue
 from typing import List, Callable, Literal, Optional, Tuple, Dict, Union
 
 from oak_deepseek.agent import AgentInfo, AgentFactory, Agent
-from oak_deepseek.client import ResponseData
 from oak_deepseek.core import AgentCore
 from oak_deepseek.loop import main
-from oak_deepseek.types import SystemMessage, UserMessage, AssistantMessage, ToolMessage, Message, Tool
+from oak_deepseek.types import SystemMessage, UserMessage, AssistantMessage, ToolMessage, Message, Tool, ResponseData
 from oak_deepseek.tools import standardize_tool, parse_tool_calls, ToolCall
 
 recovery_prompt: str = """系统恢复：执行中断，最后一条 AssistantMessage 包含未完成的 tool_calls。
