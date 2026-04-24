@@ -1,4 +1,4 @@
-from typing import Literal, Optional, List, Dict, Annotated, Union, Any
+from typing import Literal, Optional, List, Dict, Annotated, Union, Any, Tuple
 
 from pydantic import BaseModel, Field
 
@@ -55,3 +55,6 @@ class Function(BaseModel):
 class Tool(BaseModel):
     type: Literal["function"] = "function"
     function: Function = Field(..., description="具体函数")
+
+
+KeyChain = Tuple[Tuple[str, str], ...]

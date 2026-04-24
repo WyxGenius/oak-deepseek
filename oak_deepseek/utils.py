@@ -3,8 +3,7 @@ from threading import Thread
 from typing import Union, Tuple, Optional
 
 from oak_deepseek.client import ResponseData
-from oak_deepseek.types import AssistantMessage, Message
-from oak_deepseek.core import KeyChain
+from oak_deepseek.types import AssistantMessage, Message, KeyChain
 from oak_deepseek.stream import Stream
 
 
