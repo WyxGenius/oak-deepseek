@@ -2,7 +2,8 @@ import os
 from typing import List
 
 from oak_deepseek.client import ChatClient
-from oak_deepseek.models import Message, SystemMessage, UserMessage, Thinking
+from oak_deepseek.models import Thinking
+from oak_deepseek.types import SystemMessage, UserMessage, Message
 
 messages = [
     {

@@ -5,7 +5,7 @@ from typing import Dict, Callable, Tuple, Optional, List
 from oak_deepseek.agent import AgentFactory, Agent
 from oak_deepseek.core import AgentCore
 from oak_deepseek.tools import parse_tool_calls, ToolCall, parse_tool_call, is_finished
-from oak_deepseek.models import AssistantMessage, UserMessage, SystemMessage, ToolMessage
+from oak_deepseek.types import SystemMessage, UserMessage, AssistantMessage, ToolMessage
 
 
 def init(core: AgentCore, task: Optional[str]):

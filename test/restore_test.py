@@ -3,7 +3,8 @@ from threading import Thread
 import os
 
 from oak_deepseek.engine import AgentEngine
-from oak_deepseek.models import SystemMessage, UserMessage, AssistantMessage, ToolMessage
+from oak_deepseek.types import SystemMessage, UserMessage, AssistantMessage, ToolMessage
+
 
 def add(a: int, b: int) -> str:
     """
