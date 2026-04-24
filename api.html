@@ -801,31 +801,27 @@
 并收集最终的 usage、id、created 等元数据。</p>
 <dl class="field-list simple">
 <dt class="field-odd">返回<span class="colon">:</span></dt>
-<dd class="field-odd"><p><p>完整响应字典，结构与 DeepSeek API 非流式响应一致，例如：
-{</p>
-<blockquote>
-<div><p>&quot;id&quot;: &quot;...&quot;,
-&quot;object&quot;: &quot;chat.completion&quot;,
-&quot;created&quot;: 1234567890,
-&quot;model&quot;: &quot;deepseek-reasoner&quot;,
-&quot;system_fingerprint&quot;: &quot;...&quot;,
-&quot;usage&quot;: {...},
-&quot;choices&quot;: [{</p>
-<blockquote>
-<div><p>&quot;index&quot;: 0,
-&quot;message&quot;: {</p>
-<blockquote>
-<div><p>&quot;content&quot;: &quot;...&quot;,
-&quot;reasoning_content&quot;: &quot;...&quot;,
-&quot;tool_calls&quot;: [...]</p>
-</div></blockquote>
-<p>},
-&quot;logprobs&quot;: None,
-&quot;finish_reason&quot;: &quot;stop&quot;</p>
-</div></blockquote>
-<p>}]</p>
-</div></blockquote>
-<p>}</p>
+<dd class="field-odd"><p><p>完整响应字典，结构与 DeepSeek API 非流式响应一致，例如：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;object&quot;</span><span class="p">:</span> <span class="s2">&quot;chat.completion&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;created&quot;</span><span class="p">:</span> <span class="mi">1234567890</span><span class="p">,</span>
+    <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;deepseek-reasoner&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;system_fingerprint&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;usage&quot;</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">},</span>
+    <span class="s2">&quot;choices&quot;</span><span class="p">:</span> <span class="p">[{</span>
+        <span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;reasoning_content&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tool_calls&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;logprobs&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;finish_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;stop&quot;</span>
+    <span class="p">}]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </p>
 </dd>
 </dl>
@@ -861,15 +857,15 @@
 当队列收到 None 时表示输入结束。</p>
 </dd>
 <dt class="field-even">返回<span class="colon">:</span></dt>
-<dd class="field-even"><p><p>迭代器，产出完整构造的工具调用字典，结构如下：
-{</p>
-<blockquote>
-<div><p>&quot;index&quot;: int,
-&quot;id&quot;: str,
-&quot;type&quot;: &quot;function&quot;,
-&quot;function&quot;: {&quot;name&quot;: str, &quot;arguments&quot;: str}</p>
-</div></blockquote>
-<p>}</p>
+<dd class="field-even"><p><p>迭代器，产出完整构造的工具调用字典，结构如下：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;function&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;arguments&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </p>
 </dd>
 </dl>
@@ -1304,7 +1300,7 @@
 <ul class="simple">
 <li><p>若为元组 (namespace, name)，表示正常启动，该元组为入口 Agent 的 key。</p></li>
 <li><p>若为列表，表示断点恢复模式。列表元素为 (key_chain, message)，其中 key_chain 的类型为 Tuple[Tuple[str, str], ...]。
-按时间顺序排列。<a href="#id1"><span class="problematic" id="id2">**</span></a>注意：传入的列表可能被原地修改**（恢复时会补全缺失消息以确保符合API规范）。
+按时间顺序排列。注意：传入的列表可能被原地修改（恢复时会补全缺失消息以确保符合API规范）。
 若传入空列表，将引发 ValueError。</p></li>
 </ul>
 <dl class="field-list simple">

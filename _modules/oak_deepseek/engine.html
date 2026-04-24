@@ -317,7 +317,7 @@
 
 <span class="sd">        - 若为元组 (namespace, name)，表示正常启动，该元组为入口 Agent 的 key。</span>
 <span class="sd">        - 若为列表，表示断点恢复模式。列表元素为 (key_chain, message)，其中 key_chain 的类型为 Tuple[Tuple[str, str], ...]。</span>
-<span class="sd">          按时间顺序排列。**注意：传入的列表可能被原地修改**（恢复时会补全缺失消息以确保符合API规范）。</span>
+<span class="sd">          按时间顺序排列。注意：传入的列表可能被原地修改（恢复时会补全缺失消息以确保符合API规范）。</span>
 <span class="sd">          若传入空列表，将引发 ValueError。</span>
 
 <span class="sd">        :param history_queue: 消息输出队列，运行期间产生的所有消息（附带调用链信息）都会被放入此队列</span>

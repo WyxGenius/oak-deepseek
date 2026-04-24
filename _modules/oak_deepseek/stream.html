@@ -262,12 +262,15 @@
 <span class="sd">    :param tool_calls_queue: 队列，元素为单个工具调用片段（delta 中的 tool_calls 列表项）。</span>
 <span class="sd">                             当队列收到 None 时表示输入结束。</span>
 <span class="sd">    :return: 迭代器，产出完整构造的工具调用字典，结构如下：</span>
-<span class="sd">             {</span>
-<span class="sd">                 &quot;index&quot;: int,</span>
-<span class="sd">                 &quot;id&quot;: str,</span>
-<span class="sd">                 &quot;type&quot;: &quot;function&quot;,</span>
-<span class="sd">                 &quot;function&quot;: {&quot;name&quot;: str, &quot;arguments&quot;: str}</span>
-<span class="sd">             }</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            {</span>
+<span class="sd">                &quot;index&quot;: int,</span>
+<span class="sd">                &quot;id&quot;: str,</span>
+<span class="sd">                &quot;type&quot;: &quot;function&quot;,</span>
+<span class="sd">                &quot;function&quot;: {&quot;name&quot;: str, &quot;arguments&quot;: str}</span>
+<span class="sd">            }</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">tool_call</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;function&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;arguments&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">}}</span>
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
@@ -420,24 +423,27 @@
 <span class="sd">        并收集最终的 usage、id、created 等元数据。</span>
 
 <span class="sd">        :return: 完整响应字典，结构与 DeepSeek API 非流式响应一致，例如：</span>
-<span class="sd">                 {</span>
-<span class="sd">                     &quot;id&quot;: &quot;...&quot;,</span>
-<span class="sd">                     &quot;object&quot;: &quot;chat.completion&quot;,</span>
-<span class="sd">                     &quot;created&quot;: 1234567890,</span>
-<span class="sd">                     &quot;model&quot;: &quot;deepseek-reasoner&quot;,</span>
-<span class="sd">                     &quot;system_fingerprint&quot;: &quot;...&quot;,</span>
-<span class="sd">                     &quot;usage&quot;: {...},</span>
-<span class="sd">                     &quot;choices&quot;: [{</span>
-<span class="sd">                         &quot;index&quot;: 0,</span>
-<span class="sd">                         &quot;message&quot;: {</span>
-<span class="sd">                             &quot;content&quot;: &quot;...&quot;,</span>
-<span class="sd">                             &quot;reasoning_content&quot;: &quot;...&quot;,</span>
-<span class="sd">                             &quot;tool_calls&quot;: [...]</span>
-<span class="sd">                         },</span>
-<span class="sd">                         &quot;logprobs&quot;: None,</span>
-<span class="sd">                         &quot;finish_reason&quot;: &quot;stop&quot;</span>
-<span class="sd">                     }]</span>
-<span class="sd">                 }</span>
+
+<span class="sd">            .. code-block:: python</span>
+
+<span class="sd">                {</span>
+<span class="sd">                    &quot;id&quot;: &quot;...&quot;,</span>
+<span class="sd">                    &quot;object&quot;: &quot;chat.completion&quot;,</span>
+<span class="sd">                    &quot;created&quot;: 1234567890,</span>
+<span class="sd">                    &quot;model&quot;: &quot;deepseek-reasoner&quot;,</span>
+<span class="sd">                    &quot;system_fingerprint&quot;: &quot;...&quot;,</span>
+<span class="sd">                    &quot;usage&quot;: {...},</span>
+<span class="sd">                    &quot;choices&quot;: [{</span>
+<span class="sd">                        &quot;index&quot;: 0,</span>
+<span class="sd">                        &quot;message&quot;: {</span>
+<span class="sd">                            &quot;content&quot;: &quot;...&quot;,</span>
+<span class="sd">                            &quot;reasoning_content&quot;: &quot;...&quot;,</span>
+<span class="sd">                            &quot;tool_calls&quot;: [...]</span>
+<span class="sd">                        },</span>
+<span class="sd">                        &quot;logprobs&quot;: None,</span>
+<span class="sd">                        &quot;finish_reason&quot;: &quot;stop&quot;</span>
+<span class="sd">                    }]</span>
+<span class="sd">                }</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">tool_calls_queue</span><span class="p">:</span> <span class="n">Queue</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
         <span class="n">build_calls</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
