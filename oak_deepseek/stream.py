@@ -30,12 +30,15 @@ def build_tool_calls(tool_calls_queue: Queue) -> Iterator[Dict]:
     :param tool_calls_queue: 队列，元素为单个工具调用片段（delta 中的 tool_calls 列表项）。
                              当队列收到 None 时表示输入结束。
     :return: 迭代器，产出完整构造的工具调用字典，结构如下：
-             {
-                 "index": int,
-                 "id": str,
-                 "type": "function",
-                 "function": {"name": str, "arguments": str}
-             }
+
+        .. code-block:: python
+
+            {
+                "index": int,
+                "id": str,
+                "type": "function",
+                "function": {"name": str, "arguments": str}
+            }
     """
     tool_call: Dict = {"index": None, "id": None, "type": None, "function": {"name": None, "arguments": ""}}
     while True:
@@ -180,24 +183,27 @@ class Stream:
         并收集最终的 usage、id、created 等元数据。
 
         :return: 完整响应字典，结构与 DeepSeek API 非流式响应一致，例如：
-                 {
-                     "id": "...",
-                     "object": "chat.completion",
-                     "created": 1234567890,
-                     "model": "deepseek-reasoner",
-                     "system_fingerprint": "...",
-                     "usage": {...},
-                     "choices": [{
-                         "index": 0,
-                         "message": {
-                             "content": "...",
-                             "reasoning_content": "...",
-                             "tool_calls": [...]
-                         },
-                         "logprobs": None,
-                         "finish_reason": "stop"
-                     }]
-                 }
+
+            .. code-block:: python
+
+                {
+                    "id": "...",
+                    "object": "chat.completion",
+                    "created": 1234567890,
+                    "model": "deepseek-reasoner",
+                    "system_fingerprint": "...",
+                    "usage": {...},
+                    "choices": [{
+                        "index": 0,
+                        "message": {
+                            "content": "...",
+                            "reasoning_content": "...",
+                            "tool_calls": [...]
+                        },
+                        "logprobs": None,
+                        "finish_reason": "stop"
+                    }]
+                }
         """
         tool_calls_queue: Queue = Queue()
         build_calls: bool = False
