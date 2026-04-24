@@ -75,8 +75,8 @@ class DeepSeekRequestBody(BaseModel):
 
     @model_validator(mode='after')
     def set_max_tokens_by_model(self):
-        max_allowed: int = 65536
-        default_value: int = 32768
+        max_allowed: int = 393216
+        default_value: int = 393216
 
         if self.max_tokens is None:
             self.max_tokens = default_value
