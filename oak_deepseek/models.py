@@ -51,6 +51,7 @@ class DeepSeekRequestBody(BaseModel):
     messages: List[Message]
     model: Literal["deepseek-reasoner"] = "deepseek-v4-flash"
     thinking: Thinking = Thinking.enable()
+    reasoning_effort: Literal["high", "max"] = "max"
     max_tokens: Optional[int] = None
     response_format: Optional[ResponseFormat] = Field(default_factory=ResponseFormat.text)
     stop: Optional[Union[List[str], str]] = None
