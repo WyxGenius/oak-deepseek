@@ -7,14 +7,14 @@ class SystemMessage(BaseModel):
     """系统消息。"""
     role: Literal["system"] = "system"
     content: str
-    name: Optional[str]
+    name: Optional[str] = None
 
 
 class UserMessage(BaseModel):
     """用户消息。"""
     role: Literal["user"] = "user"
     content: str
-    name: Optional[str]
+    name: Optional[str] = None
 
 
 class AssistantMessage(BaseModel):
