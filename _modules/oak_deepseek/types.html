@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="索引" href="../../genindex.html"><link rel="search" title="搜索" href="../../search.html">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
-        <title>oak_deepseek.tools - Oak DeepSeek 1.2.0 文档</title>
+        <title>oak_deepseek.types - Oak DeepSeek 1.2.0 文档</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -224,105 +224,101 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <h1>oak_deepseek.tools 源代码</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">namedtuple</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">queue</span><span class="w"> </span><span class="kn">import</span> <span class="n">Queue</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Any</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">TypeAdapter</span>
+          <h1>oak_deepseek.types 源代码</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">namedtuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Annotated</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">oak_deepseek.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">AssistantMessage</span><span class="p">,</span> <span class="n">Message</span><span class="p">,</span> <span class="n">Function</span><span class="p">,</span> <span class="n">Tool</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span>
 
 
-<div class="viewcode-block" id="standardize_tool">
-<a class="viewcode-back" href="../../api.html#oak_deepseek.tools.standardize_tool">[文档]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">standardize_tool</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tool</span><span class="p">:</span>
+<div class="viewcode-block" id="SystemMessage">
+<a class="viewcode-back" href="../../api.html#oak_deepseek.types.SystemMessage">[文档]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SystemMessage</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;系统消息。&quot;&quot;&quot;</span>
+    <span class="n">role</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;system&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;system&quot;</span>
+    <span class="n">content</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="UserMessage">
+<a class="viewcode-back" href="../../api.html#oak_deepseek.types.UserMessage">[文档]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UserMessage</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;用户消息。&quot;&quot;&quot;</span>
+    <span class="n">role</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;user&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;user&quot;</span>
+    <span class="n">content</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="AssistantMessage">
+<a class="viewcode-back" href="../../api.html#oak_deepseek.types.AssistantMessage">[文档]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AssistantMessage</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    将 Python 函数转换为框架可用的 Tool 对象。</span>
+<span class="sd">    助手消息，可能包含工具调用和思考内容。</span>
 
-<span class="sd">    :param func: 工具函数，需包含类型注解和文档字符串，函数的参数类型必须能被Pydantic处理，以生成JSON Schema。</span>
-<span class="sd">    :return: Tool 对象</span>
+<span class="sd">    :ivar content: 消息内容</span>
+<span class="sd">    :ivar tool_calls: 可选，工具调用列表</span>
+<span class="sd">    :ivar reasoning_content: 可选，思考模式下的推理内容</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">Tool</span><span class="p">(</span>
-        <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;function&quot;</span><span class="p">,</span>
-        <span class="n">function</span><span class="o">=</span><span class="n">Function</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="n">func</span><span class="o">.</span><span class="vm">__doc__</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">parameters</span><span class="o">=</span><span class="n">TypeAdapter</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">json_schema</span><span class="p">()</span>
-        <span class="p">)</span>
-    <span class="p">)</span></div>
+    <span class="n">role</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;assistant&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;assistant&quot;</span>
+    <span class="n">content</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">tool_calls</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">reasoning_content</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="standardize_tools">
-<a class="viewcode-back" href="../../api.html#oak_deepseek.tools.standardize_tools">[文档]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">standardize_tools</span><span class="p">(</span><span class="n">funcs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tool</span><span class="p">]:</span>
+
+<div class="viewcode-block" id="ToolMessage">
+<a class="viewcode-back" href="../../api.html#oak_deepseek.types.ToolMessage">[文档]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ToolMessage</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;工具执行结果消息。&quot;&quot;&quot;</span>
+    <span class="n">role</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;tool&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;tool&quot;</span>
+    <span class="n">content</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">tool_call_id</span><span class="p">:</span> <span class="nb">str</span></div>
+
+
+
+<span class="n">Message</span> <span class="o">=</span> <span class="n">Annotated</span><span class="p">[</span>
+    <span class="n">Union</span><span class="p">[</span><span class="n">SystemMessage</span><span class="p">,</span> <span class="n">UserMessage</span><span class="p">,</span> <span class="n">AssistantMessage</span><span class="p">,</span> <span class="n">ToolMessage</span><span class="p">],</span>
+    <span class="n">Field</span><span class="p">(</span><span class="n">discriminator</span><span class="o">=</span><span class="s2">&quot;role&quot;</span><span class="p">)</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="Function">
+<a class="viewcode-back" href="../../api.html#oak_deepseek.types.Function">[文档]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Function</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;描述一个可供模型调用的函数。&quot;&quot;&quot;</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="n">parameters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;JSON Schema 对象&quot;</span><span class="p">)</span>
+    <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="Tool">
+<a class="viewcode-back" href="../../api.html#oak_deepseek.types.Tool">[文档]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Tool</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;function&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;function&quot;</span>
+    <span class="n">function</span><span class="p">:</span> <span class="n">Function</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;具体函数&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="n">KeyChain</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span>
+
+<span class="n">ResponseData</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;ResponseData&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;key_chain&quot;</span><span class="p">,</span> <span class="s2">&quot;payload&quot;</span><span class="p">,</span> <span class="s2">&quot;llm_response&quot;</span><span class="p">,</span> <span class="s2">&quot;http_remnants&quot;</span><span class="p">])</span>
+
+
+<div class="viewcode-block" id="LLMConfig">
+<a class="viewcode-back" href="../../api.html#oak_deepseek.types.LLMConfig">[文档]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LLMConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    批量转换工具函数。</span>
+<span class="sd">    Agent的llm配置</span>
 
-<span class="sd">    :param funcs: 工具函数列表</span>
-<span class="sd">    :return: Tool 对象列表</span>
+<span class="sd">    :ivar with_stream: 是否启用流式输出（默认 False）</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">[</span><span class="n">standardize_tool</span><span class="p">(</span><span class="n">func</span><span class="p">)</span> <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">funcs</span><span class="p">]</span></div>
-
-
-
-<span class="c1"># 命名元组，用起来更方便</span>
-<span class="n">ToolCall</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;ToolCall&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">])</span>
-
-<div class="viewcode-block" id="parse_tool_call">
-<a class="viewcode-back" href="../../api.html#oak_deepseek.tools.parse_tool_call">[文档]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">parse_tool_call</span><span class="p">(</span><span class="n">tool_call</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ToolCall</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    用来提取单个工具的核心数据</span>
-
-<span class="sd">    :param tool_call: Dict，tool_calls字段中的单个元素</span>
-<span class="sd">    :return: ToolCall 实例，包含 id、name 和 args</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">tool_call_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">tool_call</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span>
-    <span class="n">call_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;arguments&quot;</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">tool_call</span><span class="p">[</span><span class="s2">&quot;function&quot;</span><span class="p">]</span>
-
-    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">call_data</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
-    <span class="n">args</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">call_data</span><span class="p">[</span><span class="s2">&quot;arguments&quot;</span><span class="p">])</span>
-
-    <span class="k">return</span> <span class="n">ToolCall</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">tool_call_id</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="parse_tool_calls">
-<a class="viewcode-back" href="../../api.html#oak_deepseek.tools.parse_tool_calls">[文档]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">parse_tool_calls</span><span class="p">(</span><span class="n">tool_calls</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Queue</span><span class="p">[</span><span class="n">ToolCall</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    将tool_calls字段的id，函数名和参数提取出来按顺序放队列里</span>
-
-<span class="sd">    :param tool_calls: List[Dict]，原始tool_calls字段</span>
-<span class="sd">    :return: Queue[namedtuple(&quot;ToolCall&quot;, [&quot;id&quot;, &quot;name&quot;, &quot;args&quot;])]，按顺序放好的调用信息</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">queue</span><span class="p">:</span> <span class="n">Queue</span><span class="p">[</span><span class="n">ToolCall</span><span class="p">]</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">tool_call</span> <span class="ow">in</span> <span class="n">tool_calls</span><span class="p">:</span>
-        <span class="n">queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">parse_tool_call</span><span class="p">(</span><span class="n">tool_call</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">queue</span></div>
-
-
-<div class="viewcode-block" id="is_finished">
-<a class="viewcode-back" href="../../api.html#oak_deepseek.tools.is_finished">[文档]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">is_finished</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    判断一条消息是否为最终答案（任务完成）。</span>
-
-<span class="sd">    条件：</span>
-<span class="sd">    - 是 AssistantMessage 类型</span>
-<span class="sd">    - content 字段非空</span>
-<span class="sd">    - 没有 tool_calls（即不再需要调用工具）</span>
-
-<span class="sd">    :param message: 待判断的消息</span>
-<span class="sd">    :return: 是否为最终答案</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">AssistantMessage</span><span class="p">):</span>
-        <span class="k">return</span> <span class="kc">False</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">message</span><span class="o">.</span><span class="n">content</span> <span class="ow">or</span> <span class="n">message</span><span class="o">.</span><span class="n">tool_calls</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">False</span>
-    <span class="k">return</span> <span class="kc">True</span></div>
-
-
+    <span class="n">model</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;deepseek-v4-flash&quot;</span><span class="p">,</span> <span class="s2">&quot;deepseek-v4-pro&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;deepseek-v4-flash&quot;</span>
+    <span class="n">reasoning_effort</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;high&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;max&quot;</span>
+    <span class="n">with_stream</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span></div>
 
 </pre></div>
         </article>

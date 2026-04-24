@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="索引" href="../../genindex.html"><link rel="search" title="搜索" href="../../search.html">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
-        <title>oak_deepseek.core - Oak DeepSeek 1.1.3 文档</title>
+        <title>oak_deepseek.core - Oak DeepSeek 1.2.0 文档</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -160,7 +160,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">Oak DeepSeek 1.1.3 文档</div></a>
+      <a href="../../index.html"><div class="brand">Oak DeepSeek 1.2.0 文档</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -181,7 +181,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
   
-  <span class="sidebar-brand-text">Oak DeepSeek 1.1.3 文档</span>
+  <span class="sidebar-brand-text">Oak DeepSeek 1.2.0 文档</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
   <input class="sidebar-search" placeholder="搜索" name="q" aria-label="搜索">
@@ -225,18 +225,15 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>oak_deepseek.core 源代码</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">deque</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">deque</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">queue</span><span class="w"> </span><span class="kn">import</span> <span class="n">Queue</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">oak_deepseek.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">AssistantMessage</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">oak_deepseek.client</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChatClient</span><span class="p">,</span> <span class="n">ResponseData</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">oak_deepseek.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">AssistantMessage</span><span class="p">,</span> <span class="n">Message</span><span class="p">,</span> <span class="n">KeyChain</span><span class="p">,</span> <span class="n">ResponseData</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">oak_deepseek.client</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChatClient</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">oak_deepseek.agent</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
 
-
-<span class="n">KeyChain</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span>
 
 <div class="viewcode-block" id="AgentCore">
 <a class="viewcode-back" href="../../api.html#oak_deepseek.core.AgentCore">[文档]</a>
@@ -262,6 +259,7 @@
 <span class="sd">        :param history_queue: 消息输出队列，每条消息会附带其调用链</span>
 <span class="sd">        :param api_key: DeepSeek API密钥</span>
 <span class="sd">        :param raw_response_queue: 可选，原始请求/响应队列</span>
+<span class="sd">        :param exception_queue: 可选队列，用于异常处理控制。功能与 ChatClient 中的 exception_queue 一致。</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">history_queue</span><span class="p">:</span> <span class="n">Queue</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">KeyChain</span><span class="p">,</span> <span class="n">Message</span><span class="p">]]</span> <span class="o">=</span> <span class="n">history_queue</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">ChatClient</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span> <span class="n">raw_response_queue</span><span class="o">=</span><span class="n">raw_response_queue</span><span class="p">,</span> <span class="n">exception_queue</span><span class="o">=</span><span class="n">exception_queue</span><span class="p">)</span>
@@ -292,7 +290,7 @@
 
 <span class="sd">        :return: 助手消息</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">assistant_msg</span><span class="p">:</span> <span class="n">AssistantMessage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">key_chain</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">messages</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">tools</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">with_stream</span><span class="p">)</span>
+        <span class="n">assistant_msg</span><span class="p">:</span> <span class="n">AssistantMessage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">key_chain</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">messages</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">tools</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">llm_config</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">history_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">key_chain</span><span class="p">,</span> <span class="n">assistant_msg</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">assistant_msg</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">assistant_msg</span></div>
@@ -335,10 +333,8 @@
 <a class="viewcode-back" href="../../api.html#oak_deepseek.core.AgentCore.rm_rf">[文档]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">rm_rf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        递归清理记忆缓存。</span>
-
-<span class="sd">        删除 `self.memory` 字典中，键以当前 Agent 的 `KeyChain` 为前缀的所有条目。</span>
-<span class="sd">        清理范围包括当前 Agent 自身，以及其所有后代子 Agent 的记忆。</span>
+<span class="sd">        递归清理后代子 Agent 的记忆缓存。</span>
+<span class="sd">        注意：当前 Agent 自身的记忆已在 back() 中通过不保存的方式丢弃。</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">key_chain_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">KeyChain</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
         <span class="n">current_key_chain</span><span class="p">:</span> <span class="n">KeyChain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">key_chain</span>
@@ -381,7 +377,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=9c0055fd"></script>
+</div><script src="../../_static/documentation_options.js?v=d1fcaa3c"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

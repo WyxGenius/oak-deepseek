@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="索引" href="../../genindex.html"><link rel="search" title="搜索" href="../../search.html">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
-        <title>oak_deepseek.stream - Oak DeepSeek 1.1.3 文档</title>
+        <title>oak_deepseek.stream - Oak DeepSeek 1.2.0 文档</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -160,7 +160,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">Oak DeepSeek 1.1.3 文档</div></a>
+      <a href="../../index.html"><div class="brand">Oak DeepSeek 1.2.0 文档</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -181,7 +181,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
   
-  <span class="sidebar-brand-text">Oak DeepSeek 1.1.3 文档</span>
+  <span class="sidebar-brand-text">Oak DeepSeek 1.2.0 文档</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
   <input class="sidebar-search" placeholder="搜索" name="q" aria-label="搜索">
@@ -246,6 +246,55 @@
         <span class="k">return</span> <span class="kc">None</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">data</span></div>
+
+
+
+<div class="viewcode-block" id="build_tool_calls">
+<a class="viewcode-back" href="../../api.html#oak_deepseek.stream.build_tool_calls">[文档]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_tool_calls</span><span class="p">(</span><span class="n">tool_calls_queue</span><span class="p">:</span> <span class="n">Queue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    从队列中消费工具调用片段，组装成完整的工具调用字典。</span>
+
+<span class="sd">    该方法用于 `get_from_chunks` 和 `build_full_response` 中处理流式工具调用。</span>
+<span class="sd">    当遇到新的工具调用索引（index）时，会产出上一个已完成的工具调用字典，</span>
+<span class="sd">    最后产出最后一个工具调用。</span>
+
+<span class="sd">    :param tool_calls_queue: 队列，元素为单个工具调用片段（delta 中的 tool_calls 列表项）。</span>
+<span class="sd">                             当队列收到 None 时表示输入结束。</span>
+<span class="sd">    :return: 迭代器，产出完整构造的工具调用字典，结构如下：</span>
+<span class="sd">             {</span>
+<span class="sd">                 &quot;index&quot;: int,</span>
+<span class="sd">                 &quot;id&quot;: str,</span>
+<span class="sd">                 &quot;type&quot;: &quot;function&quot;,</span>
+<span class="sd">                 &quot;function&quot;: {&quot;name&quot;: str, &quot;arguments&quot;: str}</span>
+<span class="sd">             }</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tool_call</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;function&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;arguments&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">}}</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">chunk</span> <span class="o">=</span> <span class="n">tool_calls_queue</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">chunk</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="n">tmp_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tmp_id</span><span class="p">:</span>
+            <span class="n">tmp_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;index&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tmp_index</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">tool_call</span>
+                <span class="n">tool_call</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                                   <span class="s2">&quot;function&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;arguments&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">}}</span>
+
+            <span class="n">tool_call</span><span class="p">[</span><span class="s2">&quot;index&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp_index</span>
+            <span class="n">tool_call</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span>
+            <span class="n">tool_call</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
+            <span class="n">tool_call</span><span class="p">[</span><span class="s1">&#39;function&#39;</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;function&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
+
+            <span class="n">tmp_arguments</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;function&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;arguments&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tmp_arguments</span><span class="p">:</span>
+                <span class="n">tool_call</span><span class="p">[</span><span class="s1">&#39;function&#39;</span><span class="p">][</span><span class="s2">&quot;arguments&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">tmp_arguments</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tmp_arguments</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;function&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;arguments&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tmp_arguments</span><span class="p">:</span>
+                <span class="n">tool_call</span><span class="p">[</span><span class="s1">&#39;function&#39;</span><span class="p">][</span><span class="s2">&quot;arguments&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">tmp_arguments</span>
+    <span class="k">yield</span> <span class="n">tool_call</span></div>
 
 
 
@@ -317,54 +366,6 @@
                 <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">yield</span> <span class="n">data</span><span class="p">,</span> <span class="n">delta</span>
 
-<div class="viewcode-block" id="Stream.build_tool_calls">
-<a class="viewcode-back" href="../../api.html#oak_deepseek.stream.Stream.build_tool_calls">[文档]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">build_tool_calls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool_calls_queue</span><span class="p">:</span> <span class="n">Queue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        从队列中消费工具调用片段，组装成完整的工具调用字典。</span>
-
-<span class="sd">        该方法用于 `get_from_chunks` 和 `build_full_response` 中处理流式工具调用。</span>
-<span class="sd">        当遇到新的工具调用索引（index）时，会产出上一个已完成的工具调用字典，</span>
-<span class="sd">        最后产出最后一个工具调用。</span>
-
-<span class="sd">        :param tool_calls_queue: 队列，元素为单个工具调用片段（delta 中的 tool_calls 列表项）。</span>
-<span class="sd">                                 当队列收到 None 时表示输入结束。</span>
-<span class="sd">        :return: 迭代器，产出完整构造的工具调用字典，结构如下：</span>
-<span class="sd">                 {</span>
-<span class="sd">                     &quot;index&quot;: int,</span>
-<span class="sd">                     &quot;id&quot;: str,</span>
-<span class="sd">                     &quot;type&quot;: &quot;function&quot;,</span>
-<span class="sd">                     &quot;function&quot;: {&quot;name&quot;: str, &quot;arguments&quot;: str}</span>
-<span class="sd">                 }</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">tool_call</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;function&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;arguments&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">}}</span>
-        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="n">chunk</span> <span class="o">=</span> <span class="n">tool_calls_queue</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">chunk</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">break</span>
-            <span class="n">tmp_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">tmp_id</span><span class="p">:</span>
-                <span class="n">tmp_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;index&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">tmp_index</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="k">yield</span> <span class="n">tool_call</span>
-                    <span class="n">tool_call</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-                                       <span class="s2">&quot;function&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;arguments&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">}}</span>
-
-                <span class="n">tool_call</span><span class="p">[</span><span class="s2">&quot;index&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp_index</span>
-                <span class="n">tool_call</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span>
-                <span class="n">tool_call</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
-                <span class="n">tool_call</span><span class="p">[</span><span class="s1">&#39;function&#39;</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;function&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
-
-                <span class="n">tmp_arguments</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;function&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;arguments&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">tmp_arguments</span><span class="p">:</span>
-                    <span class="n">tool_call</span><span class="p">[</span><span class="s1">&#39;function&#39;</span><span class="p">][</span><span class="s2">&quot;arguments&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">tmp_arguments</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">tmp_arguments</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;function&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;arguments&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">tmp_arguments</span><span class="p">:</span>
-                    <span class="n">tool_call</span><span class="p">[</span><span class="s1">&#39;function&#39;</span><span class="p">][</span><span class="s2">&quot;arguments&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">tmp_arguments</span>
-        <span class="k">yield</span> <span class="n">tool_call</span></div>
-
-
 <div class="viewcode-block" id="Stream.get_from_chunks">
 <a class="viewcode-back" href="../../api.html#oak_deepseek.stream.Stream.get_from_chunks">[文档]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_from_chunks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -392,7 +393,7 @@
 
             <span class="k">if</span> <span class="n">tool_calls</span><span class="p">:</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">build_calls</span><span class="p">:</span>
-                    <span class="n">tool_calls_iterator</span><span class="p">:</span> <span class="n">Iterator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_tool_calls</span><span class="p">(</span><span class="n">tool_calls_queue</span><span class="p">)</span>
+                    <span class="n">tool_calls_iterator</span><span class="p">:</span> <span class="n">Iterator</span> <span class="o">=</span> <span class="n">build_tool_calls</span><span class="p">(</span><span class="n">tool_calls_queue</span><span class="p">)</span>
                     <span class="n">build_calls</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="n">tool_calls_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">tool_calls</span><span class="p">)</span>
 
@@ -455,7 +456,7 @@
 
             <span class="k">if</span> <span class="n">tool_calls</span><span class="p">:</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">build_calls</span><span class="p">:</span>
-                    <span class="n">tool_calls_iterator</span><span class="p">:</span> <span class="n">Iterator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_tool_calls</span><span class="p">(</span><span class="n">tool_calls_queue</span><span class="p">)</span>
+                    <span class="n">tool_calls_iterator</span><span class="p">:</span> <span class="n">Iterator</span> <span class="o">=</span> <span class="n">build_tool_calls</span><span class="p">(</span><span class="n">tool_calls_queue</span><span class="p">)</span>
                     <span class="n">build_calls</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="n">tool_calls_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">tool_calls</span><span class="p">)</span>
 
@@ -515,7 +516,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=9c0055fd"></script>
+</div><script src="../../_static/documentation_options.js?v=d1fcaa3c"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
