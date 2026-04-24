@@ -19,6 +19,52 @@ def parse_stream(line: bytes) -> Optional[Dict]:
     return data
 
 
+def build_tool_calls(tool_calls_queue: Queue) -> Iterator[Dict]:
+    """
+    从队列中消费工具调用片段，组装成完整的工具调用字典。
+
+    该方法用于 `get_from_chunks` 和 `build_full_response` 中处理流式工具调用。
+    当遇到新的工具调用索引（index）时，会产出上一个已完成的工具调用字典，
+    最后产出最后一个工具调用。
+
+    :param tool_calls_queue: 队列，元素为单个工具调用片段（delta 中的 tool_calls 列表项）。
+                             当队列收到 None 时表示输入结束。
+    :return: 迭代器，产出完整构造的工具调用字典，结构如下：
+             {
+                 "index": int,
+                 "id": str,
+                 "type": "function",
+                 "function": {"name": str, "arguments": str}
+             }
+    """
+    tool_call: Dict = {"index": None, "id": None, "type": None, "function": {"name": None, "arguments": ""}}
+    while True:
+        chunk = tool_calls_queue.get(block=True)
+        if chunk is None:
+            break
+        tmp_id: Optional[str] = chunk[0].get("id")
+        if tmp_id:
+            tmp_index: int = chunk[0].get("index")
+            if tmp_index != 0:
+                yield tool_call
+                tool_call = {"index": None, "id": None, "type": None,
+                                   "function": {"name": None, "arguments": ""}}
+
+            tool_call["index"] = tmp_index
+            tool_call["id"] = chunk[0].get("id")
+            tool_call["type"] = chunk[0].get("type")
+            tool_call['function']["name"] = chunk[0]['function'].get("name")
+
+            tmp_arguments: str = chunk[0]['function'].get("arguments")
+            if tmp_arguments:
+                tool_call['function']["arguments"] += tmp_arguments
+        else:
+            tmp_arguments: str = chunk[0]['function'].get("arguments")
+            if tmp_arguments:
+                tool_call['function']["arguments"] += tmp_arguments
+    yield tool_call
+
+
 class Stream:
     """
     流式响应的处理器。
@@ -85,51 +131,6 @@ class Stream:
                 idx += 1
             yield data, delta
 
-    def build_tool_calls(self, tool_calls_queue: Queue) -> Iterator[Dict]:
-        """
-        从队列中消费工具调用片段，组装成完整的工具调用字典。
-
-        该方法用于 `get_from_chunks` 和 `build_full_response` 中处理流式工具调用。
-        当遇到新的工具调用索引（index）时，会产出上一个已完成的工具调用字典，
-        最后产出最后一个工具调用。
-
-        :param tool_calls_queue: 队列，元素为单个工具调用片段（delta 中的 tool_calls 列表项）。
-                                 当队列收到 None 时表示输入结束。
-        :return: 迭代器，产出完整构造的工具调用字典，结构如下：
-                 {
-                     "index": int,
-                     "id": str,
-                     "type": "function",
-                     "function": {"name": str, "arguments": str}
-                 }
-        """
-        tool_call: Dict = {"index": None, "id": None, "type": None, "function": {"name": None, "arguments": ""}}
-        while True:
-            chunk = tool_calls_queue.get(block=True)
-            if chunk is None:
-                break
-            tmp_id: Optional[str] = chunk[0].get("id")
-            if tmp_id:
-                tmp_index: int = chunk[0].get("index")
-                if tmp_index != 0:
-                    yield tool_call
-                    tool_call = {"index": None, "id": None, "type": None,
-                                       "function": {"name": None, "arguments": ""}}
-
-                tool_call["index"] = tmp_index
-                tool_call["id"] = chunk[0].get("id")
-                tool_call["type"] = chunk[0].get("type")
-                tool_call['function']["name"] = chunk[0]['function'].get("name")
-
-                tmp_arguments: str = chunk[0]['function'].get("arguments")
-                if tmp_arguments:
-                    tool_call['function']["arguments"] += tmp_arguments
-            else:
-                tmp_arguments: str = chunk[0]['function'].get("arguments")
-                if tmp_arguments:
-                    tool_call['function']["arguments"] += tmp_arguments
-        yield tool_call
-
     def get_from_chunks(self):
         """
         遍历流式数据块，按类别产出内容。
@@ -155,7 +156,7 @@ class Stream:
 
             if tool_calls:
                 if not build_calls:
-                    tool_calls_iterator: Iterator = self.build_tool_calls(tool_calls_queue)
+                    tool_calls_iterator: Iterator = build_tool_calls(tool_calls_queue)
                     build_calls = True
                 tool_calls_queue.put(tool_calls)
 
@@ -215,7 +216,7 @@ class Stream:
 
             if tool_calls:
                 if not build_calls:
-                    tool_calls_iterator: Iterator = self.build_tool_calls(tool_calls_queue)
+                    tool_calls_iterator: Iterator = build_tool_calls(tool_calls_queue)
                     build_calls = True
                 tool_calls_queue.put(tool_calls)
 
