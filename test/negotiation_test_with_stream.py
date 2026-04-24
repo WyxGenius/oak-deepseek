@@ -3,7 +3,7 @@ from threading import Thread
 import os
 from typing import Union, Tuple
 
-from oak_deepseek.agent import LLMConfig
+from oak_deepseek.types import LLMConfig
 from oak_deepseek.engine import AgentEngine
 from oak_deepseek.stream import Stream
 from oak_deepseek.utils import StreamDisplay, is_response, is_stream

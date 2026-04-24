@@ -61,3 +61,14 @@ class Tool(BaseModel):
 KeyChain = Tuple[Tuple[str, str], ...]
 
 ResponseData = namedtuple("ResponseData", ["key_chain", "payload", "llm_response", "http_remnants"])
+
+
+class LLMConfig(BaseModel):
+    """
+    Agent的llm配置
+
+    :ivar with_stream: 是否启用流式输出（默认 False）
+    """
+    model: Literal["deepseek-v4-flash", "deepseek-v4-pro"] = "deepseek-v4-flash"
+    reasoning_effort: Literal["high", "max"] = "max"
+    with_stream: bool = False

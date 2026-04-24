@@ -5,9 +5,8 @@ import os
 import requests
 from requests import Session
 
-from oak_deepseek.agent import LLMConfig
 from oak_deepseek.models import DeepSeekRequestBody
-from oak_deepseek.types import AssistantMessage, Message, Tool, ResponseData
+from oak_deepseek.types import AssistantMessage, Message, Tool, ResponseData, LLMConfig
 from oak_deepseek.stream import Stream
 
 

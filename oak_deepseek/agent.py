@@ -1,8 +1,7 @@
-import copy
-from typing import Optional, List, Tuple, Dict, Literal
+from typing import Optional, List, Tuple, Dict
 from pydantic import BaseModel
 
-from oak_deepseek.types import Message, Tool
+from oak_deepseek.types import Message, Tool, LLMConfig
 from oak_deepseek.tools import standardize_tool
 
 
@@ -18,15 +17,6 @@ def choose_agent(agent: Tuple[str, str], task: str) -> str:
     pass
 
 # llm参数设置
-class LLMConfig(BaseModel):
-    """
-    Agent的llm配置
-
-    :ivar with_stream: 是否启用流式输出（默认 False）
-    """
-    model: Literal["deepseek-v4-flash", "deepseek-v4-pro"] = "deepseek-v4-flash"
-    reasoning_effort: Literal["high", "max"] = "max"
-    with_stream: bool = False
 
 # agent元数据
 class AgentInfo(BaseModel):
